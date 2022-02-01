@@ -1,4 +1,5 @@
 import {Condition} from "../model";
+import {Score} from "./score";
 
 export enum ElementType {
   Section = 'section',
@@ -33,6 +34,7 @@ export class Choice implements IElement<ElementType.Choice> {
     readonly id: string,
     readonly title: string,
     readonly text: string,
+    readonly scores?: Score[],
     readonly condition?: Condition,
   ) {
   }

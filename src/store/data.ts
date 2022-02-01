@@ -1,5 +1,5 @@
 import {createLogger, createStore} from 'vuex'
-import {IElement} from "../data/model/element";
+import {AnyElement} from "../data/model/element";
 import {Database, State} from "../data/state";
 import {PersistPlugin} from "./persist";
 
@@ -31,7 +31,7 @@ export default createStore<State>({
       state.genCounters[idType] += 1
       return state.genCounters[idType]
     },
-    addObject<T extends IElement<any>>(state: State, obj: T) {
+    addObject<T extends AnyElement>(state: State, obj: T) {
       state.database.objects[obj.id] = obj
     },
     addChild(state: State, {parentId, childId}) {
@@ -42,6 +42,10 @@ export default createStore<State>({
         state.database.children[parentId].push(childId)
       }
       state.database.parents[childId] = parentId
+    },
+    updateObject(state: State, {objectId, data}) {
+      const current = state.database.objects[objectId]
+      state.database.objects[objectId] = {...current, ...data}
     },
     removeObject(state: State, objectId: string) {
       function removeFromParent(objId: string) {

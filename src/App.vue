@@ -1,8 +1,9 @@
 <template>
-  <SectionView v-for="sectionId in findSections" :sectionId="sectionId"/>
-  <div>
+  <div class="toolbar">
     <button @click="createSection">Add Section</button>
+    <button @click="clearSections">Clear</button>
   </div>
+  <SectionView v-for="sectionId in findSections" :sectionId="sectionId"/>
 </template>
 
 <script setup lang="ts">
@@ -21,8 +22,12 @@ async function createSection() {
   const childCounter = await store.dispatch('genNextId', ElementType.Section)
   const childId = `${ElementType.Section}_${childCounter}`
   console.log("New Section", childId)
-  store.commit('addObject', new Section(childId, "Foo", "Bar"))
+  store.commit('addObject', new Section(childId, `Section ${childCounter}`, "Bar"))
   store.commit('addChild', {parentId: 'root', childId})
+}
+
+function clearSections() {
+
 }
 
 onMounted(() => {
@@ -30,7 +35,7 @@ onMounted(() => {
   const current = localStorage.getItem("project")
   if (current != null) {
     const stateJson = localStorage.getItem(`project/${current}`)
-    if (stateJson !=  null) {
+    if (stateJson != null) {
       const state = JSON.parse(stateJson)
       store.replaceState(state)
     }
@@ -39,28 +44,6 @@ onMounted(() => {
 </script>
 
 <style>
-.sec-objects {
-  border: 2px solid black;
-  border-radius: 5px;
-  padding: 5px;
-  margin-bottom: 5px;
-}
-.sec-objects .sec-choices {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  grid-template-rows: repeat(auto-fill, 1fr);
-  grid-auto-flow: row;
-  grid-gap: 5px;
-}
-
-.sec-objects .sec-choices .choice {
-  justify-self: stretch;
-  align-self: stretch;
-  border: 2px solid black;
-  border-radius: 5px;
-  padding: 5px;
-}
-
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
