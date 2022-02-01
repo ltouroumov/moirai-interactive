@@ -1,18 +1,18 @@
 <template>
   <div class="choice">
     <div class="ch-header">
-      <input class="ch-title" :value="choice.title" @input="updateProp('title', $event)"/>
+      <input class="form-control ch-title" :value="choice.title" @input="updateProp('title', $event)"/>
       <div class="ch-conditions" v-if="choice.conditions"></div>
       <div class="ch-scores" v-if="choice.scores"></div>
-      <textarea class="ch-text" :value="choice.text" @input="updateProp('text', $event)"></textarea>
+      <textarea class="form-control ch-text" :value="choice.text" @input="updateProp('text', $event)"></textarea>
     </div>
     <div class="ch-options" v-if="options && options.length > 0">
       <OptionView v-for="optionId in options" :optionId="optionId"/>
     </div>
     <div class="ch-actions">
       <span class="ch-id">{{ choice.id }}</span>
-      <button @click="createOption">Add Option</button>
-      <button @click="deleteChoice">Delete</button>
+      <button class="btn btn-outline-primary" @click="createOption"><font-awesome-icon icon="plus-square" /></button>
+      <button class="btn btn-outline-danger" @click="deleteChoice"><font-awesome-icon icon="trash" /></button>
     </div>
   </div>
 </template>
@@ -90,19 +90,24 @@ async function deleteChoice() {
   padding-top: 5px;
 }
 
+
 .ch-actions {
   grid-area: tools;
 
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 1fr;
   grid-template-rows: auto;
   grid-auto-flow: row;
-  grid-row-gap: 5px;
+  grid-gap: 5px;
   align-content: start;
 
   background: lightgray;
   border-radius: 5px;
   padding: 5px;
+}
+
+.ch-actions .ch-id {
+  grid-column: 1 / span 2;
 }
 
 .ch-id {

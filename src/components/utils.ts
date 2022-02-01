@@ -1,4 +1,4 @@
-import {Store, useStore} from "vuex";
+import {Store} from "vuex";
 import {RootState} from "../data/state";
 
 export function updatePropFor(store: Store<RootState>, objectIdF: () => (string | undefined)) {
