@@ -7,19 +7,19 @@
 </template>
 
 <script setup lang="ts">
-import {Option} from "../data/model/element";
+import {Option} from "../../data/model/element";
 import {useStore} from "vuex";
-import {State} from "../data/state";
+import {RootState} from "../../data/state";
 import {computed} from "vue";
 
 
-const store = useStore<State>()
+const store = useStore<RootState>()
 
 const props = defineProps({
   optionId: String
 })
 
-const option = computed(() => store.getters.findElement(props.optionId) as Option)
+const option = computed(() => store.getters["database/findElement"](props.optionId) as Option)
 </script>
 
 <style scoped>

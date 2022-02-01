@@ -19,34 +19,34 @@
 </template>
 
 <script setup lang="ts">
-import {Choice, ElementType, Section} from "../data/model/element";
+import {Choice, ElementType, Section} from "../../data/model/element";
 import ChoiceView from "./ChoiceView.vue";
 import {useStore} from "vuex";
-import {State} from "../data/state";
+import {RootState} from "../../data/state";
 import {computed} from "vue";
-import {updatePropFor} from "./utils";
+import {updatePropFor} from "../utils";
 
-const store = useStore<State>()
+const store = useStore<RootState>()
 
 const props = defineProps({
   sectionId: String
 })
 
-const section = computed(() => store.getters.findElement(props.sectionId) as Section)
-const choices = computed(() => store.getters.findChildrenIds(props.sectionId) as Choice[])
+const section = computed(() => store.getters["database/findElement"](props.sectionId) as Section)
+const choices = computed(() => store.getters["database/findChildrenIds"](props.sectionId) as Choice[])
 
 const updateProp = updatePropFor(store, () => props.sectionId)
 
 async function createChoice() {
-  const childCounter = await store.dispatch('genNextId', ElementType.Choice)
+  const childCounter = await store.dispatch('database/genNextId', ElementType.Choice)
   const childId = `${ElementType.Choice}_${childCounter}`
   console.log("New Choice", childId)
-  store.commit('addObject', new Choice(childId, `Choice ${childCounter}`, "Bar"))
-  store.commit('addChild', {parentId: props.sectionId, childId})
+  store.commit('database/addObject', new Choice(childId, `Choice ${childCounter}`, "Bar"))
+  store.commit('database/addChild', {parentId: props.sectionId, childId})
 }
 
 async function deleteSection() {
-  store.commit('removeObject', props.sectionId)
+  store.commit('database/removeObject', props.sectionId)
 }
 
 </script>
