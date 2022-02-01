@@ -9,10 +9,10 @@
 <script setup lang="ts">
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup
-import {State} from "./data/state";
-import SectionView from "./components/SectionView.vue";
+import {State} from "../data/state";
+import SectionView from "./SectionView.vue";
 import {useStore} from "vuex";
-import {ElementType, Section} from "./data/model/element";
+import {ElementType, Section} from "../data/model/element";
 import {computed, onMounted} from "vue";
 
 const store = useStore<State>()
@@ -27,7 +27,7 @@ async function createSection() {
 }
 
 function clearSections() {
-
+  store.commit('removeChildren', 'root')
 }
 
 onMounted(() => {

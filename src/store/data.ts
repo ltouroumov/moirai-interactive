@@ -3,6 +3,36 @@ import {AnyElement} from "../data/model/element";
 import {Database, State} from "../data/state";
 import {PersistPlugin} from "./persist";
 
+function removeFromParent(state: State, objId: string) {
+  const parentId = state.database.parents[objId]
+  if (parentId) {
+    const idx = state.database.children[parentId].indexOf(objId)
+    if (idx !== -1) {
+      state.database.children[parentId].splice(idx, 1)
+    }
+  }
+}
+
+function removeParent(state: State, objId: string) {
+  delete state.database.parents[objId]
+}
+
+function removeChildren(state: State, objId: string) {
+  const children = state.database.children[objId]
+  if (children) {
+    children.forEach(childId => {
+      removeChildren(state, childId)
+      removeParent(state, childId)
+      removeObject(state, childId)
+    })
+  }
+  delete state.database.children[objId]
+}
+
+function removeObject(state: State, objId: string) {
+  delete state.database.objects[objId]
+}
+
 export default createStore<State>({
   plugins: [createLogger(), PersistPlugin],
   state(): State {
@@ -47,41 +77,14 @@ export default createStore<State>({
       const current = state.database.objects[objectId]
       state.database.objects[objectId] = {...current, ...data}
     },
+    removeChildren(state: State, objectId: string) {
+      removeChildren(state, objectId)
+    },
     removeObject(state: State, objectId: string) {
-      function removeFromParent(objId: string) {
-        const parentId = state.database.parents[objId]
-        if (parentId) {
-          const idx = state.database.children[parentId].indexOf(objId)
-          if (idx !== -1) {
-            state.database.children[parentId].splice(idx, 1)
-          }
-        }
-      }
-
-      function removeParent(objId: string) {
-        delete state.database.parents[objId]
-      }
-
-      function removeChildren(objId: string) {
-        const children = state.database.children[objId]
-        if (children) {
-          children.forEach(childId => {
-            removeChildren(childId)
-            removeParent(childId)
-            removeObject(childId)
-          })
-        }
-        delete state.database.children[objId]
-      }
-
-      function removeObject(objId: string) {
-        delete state.database.objects[objId]
-      }
-
-      removeFromParent(objectId)
-      removeParent(objectId)
-      removeChildren(objectId)
-      removeObject(objectId)
+      removeFromParent(state, objectId)
+      removeParent(state, objectId)
+      removeChildren(state, objectId)
+      removeObject(state, objectId)
     }
   },
   actions: {

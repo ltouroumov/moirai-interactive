@@ -35,7 +35,7 @@ export class Choice implements IElement<ElementType.Choice> {
     readonly title: string,
     readonly text: string,
     readonly scores?: Score[],
-    readonly condition?: Condition,
+    readonly conditions?: Condition,
   ) {
   }
 }
