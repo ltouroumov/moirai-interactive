@@ -9,10 +9,15 @@ import Viewer from '../components/Viewer.vue'
 export const routes = [
     { name: 'home', path: '/', component: Home },
     {
-        name: 'edit', path: '/edit/:project', component: Editor,
+        name: 'edit',
+        path: '/edit/:project',
+        component: Editor,
         children: [
-            { path: '', redirect: { name: 'edit_sections' } },
-            { name: 'edit_sections', path: 'sections', component: EditorSections },
+            {
+                name: 'edit_sections',
+                path: 'sections',
+                component: EditorSections
+            },
             { name: 'edit_pages', path: 'pages', component: EditorPages },
             { name: 'edit_settings', path: 'pages', component: EditorSettings },
         ]

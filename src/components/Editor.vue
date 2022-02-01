@@ -2,7 +2,8 @@
   <div class="toolbar">
     <nav class="nav nav-pills nav-fill editor-tabs">
       <router-link class="nav-link" :to="{ name: 'home' }">
-        <font-awesome-icon icon="home" /> Home
+        <font-awesome-icon icon="home"/>
+        Home
       </router-link>
       <router-link class="nav-link" :to="{ name: 'edit_sections', params: $route.params }" active-class="active">
         Sections
@@ -16,7 +17,8 @@
     </nav>
     <div class="editor-actions">
       <button class="btn btn-primary" @click="createSection">
-        <font-awesome-icon :icon="['far', 'plus-square']" /> Add Section
+        <font-awesome-icon :icon="['far', 'plus-square']"/>
+        Add Section
       </button>
     </div>
   </div>
@@ -33,7 +35,9 @@ import { useStore } from 'vuex';
 import { ElementType, Section } from '../data/model/element';
 import { computed, onMounted, onUnmounted } from 'vue';
 import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
+import { routes } from '../router/routes';
 
+const $router = useRouter()
 const route = useRoute()
 const store = useStore<RootState>()
 const findSections = computed(() => store.getters['database/findChildrenIds']('root'))
@@ -59,6 +63,9 @@ onMounted(() => {
     const projectData = store.getters['projects/findProject'](projectId)
     store.commit('database/setupProject', projectData)
   }
+
+  if (route.name === 'edit')
+    $router.push({ name: 'edit_sections', params: route.params })
 })
 onUnmounted(() => {
   store.commit('database/unloadProject')

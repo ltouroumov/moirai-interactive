@@ -1,6 +1,9 @@
 <template>
-<div>
+<div v-if="findSections && findSections.length > 0">
   <SectionView v-for="sectionId in findSections" :sectionId="sectionId"/>
+</div>
+  <div v-if="!findSections || findSections.length === 0">
+  <p>No Sections</p>
 </div>
 </template>
 
