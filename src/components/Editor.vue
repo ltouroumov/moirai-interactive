@@ -2,24 +2,40 @@
   <div class="toolbar">
     <nav class="nav nav-pills nav-fill editor-tabs">
       <router-link class="nav-link" :to="{ name: 'home' }">
-        <font-awesome-icon icon="home"/>
+        <mdi-icon name="chevron-left" />
         Home
       </router-link>
       <router-link class="nav-link" :to="{ name: 'edit_sections', params: $route.params }" active-class="active">
+        <mdi-icon name="layers-triple" />
         Sections
       </router-link>
       <router-link class="nav-link" :to="{ name: 'edit_pages', params: $route.params }" active-class="active">
+        <mdi-icon name="file-multiple" />
         Pages
       </router-link>
       <router-link class="nav-link" :to="{ name: 'edit_settings', params: $route.params }" active-class="active">
+        <mdi-icon name="cog" />
         Settings
       </router-link>
     </nav>
     <div class="editor-actions">
-      <button class="btn btn-primary" @click="createSection">
-        <font-awesome-icon :icon="['far', 'plus-square']"/>
-        Add Section
-      </button>
+      <div class="btn-toolbar">
+        <div class="btn-group">
+          <button class="btn btn-primary" @click="createSection">
+            <mdi-icon name="layers-plus" />
+            New Section
+          </button>
+          <button class="btn btn-primary" @click="createScore">
+            <mdi-icon name="numeric-9-plus-box" />
+            New Score
+          </button>
+          <button class="btn btn-primary" @click="screateStyle">
+            <mdi-icon name="palette-swatch-outline" />
+            New Style
+          </button>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -27,53 +43,65 @@
 </template>
 
 <script setup lang="ts">
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup
-import { RootState } from '../data/state';
-import SectionView from './editor/SectionView.vue';
-import { useStore } from 'vuex';
-import { ElementType, Section } from '../data/model/element';
-import { computed, onMounted, onUnmounted } from 'vue';
-import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
-import { routes } from '../router/routes';
+// Imports
+import { useStore } from "vuex";
+import { onMounted, onUnmounted } from "vue";
+import { onBeforeRouteUpdate, RouteLocationNormalizedLoaded, useRoute, useRouter } from "vue-router";
+import { editorStoreKey } from "../store/editor";
+import { homeStoreKey } from "../store/home";
+import { ElementType, Section } from "../data/model/element";
+import MdiIcon from "./utils/mdi-icon.vue";
 
-const $router = useRouter()
-const route = useRoute()
-const store = useStore<RootState>()
-const findSections = computed(() => store.getters['database/findChildrenIds']('root'))
+const $router = useRouter();
+const store = useStore(editorStoreKey);
 
 async function createSection() {
-  const childCounter = await store.dispatch('database/genNextId', ElementType.Section)
-  const childId = `${ElementType.Section}_${childCounter}`
-  console.log('New Section', childId)
-  store.commit('database/addObject', new Section(childId, `Section ${childCounter}`, 'Bar'))
-  store.commit('database/addChild', { parentId: 'root', childId })
+  const childCounter = await store.dispatch("project/genNextId", ElementType.Section);
+  const childId = `${ElementType.Section}_${childCounter}`;
+  console.log("New Section", childId);
+  store.commit("project/addObject", new Section(childId, `Section ${childCounter}`));
+  store.commit("project/addChild", { parentId: "root", childId });
+}
+
+function reloadProject(route: RouteLocationNormalizedLoaded) {
+  const projectId = route.params["project"];
+  console.log(`Loading project ${projectId}`);
+
+  const jsonData = localStorage.getItem(`projects/${projectId}`);
+  if (jsonData) {
+    const project = JSON.parse(jsonData);
+    store.commit("project/loadProject", project);
+    console.log("Loaded from storage");
+  }
+  if (!store.state.project.key) {
+    console.log("Project requires setup");
+    const homeStore = useStore(homeStoreKey);
+    const projectData = homeStore.getters["findProject"](projectId);
+    if (projectData) {
+      store.commit("project/setupProject", projectData);
+    } else {
+      $router.push({ name: "home" });
+    }
+  }
+
+  if (route.name === "edit")
+    $router.push({ name: "edit_sections", params: route.params });
 }
 
 onMounted(() => {
-  const projectId = route.params['project']
-  console.log(`Loading project ${projectId}`)
-
-  const jsonData = localStorage.getItem(`vuex/projects/${projectId}`)
-  if (jsonData) {
-    const project = JSON.parse(jsonData)
-    store.commit('database/loadProject', project)
-  }
-  if (!store.state.database.key) {
-    const projectData = store.getters['projects/findProject'](projectId)
-    store.commit('database/setupProject', projectData)
-  }
-
-  if (route.name === 'edit')
-    $router.push({ name: 'edit_sections', params: route.params })
-})
+  const route = useRoute();
+  reloadProject(route);
+});
 onUnmounted(() => {
-  store.commit('database/unloadProject')
-})
+  store.commit("project/unloadProject");
+});
 onBeforeRouteUpdate((to, from, next) => {
-  console.log(`Route change`, from, to)
-  next()
-})
+  console.log(`Route change`, from, to);
+  if (from.params["project"] === to.params["project"])
+    next();
+  else
+    reloadProject(to);
+});
 </script>
 
 <style>
@@ -93,12 +121,5 @@ div.toolbar .editor-tabs {
 
 div.toolbar .editor-actions {
   grid-column: actions / span 1;
-}
-
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  padding: 5px;
 }
 </style>

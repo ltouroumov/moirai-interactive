@@ -7,20 +7,20 @@ import EditorSettings from '../components/editor/EditorSettings.vue'
 import Viewer from '../components/Viewer.vue'
 
 export const routes = [
-    { name: 'home', path: '/', component: Home },
-    {
-        name: 'edit',
-        path: '/edit/:project',
-        component: Editor,
-        children: [
-            {
-                name: 'edit_sections',
-                path: 'sections',
-                component: EditorSections
-            },
-            { name: 'edit_pages', path: 'pages', component: EditorPages },
-            { name: 'edit_settings', path: 'pages', component: EditorSettings },
-        ]
-    },
-    { name: 'view', path: '/view/:project', component: Viewer },
+  { name: 'home', path: '/', component: Home },
+  {
+    name: 'edit',
+    path: '/edit/:project',
+    component: Editor,
+    children: [
+      {
+        name: 'edit_sections',
+        path: 'sections',
+        component: EditorSections
+      },
+      { name: 'edit_pages', path: 'pages', component: EditorPages },
+      { name: 'edit_settings', path: 'pages', component: EditorSettings },
+    ]
+  },
+  { name: 'view', path: '/view/:project', component: Viewer },
 ]

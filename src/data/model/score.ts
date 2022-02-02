@@ -1,4 +1,4 @@
-import {Condition} from "../model";
+import { Condition } from '../model';
 
 export class ScoreType {
   constructor(

@@ -11,41 +11,46 @@
     </div>
     <div class="ch-actions">
       <span class="ch-id">{{ choice.id }}</span>
-      <button class="btn btn-outline-primary" @click="createOption"><font-awesome-icon icon="plus-square" /></button>
-      <button class="btn btn-outline-danger" @click="deleteChoice"><font-awesome-icon icon="trash" /></button>
+      <button class="btn btn-sm btn-outline-primary" @click="createOption">
+        <mdi-icon name="plus-circle" />
+      </button>
+      <button class="btn btn-sm btn-outline-danger" @click="deleteChoice">
+        <mdi-icon name="delete-outline" />
+      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import {Choice, ElementType, Option} from "../../data/model/element";
-import OptionView from "./OptionView.vue";
-import {useStore} from "vuex";
-import {RootState} from "../../data/state";
-import {computed} from "vue";
-import {updatePropFor} from "../utils";
+import { Choice, ElementType, Option } from '../../data/model/element';
+import OptionView from './OptionView.vue';
+import { useStore } from 'vuex';
+import { computed } from 'vue';
+import { updatePropFor } from '../utils';
+import { editorStoreKey } from "../../store/editor";
+import MdiIcon from "../utils/mdi-icon.vue";
 
-const store = useStore<RootState>()
+const store = useStore(editorStoreKey)
 
 const props = defineProps({
   choiceId: String
 })
 
-const choice = computed(() => store.getters["database/findElement"](props.choiceId) as Choice)
-const options = computed(() => store.getters["database/findChildrenIds"](props.choiceId) as Option[])
+const choice = computed(() => store.getters['project/findElement'](props.choiceId) as Choice)
+const options = computed(() => store.getters['project/findChildrenIds'](props.choiceId) as Option[])
 
 const updateProp = updatePropFor(store, () => props.choiceId)
 
 async function createOption() {
-  const childCounter = await store.dispatch('database/genNextId', ElementType.Option)
+  const childCounter = await store.dispatch('project/genNextId', ElementType.Option)
   const childId = `${ElementType.Option}_${childCounter}`
-  console.log("New Choice", childId)
-  store.commit('database/addObject', new Option(childId, `Option ${childCounter}`, "Bar",))
-  store.commit('database/addChild', {parentId: props.choiceId, childId})
+  console.log('New Choice', childId)
+  store.commit('project/addObject', new Option(childId, `Option ${childCounter}`, 'Bar',))
+  store.commit('project/addChild', { parentId: props.choiceId, childId })
 }
 
 async function deleteChoice() {
-  store.commit('database/removeObject', props.choiceId)
+  store.commit('project/removeObject', props.choiceId)
 }
 
 </script>
@@ -54,11 +59,10 @@ async function deleteChoice() {
 .choice {
   display: grid;
   grid-template-columns: 1fr auto;
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: auto 1fr;
   grid-template-areas:
    "header tools"
-   "options tools"
-   "_fill_ tools";
+   "options options";
   grid-gap: 5px;
 
   border: grey solid 1px;

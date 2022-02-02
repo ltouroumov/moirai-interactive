@@ -1,5 +1,5 @@
-import {Condition} from "../model";
-import {Score} from "./score";
+import { Condition } from '../model';
+import { Score } from './score';
 
 export enum ElementType {
   Section = 'section',
@@ -20,9 +20,9 @@ export class Section implements IElement<ElementType.Section> {
   constructor(
     readonly id: string,
     readonly title: string,
-    readonly header: string,
+    readonly header?: string,
     readonly footer?: string,
-    readonly condition?: Condition,
+    readonly conditions?: Condition[],
   ) {
   }
 }

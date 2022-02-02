@@ -1,9 +1,7 @@
-
-
-
 export class Condition {
   constructor(
-    expr: String
+    readonly test: String,
+    readonly state: String,
   ) {
   }
 }

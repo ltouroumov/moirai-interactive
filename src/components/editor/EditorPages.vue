@@ -1,5 +1,5 @@
 <template>
-<b>Pages</b>
+  <b>Pages</b>
 </template>
 
 <script setup lang="ts">

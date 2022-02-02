@@ -29,19 +29,19 @@
 
 <script setup lang="ts">
 import { useStore } from 'vuex';
-import { RootState, StateModules } from '../data/state';
-import { computed, onMounted } from 'vue';
+import { computed } from 'vue';
+import { homeStoreKey } from "../store/home";
 
-const store = useStore<RootState>()
+const store = useStore(homeStoreKey)
 
-const projects = computed(() => store.state.projects.projects)
+const projects = computed(() => store.state.items)
 
 function createProject() {
-  store.commit('projects/createProject')
+  store.commit('createProject')
 }
 
-function removeProject(projectId) {
-  store.dispatch('projects/removeProject', projectId)
+function removeProject(projectId: string) {
+  store.dispatch('removeProject', projectId)
 }
 </script>
 

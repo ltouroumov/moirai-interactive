@@ -1,8 +1,10 @@
 <template>
   <section class="section">
     <div class="sec-header">
-      <input class="form-control sec-header-title" type="text" :value="section.title" @input="updateProp('title', $event)">
-      <textarea class="form-control sec-header-text" :value="section.header" @input="updateProp('header', $event)"></textarea>
+      <input class="form-control sec-header-title" type="text" :value="section.title"
+             @input="updateProp('title', $event)">
+      <textarea class="form-control sec-header-text" :value="section.header"
+                @input="updateProp('header', $event)"></textarea>
     </div>
     <div class="sec-choices">
       <ChoiceView v-for="choiceId in choices" :choiceId="choiceId"/>
@@ -12,11 +14,14 @@
     </div>
     <div class="sec-actions">
       <span class="sec-id">{{ section.id }}</span>
-      <button class="btn btn-outline-primary" @click="createChoice">
-        <font-awesome-icon icon="plus-square"/>
+      <button class="btn btn-sm btn-outline-primary" @click="createChoice">
+        <mdi-icon name="plus-circle" />
       </button>
-      <button class="btn btn-outline-danger" @click="deleteSection">
-        <font-awesome-icon icon="trash"/>
+      <button class="btn btn-sm btn-outline-primary" @click="addCondition">
+        <mdi-icon name="key-plus" />
+      </button>
+      <button class="btn btn-sm btn-outline-danger" @click="deleteSection">
+        <mdi-icon name="delete-outline" />
       </button>
     </div>
   </section>
@@ -26,31 +31,40 @@
 import { Choice, ElementType, Section } from '../../data/model/element';
 import ChoiceView from './ChoiceView.vue';
 import { useStore } from 'vuex';
-import { RootState } from '../../data/state';
 import { computed } from 'vue';
 import { updatePropFor } from '../utils';
+import { editorStoreKey } from "../../store/editor";
+import MdiIcon from "../utils/mdi-icon.vue";
+import { Condition } from "../../data/model";
 
-const store = useStore<RootState>()
+const store = useStore(editorStoreKey);
 
 const props = defineProps({
   sectionId: String
 })
 
-const section = computed(() => store.getters['database/findElement'](props.sectionId) as Section)
-const choices = computed(() => store.getters['database/findChildrenIds'](props.sectionId) as Choice[])
+const section = computed(() => store.getters['project/findElement'](props.sectionId) as Section)
+const choices = computed(() => store.getters['project/findChildrenIds'](props.sectionId) as Choice[])
 
 const updateProp = updatePropFor(store, () => props.sectionId)
 
 async function createChoice() {
-  const childCounter = await store.dispatch('database/genNextId', ElementType.Choice)
+  const childCounter = await store.dispatch('project/genNextId', ElementType.Choice)
   const childId = `${ElementType.Choice}_${childCounter}`
   console.log('New Choice', childId)
-  store.commit('database/addObject', new Choice(childId, `Choice ${childCounter}`, 'Bar'))
-  store.commit('database/addChild', { parentId: props.sectionId, childId })
+  store.commit('project/addObject', new Choice(childId, `Choice ${childCounter}`, 'Bar'))
+  store.commit('project/addChild', { parentId: props.sectionId, childId })
+}
+
+function addCondition() {
+  store.commit('project/addCondition', {
+    objectId: props.sectionId,
+    data: new Condition("choice_3", "enabled")
+  })
 }
 
 async function deleteSection() {
-  store.commit('database/removeObject', props.sectionId)
+  store.commit('project/removeObject', props.sectionId)
 }
 
 </script>
@@ -62,11 +76,11 @@ async function deleteSection() {
   grid-template-rows: auto auto auto;
   grid-template-areas:
    "header tools"
-   "choices tools"
-   "footer tools";
+   "choices choices"
+   "footer footer";
   grid-gap: 5px;
 
-  padding: 5px;
+  padding: 5px 0;
   margin-bottom: 10px;
 }
 
