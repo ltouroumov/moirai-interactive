@@ -1,13 +1,13 @@
 <template>
   <div class="choice">
     <div class="ch-header">
-      <input class="form-control ch-title" :value="choice.title" @input="updateProp('title', $event)"/>
+      <input class="form-control ch-title" v-model="M_title" />
       <div class="ch-conditions" v-if="choice.conditions"></div>
       <div class="ch-scores" v-if="choice.scores"></div>
-      <textarea class="form-control ch-text" :value="choice.text" @input="updateProp('text', $event)"></textarea>
+      <textarea class="form-control ch-text" v-model="M_text"></textarea>
     </div>
     <div class="ch-options" v-if="options && options.length > 0">
-      <OptionView v-for="optionId in options" :optionId="optionId"/>
+      <OptionView v-for="optionId in options" :optionId="optionId" />
     </div>
     <div class="ch-actions">
       <span class="ch-id">{{ choice.id }}</span>
@@ -22,35 +22,38 @@
 </template>
 
 <script setup lang="ts">
-import { Choice, ElementType, Option } from '../../data/model/element';
-import OptionView from './OptionView.vue';
-import { useStore } from 'vuex';
-import { computed } from 'vue';
-import { updatePropFor } from '../utils';
+import { Choice, ElementType, Option } from "../../data/model/element";
+import OptionView from "./OptionView.vue";
+import { useStore } from "vuex";
+import { computed } from "vue";
+import { updatePropsFor } from "../utils";
 import { editorStoreKey } from "../../store/editor";
 import MdiIcon from "../utils/mdi-icon.vue";
 
-const store = useStore(editorStoreKey)
+const store = useStore(editorStoreKey);
 
 const props = defineProps({
   choiceId: String
-})
+});
 
-const choice = computed(() => store.getters['project/findElement'](props.choiceId) as Choice)
-const options = computed(() => store.getters['project/findChildrenIds'](props.choiceId) as Option[])
-
-const updateProp = updatePropFor(store, () => props.choiceId)
+const choice = computed(() => store.getters["project/findElement"](props.choiceId) as Choice);
+const options = computed(() => store.getters["project/findChildrenIds"](props.choiceId) as Option[]);
+const { M_title, M_text } = updatePropsFor(store, {
+  type: Choice,
+  prop: choice,
+  objectId: () => props.choiceId
+});
 
 async function createOption() {
-  const childCounter = await store.dispatch('project/genNextId', ElementType.Option)
-  const childId = `${ElementType.Option}_${childCounter}`
-  console.log('New Choice', childId)
-  store.commit('project/addObject', new Option(childId, `Option ${childCounter}`, 'Bar',))
-  store.commit('project/addChild', { parentId: props.choiceId, childId })
+  const childCounter = await store.dispatch("project/genNextId", ElementType.Option);
+  const childId = `${ElementType.Option}_${childCounter}`;
+  console.log("New Choice", childId);
+  store.commit("project/addObject", new Option(childId, `Option ${childCounter}`, "Bar"));
+  store.commit("project/addChild", { parentId: props.choiceId, childId });
 }
 
 async function deleteChoice() {
-  store.commit('project/removeObject', props.choiceId)
+  store.commit("project/removeObject", props.choiceId);
 }
 
 </script>

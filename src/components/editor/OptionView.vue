@@ -1,7 +1,7 @@
 <template>
   <div class="option">
     <div class="opt-header">
-      <input class="form-control opt-title" :value="option.title" @input="updateProp('title', $event)" />
+      <input class="form-control opt-title" v-model="M_title" />
       <div class="opt-conditions"></div>
       <div class="opt-scores"></div>
     </div>
@@ -11,16 +11,16 @@
         <mdi-icon name="delete-outline" />
       </button>
     </div>
-    <textarea class="form-control opt-text" :value="option.text" @input="updateProp('text', $event)"></textarea>
+    <textarea class="form-control opt-text" v-model="M_text"></textarea>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Option } from "../../data/model/element";
+import { Choice, Option } from "../../data/model/element";
 import { useStore } from "vuex";
 import { computed } from "vue";
 import { editorStoreKey } from "../../store/editor";
-import { updatePropFor } from "../utils";
+import { updatePropsFor } from "../utils";
 import MdiIcon from "../utils/mdi-icon.vue";
 
 
@@ -30,8 +30,16 @@ const props = defineProps({
   optionId: String
 });
 
-const updateProp = updatePropFor(store, () => props.choiceId);
 const option = computed(() => store.getters["project/findElement"](props.optionId) as Option);
+const { M_title, M_text } = updatePropsFor(store, {
+  type: Option,
+  prop: option,
+  objectId: () => props.optionId
+});
+
+async function deleteOption() {
+  store.commit("project/removeObject", props.optionId);
+}
 </script>
 
 <style scoped lang="less">

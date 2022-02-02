@@ -3,6 +3,7 @@ import { Project } from "../../data/model/project";
 import { AnyElement, IConditionContainer, IElement } from "../../data/model/element";
 import { EditorData } from "../../data/state/editor";
 import { ProjectInfo } from "../../data/state/home";
+import * as R from "ramda";
 
 function removeFromParent(state: Project, objId: string) {
   const parentId = state.parents[objId];
@@ -72,9 +73,12 @@ export const ProjectModule: Module<Project, EditorData> = {
       }
       state.parents[childId] = parentId;
     },
-    updateObject(state: Project, { objectId, data }) {
-      const current = state.objects[objectId];
-      state.objects[objectId] = { ...current, ...data };
+    updateObject(state: Project, { objectId, path, data }) {
+      state.objects[objectId] = R.over(
+        R.lensPath(path || []),
+        R.mergeRight(R.__, data),
+        state.objects[objectId]
+      );
     },
     removeChildren(state: Project, objectId: string) {
       removeChildren(state, objectId);

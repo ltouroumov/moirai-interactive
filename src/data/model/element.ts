@@ -1,57 +1,80 @@
-import { Condition } from '../model';
-import { Score } from './score';
+import "reflect-metadata";
+import { Condition } from "../model";
+import { Score } from "./score";
+import { inner, persist } from "./persist";
+import { ChoiceStyle, IStyle, OptionStyle, SectionStyle } from "./style";
+
 
 export enum ElementType {
-  Section = 'section',
-  Choice = 'choice',
-  Option = 'option',
+  Section = "section",
+  Choice = "choice",
+  Option = "option",
 }
 
 export interface IElement<T extends ElementType> {
-  type: T
-  id: string
+  type: T;
+  id: string;
+  title: string;
 }
 
 export interface IConditionContainer {
-  readonly conditions?: Condition[]
+  readonly conditions?: Condition[];
+}
+
+export interface IScoreContainer {
+  readonly scores?: Score[];
+}
+
+export interface IStyleContainer<S extends IStyle> {
+  readonly style?: S;
 }
 
 export type AnyElement = IElement<ElementType>
 
-export class Section implements IElement<ElementType.Section> {
-  readonly type = ElementType.Section
+@persist(["id", "title", "headerText", "footerText", "conditions", "style"])
+@inner({ "style": SectionStyle })
+export class Section implements IElement<ElementType.Section>, IConditionContainer, IStyleContainer<SectionStyle> {
+  readonly type = ElementType.Section;
 
   constructor(
     readonly id: string,
     readonly title: string,
-    readonly header?: string,
-    readonly footer?: string,
-    readonly conditions?: Condition[],
+    readonly headerText: string = "",
+    readonly footerText: string = "",
+    readonly conditions: Condition[] = [],
+    readonly style?: SectionStyle
   ) {
   }
 }
 
-export class Choice implements IElement<ElementType.Choice> {
-  readonly type = ElementType.Choice
+@persist(["id", "title", "text", "scores", "conditions", "style"])
+@inner({ "style": ChoiceStyle })
+export class Choice implements IElement<ElementType.Choice>, IConditionContainer, IScoreContainer, IStyleContainer<ChoiceStyle> {
+  readonly type = ElementType.Choice;
 
   constructor(
     readonly id: string,
     readonly title: string,
     readonly text: string,
-    readonly scores?: Score[],
-    readonly conditions?: Condition,
+    readonly scores: Score[] = [],
+    readonly conditions: Condition[] = [],
+    readonly style?: ChoiceStyle
   ) {
   }
 }
 
-export class Option implements IElement<ElementType.Option> {
-  readonly type = ElementType.Option
+@persist(["id", "title", "text", "scores", "conditions", "style"])
+@inner({ "style": OptionStyle })
+export class Option implements IElement<ElementType.Option>, IConditionContainer, IScoreContainer, IStyleContainer<OptionStyle> {
+  readonly type = ElementType.Option;
 
   constructor(
     readonly id: string,
     readonly title: string,
     readonly text: string,
-    readonly condition?: Condition,
+    readonly scores: Score[] = [],
+    readonly conditions: Condition[] = [],
+    readonly style?: OptionStyle
   ) {
   }
 }

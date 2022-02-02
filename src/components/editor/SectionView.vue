@@ -1,13 +1,33 @@
 <template>
   <section class="section">
     <div class="sec-header">
-      <input class="form-control sec-header-title" type="text" :value="section.title"
-             @input="updateProp('title', $event)">
-      <textarea class="form-control sec-header-text" :value="section.header"
-                @input="updateProp('header', $event)"></textarea>
-      <div class="sec-conditions" v-if="section.conditions && section.conditions.length > 0">
+      <div class="sec-text">
+        <input class="form-control sec-header-title" type="text" v-model="M_title">
+        <label>Header Text</label>
+        <textarea class="form-control sec-header-text" v-model="M_headerText" placeholder="..."></textarea>
+        <label>Footer Text</label>
+        <textarea class="form-control sec-header-text" v-model="M_footerText" placeholder="..."></textarea>
+      </div>
+      <div class="sec-conditions">
         <b>Conditions</b>
         <div v-for="cond in section.conditions">IF {{ cond.test }} THEN {{ cond.state }}</div>
+      </div>
+      <div class="sec-style">
+        <b>Style</b>
+        <select class="form-select sec-style-select" v-model="M_style_name">
+          <option v-for="style in styles" :value="style">{{ style }}</option>
+        </select>
+        <div class="sec-grid">
+          <label>Columns</label>
+          <input class="form-control sec-grid-cols" type="text" v-model="M_gridCols" />
+          <label>Rows</label>
+          <input class="form-control sec-grid-rows" type="text" v-model="M_gridRows" />
+        </div>
+      </div>
+      <div class="sec-meta">
+        <b>Choices</b>
+        <label>Maximum Selected</label>
+        <input class="form-control" type="number" />
       </div>
     </div>
     <div class="sec-choices">
@@ -36,7 +56,7 @@ import { Choice, ElementType, Section } from "../../data/model/element";
 import ChoiceView from "./ChoiceView.vue";
 import { useStore } from "vuex";
 import { computed } from "vue";
-import { updatePropFor } from "../utils";
+import { updatePropsFor } from "../utils";
 import { editorStoreKey } from "../../store/editor";
 import MdiIcon from "../utils/mdi-icon.vue";
 import { Condition } from "../../data/model";
@@ -49,8 +69,17 @@ const props = defineProps({
 
 const section = computed(() => store.getters["project/findElement"](props.sectionId) as Section);
 const choices = computed(() => store.getters["project/findChildrenIds"](props.sectionId) as Choice[]);
-
-const updateProp = updatePropFor(store, () => props.sectionId);
+const styles = computed(() => ["default", "Style 1", "Style 2"]);
+const {
+  M_title,
+  M_headerText,
+  M_footerText,
+  style: { M_name: M_style_name , M_gridCols, M_gridRows }
+} = updatePropsFor(store, {
+  type: Section,
+  prop: section,
+  objectId: () => props.sectionId
+});
 
 async function createChoice() {
   const childCounter = await store.dispatch("project/genNextId", ElementType.Choice);
@@ -73,7 +102,7 @@ async function deleteSection() {
 
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .section {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -92,10 +121,54 @@ async function deleteSection() {
   grid-area: header;
 
   display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: auto;
-  grid-auto-flow: row;
-  grid-row-gap: 5px;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: auto auto;
+  grid-gap: 5px;
+
+  grid-template-areas:
+    "text cond style"
+    "text cond meta";
+
+  .sec-text {
+    grid-area: text;
+
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-auto-rows: auto;
+    grid-auto-flow: row;
+    align-content: start;
+    grid-gap: 5px;
+  }
+
+  .sec-conditions {
+    grid-area: cond;
+  }
+
+  .sec-style {
+    grid-area: style;
+
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-auto-flow: row;
+    grid-gap: 5px;
+
+    .sec-style-select {
+      grid-area: span 1 / span 2;
+    }
+
+    .sec-grid {
+
+      display: grid;
+      grid-template-columns: auto 1fr;
+      grid-auto-flow: row;
+      grid-gap: 5px;
+      align-items: center;
+    }
+  }
+
+  .sec-meta {
+    grid-area: meta;
+  }
 }
 
 .sec-choices {
@@ -127,13 +200,11 @@ async function deleteSection() {
   background: lightgray;
   border-radius: 5px;
   padding: 5px;
+
+  .sec-id {
+    grid-column: 1 / span 2;
+    font-family: monospace;
+  }
 }
 
-.sec-actions .sec-id {
-  grid-column: 1 / span 2;
-}
-
-.sec-id {
-  font-family: monospace;
-}
 </style>
