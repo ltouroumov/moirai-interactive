@@ -12,6 +12,10 @@ export interface IElement<T extends ElementType> {
   id: string
 }
 
+export interface IConditionContainer {
+  readonly conditions?: Condition[]
+}
+
 export type AnyElement = IElement<ElementType>
 
 export class Section implements IElement<ElementType.Section> {

@@ -5,9 +5,13 @@
              @input="updateProp('title', $event)">
       <textarea class="form-control sec-header-text" :value="section.header"
                 @input="updateProp('header', $event)"></textarea>
+      <div class="sec-conditions" v-if="section.conditions && section.conditions.length > 0">
+        <b>Conditions</b>
+        <div v-for="cond in section.conditions">IF {{ cond.test }} THEN {{ cond.state }}</div>
+      </div>
     </div>
     <div class="sec-choices">
-      <ChoiceView v-for="choiceId in choices" :choiceId="choiceId"/>
+      <ChoiceView v-for="choiceId in choices" :choiceId="choiceId" />
     </div>
     <div class="sec-footer" v-if="section.footer">
       {{ section.footer }}
@@ -28,11 +32,11 @@
 </template>
 
 <script setup lang="ts">
-import { Choice, ElementType, Section } from '../../data/model/element';
-import ChoiceView from './ChoiceView.vue';
-import { useStore } from 'vuex';
-import { computed } from 'vue';
-import { updatePropFor } from '../utils';
+import { Choice, ElementType, Section } from "../../data/model/element";
+import ChoiceView from "./ChoiceView.vue";
+import { useStore } from "vuex";
+import { computed } from "vue";
+import { updatePropFor } from "../utils";
 import { editorStoreKey } from "../../store/editor";
 import MdiIcon from "../utils/mdi-icon.vue";
 import { Condition } from "../../data/model";
@@ -41,30 +45,30 @@ const store = useStore(editorStoreKey);
 
 const props = defineProps({
   sectionId: String
-})
+});
 
-const section = computed(() => store.getters['project/findElement'](props.sectionId) as Section)
-const choices = computed(() => store.getters['project/findChildrenIds'](props.sectionId) as Choice[])
+const section = computed(() => store.getters["project/findElement"](props.sectionId) as Section);
+const choices = computed(() => store.getters["project/findChildrenIds"](props.sectionId) as Choice[]);
 
-const updateProp = updatePropFor(store, () => props.sectionId)
+const updateProp = updatePropFor(store, () => props.sectionId);
 
 async function createChoice() {
-  const childCounter = await store.dispatch('project/genNextId', ElementType.Choice)
-  const childId = `${ElementType.Choice}_${childCounter}`
-  console.log('New Choice', childId)
-  store.commit('project/addObject', new Choice(childId, `Choice ${childCounter}`, 'Bar'))
-  store.commit('project/addChild', { parentId: props.sectionId, childId })
+  const childCounter = await store.dispatch("project/genNextId", ElementType.Choice);
+  const childId = `${ElementType.Choice}_${childCounter}`;
+  console.log("New Choice", childId);
+  store.commit("project/addObject", new Choice(childId, `Choice ${childCounter}`, "Bar"));
+  store.commit("project/addChild", { parentId: props.sectionId, childId });
 }
 
 function addCondition() {
-  store.commit('project/addCondition', {
+  store.commit("project/addCondition", {
     objectId: props.sectionId,
-    data: new Condition("choice_3", "enabled")
-  })
+    data: new Condition("always", "enabled")
+  });
 }
 
 async function deleteSection() {
-  store.commit('project/removeObject', props.sectionId)
+  store.commit("project/removeObject", props.sectionId);
 }
 
 </script>
