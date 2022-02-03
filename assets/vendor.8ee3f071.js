@@ -3999,6 +3999,36 @@ function renderList(source, renderItem, cache, index) {
   }
   return ret;
 }
+function renderSlot(slots, name, props = {}, fallback, noSlotted) {
+  if (currentRenderingInstance.isCE) {
+    return createVNode("slot", name === "default" ? null : { name }, fallback && fallback());
+  }
+  let slot = slots[name];
+  if (slot && slot._c) {
+    slot._d = false;
+  }
+  openBlock();
+  const validSlotContent = slot && ensureValidVNode(slot(props));
+  const rendered = createBlock(Fragment, { key: props.key || `_${name}` }, validSlotContent || (fallback ? fallback() : []), validSlotContent && slots._ === 1 ? 64 : -2);
+  if (!noSlotted && rendered.scopeId) {
+    rendered.slotScopeIds = [rendered.scopeId + "-s"];
+  }
+  if (slot && slot._c) {
+    slot._d = true;
+  }
+  return rendered;
+}
+function ensureValidVNode(vnodes) {
+  return vnodes.some((child) => {
+    if (!isVNode(child))
+      return true;
+    if (child.type === Comment)
+      return false;
+    if (child.type === Fragment && !ensureValidVNode(child.children))
+      return false;
+    return true;
+  }) ? vnodes : null;
+}
 const getPublicInstance = (i) => {
   if (!i)
     return null;
@@ -4791,6 +4821,44 @@ function setSelected(el, value) {
 }
 function getValue(el) {
   return "_value" in el ? el._value : el.value;
+}
+const vShow = {
+  beforeMount(el, { value }, { transition }) {
+    el._vod = el.style.display === "none" ? "" : el.style.display;
+    if (transition && value) {
+      transition.beforeEnter(el);
+    } else {
+      setDisplay(el, value);
+    }
+  },
+  mounted(el, { value }, { transition }) {
+    if (transition && value) {
+      transition.enter(el);
+    }
+  },
+  updated(el, { value, oldValue }, { transition }) {
+    if (!value === !oldValue)
+      return;
+    if (transition) {
+      if (value) {
+        transition.beforeEnter(el);
+        setDisplay(el, true);
+        transition.enter(el);
+      } else {
+        transition.leave(el, () => {
+          setDisplay(el, false);
+        });
+      }
+    } else {
+      setDisplay(el, value);
+    }
+  },
+  beforeUnmount(el, { value }) {
+    setDisplay(el, value);
+  }
+};
+function setDisplay(el, value) {
+  el.style.display = value ? el._vod : "none";
 }
 const rendererOptions = extend({ patchProp }, nodeOps);
 let renderer;
@@ -14019,4 +14087,4 @@ class Toast extends BaseComponent {
 }
 enableDismissTrigger(Toast);
 defineJQueryPlugin(Toast);
-export { useRoute as A, clone$1 as B, view$1 as C, withDirectives as D, vModelText as E, Fragment as F, isRef as G, always$1 as H, mergeWith$1 as I, mergeAll$1 as J, lib as K, match$1 as L, createCommentVNode as M, vModelSelect as N, createBlock as O, normalizeStyle as P, createRouter as Q, createWebHashHistory as R, createApp as S, VuexPersistence$1 as V, __ as _, createLogger as a, omit$1 as b, createStore as c, defineComponent as d, computed as e, createElementBlock as f, createBaseVNode as g, popScopeId as h, useStore as i, resolveComponent as j, openBlock as k, lensPath$1 as l, mergeRight$1 as m, createVNode as n, over$1 as o, pushScopeId as p, createTextVNode as q, renderList as r, normalizeClass as s, toDisplayString as t, unref as u, onMounted as v, withCtx as w, onUnmounted as x, onBeforeRouteUpdate as y, useRouter as z };
+export { useRoute as A, clone$1 as B, view$1 as C, withDirectives as D, vModelText as E, Fragment as F, isRef as G, always$1 as H, mergeWith$1 as I, mergeAll$1 as J, lib as K, match$1 as L, createCommentVNode as M, vModelSelect as N, createBlock as O, normalizeStyle as P, renderSlot as Q, reactive as R, vShow as S, createRouter as T, createWebHashHistory as U, VuexPersistence$1 as V, createApp as W, __ as _, createLogger as a, omit$1 as b, createStore as c, defineComponent as d, computed as e, createElementBlock as f, createBaseVNode as g, popScopeId as h, useStore as i, resolveComponent as j, openBlock as k, lensPath$1 as l, mergeRight$1 as m, createVNode as n, over$1 as o, pushScopeId as p, createTextVNode as q, renderList as r, normalizeClass as s, toDisplayString as t, unref as u, onMounted as v, withCtx as w, onUnmounted as x, onBeforeRouteUpdate as y, useRouter as z };
