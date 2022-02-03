@@ -20,7 +20,7 @@ import { Choice, Option } from "../../data/model/element";
 import { useStore } from "vuex";
 import { computed } from "vue";
 import { editorStoreKey } from "../../store/editor";
-import { updatePropsFor } from "../utils";
+import { updatePropsFor } from "../utils/props";
 import MdiIcon from "../utils/mdi-icon.vue";
 
 

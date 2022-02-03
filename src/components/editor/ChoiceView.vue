@@ -1,10 +1,31 @@
 <template>
-  <div class="choice">
+  <div class="choice" :style="containerStyle">
     <div class="ch-header">
       <input class="form-control ch-title" v-model="M_title" />
       <div class="ch-conditions" v-if="choice.conditions"></div>
       <div class="ch-scores" v-if="choice.scores"></div>
-      <textarea class="form-control ch-text" v-model="M_text"></textarea>
+      <div class="form-floating">
+        <textarea class="form-control ch-text" v-model="M_text"></textarea>
+        <label>Choice Text</label>
+      </div>
+    </div>
+    <div class="ch-style">
+      <div class="form-floating">
+        <select class="form-select ch-style-select" v-model="M_style_name">
+          <option v-for="style in styles" :value="style">{{ style }}</option>
+        </select>
+        <label>Style</label>
+      </div>
+      <div class="ch-grid-area">
+        <div class="form-floating">
+          <input class="form-control sec-grid-cols" type="text" v-model="M_colSpan" />
+          <label>Col Span</label>
+        </div>
+        <div class="form-floating">
+          <input class="form-control sec-grid-rows" type="text" v-model="M_rowSpan" />
+          <label>Row Span</label>
+        </div>
+      </div>
     </div>
     <div class="ch-options" v-if="options && options.length > 0">
       <OptionView v-for="optionId in options" :optionId="optionId" />
@@ -26,22 +47,56 @@ import { Choice, ElementType, Option } from "../../data/model/element";
 import OptionView from "./OptionView.vue";
 import { useStore } from "vuex";
 import { computed } from "vue";
-import { updatePropsFor } from "../utils";
+import { updatePropsFor } from "../utils/props";
 import { editorStoreKey } from "../../store/editor";
 import MdiIcon from "../utils/mdi-icon.vue";
+import { ChoiceStyle, DefaultChoiceStyle } from "../../data/model/style";
+import * as P from "ts-pattern";
+import * as R from "ramda";
 
 const store = useStore(editorStoreKey);
 
 const props = defineProps({
-  choiceId: String
+  choiceId: String,
+  defaultStyle: { type: ChoiceStyle, default: DefaultChoiceStyle }
 });
 
 const choice = computed(() => store.getters["project/findElement"](props.choiceId) as Choice);
 const options = computed(() => store.getters["project/findChildrenIds"](props.choiceId) as Option[]);
-const { M_title, M_text } = updatePropsFor(store, {
+const styles = computed(() => ["default", "Style 1", "Style 2"]);
+const { M_title, M_text, style: { M_name: M_style_name, M_colSpan, M_rowSpan } } = updatePropsFor(store, {
   type: Choice,
   prop: choice,
   objectId: () => props.choiceId
+});
+
+const containerStyle = computed(() => {
+  const EMPTY = R.always({});
+  const style = R.mergeWith(
+    (a: any, b: any) => b || a,
+    props.defaultStyle, choice.value.style
+  );
+  console.log("Merged Style", style, props.defaultStyle, choice.value.style);
+  return R.mergeAll([
+    P.match<number | undefined>(style.colSpan)
+      .with(undefined, EMPTY)
+      .with(P.__.number, colSpan => {
+        return { "grid-column": `span ${colSpan}` };
+      })
+      .when(R.match(/^\d+$/), colSpan => {
+        return { "grid-column": `span ${colSpan}` };
+      })
+      .run(),
+    P.match<number | undefined>(style.rowSpan)
+      .with(undefined, EMPTY)
+      .with(P.__.number, colSpan => {
+        return { "grid-row": `span ${colSpan}` };
+      })
+      .when(R.match(/^\d+$/), colSpan => {
+        return { "grid-row": `span ${colSpan}` };
+      })
+      .run()
+  ]);
 });
 
 async function createOption() {
@@ -58,13 +113,14 @@ async function deleteChoice() {
 
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .choice {
   display: grid;
   grid-template-columns: 1fr auto;
   grid-template-rows: auto 1fr;
   grid-template-areas:
    "header tools"
+   "style style"
    "options options";
   grid-gap: 5px;
 
@@ -82,6 +138,26 @@ async function deleteChoice() {
   grid-auto-flow: row;
   grid-row-gap: 5px;
 }
+
+
+.ch-style {
+  grid-area: style;
+
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-auto-flow: row;
+  grid-gap: 5px;
+  align-content: start;
+
+  .ch-grid-area {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-auto-flow: row;
+    grid-gap: 5px;
+    align-items: center;
+  }
+}
+
 
 .ch-options {
   grid-area: options;
