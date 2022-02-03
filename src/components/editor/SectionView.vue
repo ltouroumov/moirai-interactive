@@ -1,6 +1,36 @@
 <template>
   <section class="section">
-    <div class="sec-header">
+    <div class="sec-actions">
+      <button class="btn btn-sm btn-link" @click="toggleSection">
+        <mdi-icon name="eye" v-show="_state.collapsed" />
+        <mdi-icon name="eye-off" v-show="!_state.collapsed" />
+      </button>
+      <span class="sec-id">{{ section.id }}</span>
+      <div class="btn-toolbar">
+        <div class="btn-group me-2">
+          <button class="btn btn-sm btn-outline-primary" @click="createChoice">
+            <mdi-icon name="plus-circle" />
+            Choice
+          </button>
+        </div>
+        <div class="btn-group me-2">
+          <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                  :data-bs-target="`#cond_${props.sectionId}`">
+            <mdi-icon name="key" /> Requirements
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                  :data-bs-target="`#style_${props.sectionId}`">
+            <mdi-icon name="palette-swatch" /> Style
+          </button>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-sm btn-outline-danger wide" @click="deleteSection">
+            <mdi-icon name="delete-outline" />
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="sec-header" v-if="!_state.collapsed">
       <div class="sec-text">
         <input class="form-control sec-header-title" type="text" v-model="M_title">
         <div class="form-floating">
@@ -17,32 +47,10 @@
         <label>Maximum Selected</label>
         <input class="form-control" type="number" />
       </div>
-      <div class="sec-actions">
-        <span class="sec-id wide">{{ section.id }}</span>
-        <button class="btn btn-sm btn-outline-primary wide" @click="createChoice">
-          <mdi-icon name="plus-circle" />
-          Choice
-        </button>
-        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
-                :data-bs-target="`#cond_${props.sectionId}`">
-          <mdi-icon name="key" />
-        </button>
-
-        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
-                :data-bs-target="`#style_${props.sectionId}`">
-          <mdi-icon name="palette-swatch" />
-        </button>
-
-        <button class="btn btn-sm btn-outline-danger wide" @click="deleteSection">
-          <mdi-icon name="delete-outline" />
-          Remove
-        </button>
-      </div>
     </div>
-    <div class="sec-choices" :style="choicesContainerStyle">
+    <div class="sec-choices" :style="choicesContainerStyle" v-if="!_state.collapsed">
       <ChoiceView v-for="choiceId in choices" :choiceId="choiceId" :defaultStyle="defaultChoiceStyle" />
     </div>
-
   </section>
 
   <!-- Modals -->
@@ -93,7 +101,7 @@
 import { Choice, ElementType, Section } from "../../data/model/element";
 import ChoiceView from "./ChoiceView.vue";
 import { useStore } from "vuex";
-import { computed } from "vue";
+import { computed, reactive, ref } from "vue";
 import { updatePropsFor } from "../utils/props";
 import { editorStoreKey } from "../../store/editor";
 import MdiIcon from "../utils/mdi-icon.vue";
@@ -108,6 +116,10 @@ const store = useStore(editorStoreKey);
 const props = defineProps({
   sectionId: String
 });
+
+const _state = reactive({
+  collapsed: false
+})
 
 const section = computed(() => store.getters["project/findElement"](props.sectionId) as Section);
 const choices = computed(() => store.getters["project/findChildrenIds"](props.sectionId) as Choice[]);
@@ -170,6 +182,10 @@ const defaultChoiceStyle = computed(() => {
   ]);
 });
 
+function toggleSection() {
+  _state.collapsed = !_state.collapsed;
+}
+
 async function createChoice() {
   const childCounter = await store.dispatch("project/genNextId", ElementType.Choice);
   const childId = `${ElementType.Choice}_${childCounter}`;
@@ -195,6 +211,7 @@ async function deleteSection() {
 .section {
   display: grid;
   grid-template:
+    "tools" auto
     "header" auto
     "choices" auto
     / 1fr;
@@ -202,6 +219,24 @@ async function deleteSection() {
 
   padding: 5px 0;
   margin-bottom: 10px;
+}
+
+.sec-actions {
+  grid-area: tools;
+
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-auto-flow: column;
+  grid-gap: 5px;
+  align-items: center;
+
+  background: lightgray;
+  border-radius: 5px;
+  padding: 5px;
+
+  .sec-id {
+    font-family: monospace;
+  }
 }
 
 .sec-header {
@@ -232,29 +267,6 @@ async function deleteSection() {
 
   .sec-meta {
     grid-area: meta;
-  }
-
-  .sec-actions {
-    grid-area: tools;
-
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto;
-    grid-auto-flow: row;
-    grid-gap: 5px;
-    align-content: start;
-
-    background: lightgray;
-    border-radius: 5px;
-    padding: 5px;
-
-    .wide {
-      grid-column: 1 / span 2;
-    }
-
-    .sec-id {
-      font-family: monospace;
-    }
   }
 
 }
