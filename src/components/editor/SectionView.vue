@@ -12,56 +12,81 @@
           <label>Footer Text</label>
         </div>
       </div>
-      <div class="sec-conditions">
-        <b>Conditions</b>
-        <div v-for="cond in section.conditions">IF {{ cond.test }} THEN {{ cond.state }}</div>
-      </div>
-      <div class="sec-style">
-        <b>Style</b>
-        <select class="form-select sec-style-select" v-model="M_style_name">
-          <option v-for="style in styles" :value="style">{{ style }}</option>
-        </select>
-        <div class="sec-grid">
-          <label>Direction</label>
-          <select class="form-select sec-style-dir span3" v-model="M_gridFlow">
-            <option>row</option>
-            <option>column</option>
-          </select>
-          <label>Columns</label>
-          <input class="form-control sec-grid-cols" type="text" v-model="M_gridCols" />
-          <label>Rows</label>
-          <input class="form-control sec-grid-rows" type="text" v-model="M_gridRows" />
-          <label>Default Width</label>
-          <input class="form-control sec-grid-cols" type="text" v-model="M_gridDefaultColSpan" />
-          <label>Default Height</label>
-          <input class="form-control sec-grid-rows" type="text" v-model="M_gridDefaultRowSpan" />
-        </div>
-      </div>
       <div class="sec-meta">
         <b>Choices</b>
         <label>Maximum Selected</label>
         <input class="form-control" type="number" />
       </div>
+      <div class="sec-actions">
+        <span class="sec-id wide">{{ section.id }}</span>
+        <button class="btn btn-sm btn-outline-primary wide" @click="createChoice">
+          <mdi-icon name="plus-circle" />
+          Choice
+        </button>
+        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                :data-bs-target="`#cond_${props.sectionId}`">
+          <mdi-icon name="key" />
+        </button>
+
+        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                :data-bs-target="`#style_${props.sectionId}`">
+          <mdi-icon name="palette-swatch" />
+        </button>
+
+        <button class="btn btn-sm btn-outline-danger wide" @click="deleteSection">
+          <mdi-icon name="delete-outline" />
+          Remove
+        </button>
+      </div>
     </div>
     <div class="sec-choices" :style="choicesContainerStyle">
       <ChoiceView v-for="choiceId in choices" :choiceId="choiceId" :defaultStyle="defaultChoiceStyle" />
     </div>
-    <div class="sec-footer" v-if="section.footer">
-      {{ section.footer }}
+
+  </section>
+
+  <!-- Modals -->
+  <b-modal :modalId="`style_${props.sectionId}`" title="Style Editor">
+    <div class="sec-style">
+      <b>Section Style</b>
+      <select class="form-select sec-style-select" v-model="M_style_name">
+        <option v-for="style in styles" :value="style">{{ style }}</option>
+      </select>
+      <b>Choices Style (default)</b>
+      <select class="form-select sec-style-select" v-model="M_style_children">
+        <option v-for="style in styles" :value="style">{{ style }}</option>
+      </select>
+      <b>Grid</b>
+      <div class="sec-grid">
+        <label>Direction</label>
+        <select class="form-select sec-style-dir span3" v-model="M_gridFlow">
+          <option>row</option>
+          <option>column</option>
+        </select>
+        <label>Columns</label>
+        <input class="form-control sec-grid-cols" type="text" v-model="M_gridCols" />
+        <label>Rows</label>
+        <input class="form-control sec-grid-rows" type="text" v-model="M_gridRows" />
+        <label>Default Width</label>
+        <input class="form-control sec-grid-cols" type="text" v-model="M_gridDefaultColSpan" />
+        <label>Default Height</label>
+        <input class="form-control sec-grid-rows" type="text" v-model="M_gridDefaultRowSpan" />
+      </div>
     </div>
-    <div class="sec-actions">
-      <span class="sec-id">{{ section.id }}</span>
-      <button class="btn btn-sm btn-outline-primary" @click="createChoice">
-        <mdi-icon name="plus-circle" />
-      </button>
+  </b-modal>
+
+  <b-modal :modalId="`cond_${props.sectionId}`" title="Requirements">
+    <div class="sec-conditions">
+      <b>Conditions</b>
+
       <button class="btn btn-sm btn-outline-primary" @click="addCondition">
         <mdi-icon name="key-plus" />
       </button>
-      <button class="btn btn-sm btn-outline-danger" @click="deleteSection">
-        <mdi-icon name="delete-outline" />
-      </button>
+
+      <div v-for="cond in section.conditions">IF {{ cond.test }} THEN {{ cond.state }}</div>
     </div>
-  </section>
+  </b-modal>
+
 </template>
 
 <script setup lang="ts">
@@ -76,6 +101,7 @@ import { Condition } from "../../data/model";
 import * as P from "ts-pattern";
 import * as R from "ramda";
 import { ChoiceStyle, DefaultChoiceStyle, DefaultSectionStyle, SectionStyle } from "../../data/model/style";
+import BModal from "../utils/b-modal.vue";
 
 const store = useStore(editorStoreKey);
 
@@ -90,7 +116,7 @@ const {
   M_title,
   M_headerText,
   M_footerText,
-  style: { M_name: M_style_name, M_gridCols, M_gridRows, M_gridFlow, M_gridDefaultColSpan, M_gridDefaultRowSpan }
+  style: { M_name: M_style_name, M_children: M_style_children, M_gridCols, M_gridRows, M_gridFlow, M_gridDefaultColSpan, M_gridDefaultRowSpan }
 } = updatePropsFor(store, {
   type: Section,
   prop: section,
@@ -168,12 +194,10 @@ async function deleteSection() {
 <style scoped lang="less">
 .section {
   display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-rows: auto auto auto;
-  grid-template-areas:
-   "header tools"
-   "choices choices"
-   "footer footer";
+  grid-template:
+    "header" auto
+    "choices" auto
+    / 1fr;
   grid-gap: 5px;
 
   padding: 5px 0;
@@ -184,13 +208,12 @@ async function deleteSection() {
   grid-area: header;
 
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: auto auto;
+  grid-template-columns: 2fr 1fr auto;
+  grid-template-rows: auto;
   grid-gap: 5px;
 
   grid-template-areas:
-    "text cond style"
-    "text cond meta";
+    "text meta tools";
 
   .sec-text {
     grid-area: text;
@@ -207,34 +230,52 @@ async function deleteSection() {
     grid-area: cond;
   }
 
-  .sec-style {
-    grid-area: style;
+  .sec-meta {
+    grid-area: meta;
+  }
+
+  .sec-actions {
+    grid-area: tools;
 
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
     grid-auto-flow: row;
     grid-gap: 5px;
+    align-content: start;
 
-    .sec-style-select {
-      grid-area: span 1 / span 2;
+    background: lightgray;
+    border-radius: 5px;
+    padding: 5px;
+
+    .wide {
+      grid-column: 1 / span 2;
     }
 
-    .sec-grid {
-
-      display: grid;
-      grid-template-columns: auto 1fr auto 1fr;
-      grid-auto-flow: row;
-      grid-gap: 5px;
-      align-items: center;
-
-      .span3 {
-        grid-area: span 1 / span 3;
-      }
+    .sec-id {
+      font-family: monospace;
     }
   }
 
-  .sec-meta {
-    grid-area: meta;
+}
+
+.sec-style {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-auto-flow: row;
+  grid-gap: 5px;
+  align-items: center;
+
+  .sec-grid {
+    display: grid;
+    grid-template-columns: auto 1fr auto 1fr;
+    grid-auto-flow: row;
+    grid-gap: 5px;
+    align-items: center;
+
+    .span3 {
+      grid-area: span 1 / span 3;
+    }
   }
 }
 
@@ -248,30 +289,6 @@ async function deleteSection() {
   grid-gap: 5px;
   justify-items: stretch;
   align-items: stretch;
-}
-
-.sec-footer {
-  grid-area: footer;
-}
-
-.sec-actions {
-  grid-area: tools;
-
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto;
-  grid-auto-flow: row;
-  grid-gap: 5px;
-  align-content: start;
-
-  background: lightgray;
-  border-radius: 5px;
-  padding: 5px;
-
-  .sec-id {
-    grid-column: 1 / span 2;
-    font-family: monospace;
-  }
 }
 
 </style>

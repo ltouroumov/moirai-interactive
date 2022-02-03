@@ -3,7 +3,7 @@ import { Store } from "vuex";
 import { EditorState } from "../../store/editor";
 import { computed, ComputedRef } from "vue";
 import { AnyElement } from "../../data/model/element";
-import { defaults, DefaultsDef, InnerDef } from "../../data/model/persist";
+import { DefaultsDef, InnerDef } from "../../data/model/persist";
 import * as R from "ramda";
 
 type Args<T extends AnyElement> = { type: any, prop: ComputedRef<T>, objectId: () => string | undefined };
@@ -12,7 +12,10 @@ type DefaultsObj = { [key: string]: any }
 export function updatePropsFor<T extends AnyElement>(store: Store<EditorState>, { type, prop, objectId }: Args<T>) {
   function computedPropFor(key: string, path: string[] = [], defaultValue: any = undefined) {
     return [`M_${key}`, computed({
-      get: () => R.view(R.lensPath([...path, key]), prop.value) || defaultValue,
+      get: () => {
+        const cur = R.view(R.lensPath([...path, key]), prop.value);
+        return (cur !== undefined) ? cur : defaultValue;
+      },
       set: (value) => {
         let _objectId = objectId();
         if (!_objectId) return;
