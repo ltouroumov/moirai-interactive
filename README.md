@@ -1,8 +1,8 @@
-# Clotho - The Interactive CYOA Builder
+# Moirai - The Interactive CYOA Builder
 
-Clotho is an interactive CYOA/Jumpchain builder.
+TODO: A proper description
 
-# Features (In Progress)
+## Features (In Progress)
 
 * [x] Grid Based Layout
 * [ ] Responsive Design
