@@ -205,6 +205,67 @@ div.toolbar .editor-actions {
   align-items: stretch;
 }
 
+h1[data-v-681b85fa] {
+  text-align: center;
+  margin-top: 10px;
+  background: #6c757d;
+  padding: 5px;
+  border-radius: 5px;
+}
+.page[data-v-5431951e] {
+  display: grid;
+  grid-template: "tools" auto "header" auto / 1fr;
+  grid-gap: 5px;
+  padding: 5px 0;
+  margin-bottom: 10px;
+}
+.page-actions[data-v-5431951e] {
+  grid-area: tools;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-auto-flow: column;
+  grid-gap: 5px;
+  align-items: center;
+  background: lightgray;
+  border-radius: 5px;
+  padding: 5px;
+}
+.page-actions .page-id[data-v-5431951e] {
+  font-family: monospace;
+}
+.page-header[data-v-5431951e] {
+  grid-area: header;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto;
+  grid-gap: 5px;
+  grid-template-areas: "text";
+}
+.page-header .page-text[data-v-5431951e] {
+  grid-area: text;
+  display: grid;
+  grid-template: "title title" auto "header footer" auto / 1fr 1fr;
+  grid-gap: 5px;
+}
+.page-header .page-text .page-title[data-v-5431951e] {
+  grid-area: title;
+}
+.page-header .page-text .page-header[data-v-5431951e] {
+  grid-area: header;
+}
+.page-header .page-text .page-footer[data-v-5431951e] {
+  grid-area: footer;
+}
+
+h1[data-v-004840d1] {
+  text-align: center;
+  margin-top: 10px;
+  background: #6c757d;
+  padding: 5px;
+  border-radius: 5px;
+}
+
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
