@@ -568,14 +568,15 @@ const _hoisted_7$4 = {
   class: "dropdown-menu",
   "aria-labelledby": "dropdownMenuLink"
 };
-const _hoisted_8$4 = /* @__PURE__ */ createTextVNode(" Settings ");
-const _hoisted_9$3 = { class: "editor-actions" };
-const _hoisted_10$3 = { class: "btn-toolbar" };
-const _hoisted_11$3 = { class: "btn-group" };
-const _hoisted_12$3 = /* @__PURE__ */ createTextVNode(" New Page ");
-const _hoisted_13$3 = /* @__PURE__ */ createTextVNode(" New Section ");
-const _hoisted_14$3 = /* @__PURE__ */ createTextVNode(" New Score ");
-const _hoisted_15$3 = /* @__PURE__ */ createTextVNode(" New Style ");
+const _hoisted_8$4 = { class: "object-id" };
+const _hoisted_9$3 = /* @__PURE__ */ createTextVNode(" Settings ");
+const _hoisted_10$3 = { class: "editor-actions" };
+const _hoisted_11$3 = { class: "btn-toolbar" };
+const _hoisted_12$3 = { class: "btn-group" };
+const _hoisted_13$3 = /* @__PURE__ */ createTextVNode(" New Page ");
+const _hoisted_14$3 = /* @__PURE__ */ createTextVNode(" New Section ");
+const _hoisted_15$3 = /* @__PURE__ */ createTextVNode(" New Score ");
+const _hoisted_16$3 = /* @__PURE__ */ createTextVNode(" New Style ");
 const _sfc_main$a = /* @__PURE__ */ defineComponent({
   setup(__props) {
     const $router = useRouter();
@@ -683,7 +684,8 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
                       "active-class": "active"
                     }, {
                       default: withCtx(() => [
-                        createTextVNode(toDisplayString(pageId) + " / " + toDisplayString(findPage(pageId).title), 1)
+                        createTextVNode(toDisplayString(findPage(pageId).title) + " / ", 1),
+                        createBaseVNode("span", _hoisted_8$4, toDisplayString(pageId), 1)
                       ]),
                       _: 2
                     }, 1032, ["to"])
@@ -698,41 +700,41 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
             }, {
               default: withCtx(() => [
                 createVNode(_sfc_main$b, { name: "cog" }),
-                _hoisted_8$4
+                _hoisted_9$3
               ]),
               _: 1
             }, 8, ["to"])
           ]),
-          createBaseVNode("div", _hoisted_9$3, [
-            createBaseVNode("div", _hoisted_10$3, [
-              createBaseVNode("div", _hoisted_11$3, [
+          createBaseVNode("div", _hoisted_10$3, [
+            createBaseVNode("div", _hoisted_11$3, [
+              createBaseVNode("div", _hoisted_12$3, [
                 createBaseVNode("button", {
                   class: "btn btn-primary",
                   onClick: createPage
                 }, [
                   createVNode(_sfc_main$b, { name: "file-plus" }),
-                  _hoisted_12$3
+                  _hoisted_13$3
                 ]),
                 createBaseVNode("button", {
                   class: normalizeClass(["btn btn-primary", { disabled: unref($router).currentRoute.value.name !== "edit_section" }]),
                   onClick: createSection
                 }, [
                   createVNode(_sfc_main$b, { name: "layers-plus" }),
-                  _hoisted_13$3
+                  _hoisted_14$3
                 ], 2),
                 createBaseVNode("button", {
                   class: "btn btn-primary",
                   onClick: _cache[0] || (_cache[0] = (...args) => _ctx.createScore && _ctx.createScore(...args))
                 }, [
                   createVNode(_sfc_main$b, { name: "numeric-9-plus-box" }),
-                  _hoisted_14$3
+                  _hoisted_15$3
                 ]),
                 createBaseVNode("button", {
                   class: "btn btn-primary",
                   onClick: _cache[1] || (_cache[1] = (...args) => _ctx.screateStyle && _ctx.screateStyle(...args))
                 }, [
                   createVNode(_sfc_main$b, { name: "palette-swatch-outline" }),
-                  _hoisted_15$3
+                  _hoisted_16$3
                 ])
               ])
             ])
@@ -1399,7 +1401,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
 });
 var EditorSections = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-681b85fa"]]);
 var PageView_vue_vue_type_style_index_0_scoped_true_lang = "";
-const _withScopeId$1 = (n) => (pushScopeId("data-v-5431951e"), n = n(), popScopeId(), n);
+const _withScopeId$1 = (n) => (pushScopeId("data-v-079911a2"), n = n(), popScopeId(), n);
 const _hoisted_1$3 = { class: "page" };
 const _hoisted_2$2 = { class: "page-actions" };
 const _hoisted_3$1 = { class: "page-id" };
@@ -1439,12 +1441,15 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       prop: page,
       objectId: () => props.pageId
     });
+    function togglePage() {
+      _state.collapsed = !_state.collapsed;
+    }
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock("div", _hoisted_1$3, [
         createBaseVNode("div", _hoisted_2$2, [
           createBaseVNode("button", {
             class: "btn btn-sm btn-link",
-            onClick: _cache[0] || (_cache[0] = (...args) => _ctx.togglePage && _ctx.togglePage(...args))
+            onClick: togglePage
           }, [
             withDirectives(createVNode(_sfc_main$b, { name: "eye" }, null, 512), [
               [vShow, unref(_state).collapsed]
@@ -1477,7 +1482,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             createBaseVNode("div", _hoisted_10, [
               createBaseVNode("button", {
                 class: "btn btn-sm btn-outline-danger wide",
-                onClick: _cache[1] || (_cache[1] = (...args) => _ctx.deletePage && _ctx.deletePage(...args))
+                onClick: _cache[0] || (_cache[0] = (...args) => _ctx.deletePage && _ctx.deletePage(...args))
               }, [
                 createVNode(_sfc_main$b, { name: "delete-outline" })
               ])
@@ -1489,14 +1494,14 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             withDirectives(createBaseVNode("input", {
               class: "form-control page-title",
               type: "text",
-              "onUpdate:modelValue": _cache[2] || (_cache[2] = ($event) => isRef(M_title) ? M_title.value = $event : null)
+              "onUpdate:modelValue": _cache[1] || (_cache[1] = ($event) => isRef(M_title) ? M_title.value = $event : null)
             }, null, 512), [
               [vModelText, unref(M_title)]
             ]),
             createBaseVNode("div", _hoisted_13, [
               withDirectives(createBaseVNode("textarea", {
                 class: "form-control page-header",
-                "onUpdate:modelValue": _cache[3] || (_cache[3] = ($event) => isRef(M_headerText) ? M_headerText.value = $event : null),
+                "onUpdate:modelValue": _cache[2] || (_cache[2] = ($event) => isRef(M_headerText) ? M_headerText.value = $event : null),
                 placeholder: "..."
               }, null, 512), [
                 [vModelText, unref(M_headerText)]
@@ -1506,7 +1511,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             createBaseVNode("div", _hoisted_15, [
               withDirectives(createBaseVNode("textarea", {
                 class: "form-control page-footer",
-                "onUpdate:modelValue": _cache[4] || (_cache[4] = ($event) => isRef(M_footerText) ? M_footerText.value = $event : null),
+                "onUpdate:modelValue": _cache[3] || (_cache[3] = ($event) => isRef(M_footerText) ? M_footerText.value = $event : null),
                 placeholder: "..."
               }, null, 512), [
                 [vModelText, unref(M_footerText)]
@@ -1519,7 +1524,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-var PageView = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-5431951e"]]);
+var PageView = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-079911a2"]]);
 var EditorPages_vue_vue_type_style_index_0_scoped_true_lang = "";
 const _withScopeId = (n) => (pushScopeId("data-v-004840d1"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("h1", null, "Pages", -1));
@@ -1601,6 +1606,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
 });
 var materialdesignicons_min = "";
 var bootstrap_min = "";
+var common = "";
 const app = createApp(_sfc_main);
 app.use(homeStore, homeStoreKey);
 app.use(editorStore, editorStoreKey);
