@@ -21,7 +21,7 @@ var __publicField = (obj, key, value) => {
   __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
   return value;
 };
-import { V as VuexPersistence, c as createStore, a as createLogger, o as over, l as lensPath, m as mergeRight, _ as __, H as Hashids, b as omit, d as defineComponent, e as computed, f as createElementBlock, g as createBaseVNode, F as Fragment, r as renderList, u as unref, p as pushScopeId, h as popScopeId, i as useStore, j as resolveComponent, k as openBlock, t as toDisplayString, n as createVNode, w as withCtx, q as createTextVNode, s as normalizeClass, v as watch, x as onMounted, y as onUnmounted, z as useRouter, A as clone, B as view, C as withDirectives, D as vModelText, E as isRef, G as always, I as mergeWith, J as mergeAll, K as lib, L as match, M as createCommentVNode, N as vModelSelect, O as createBlock, P as normalizeStyle, Q as renderSlot, R as reactive, S as vShow, T as useRoute, U as createRouter, W as createWebHashHistory, X as createApp } from "./vendor.e1b7edaf.js";
+import { l as localforage, V as VuexPersistence, c as clone, a as createStore, b as createLogger, o as over, d as lensPath, m as mergeRight, _ as __, H as Hashids, e as omit, f as defineComponent, g as computed, h as createElementBlock, i as createBaseVNode, F as Fragment, r as renderList, u as unref, p as pushScopeId, j as popScopeId, k as useStore, n as resolveComponent, q as openBlock, t as toDisplayString, s as createVNode, w as withCtx, v as createTextVNode, x as normalizeClass, y as watch, z as onMounted, A as onUnmounted, B as useRouter, C as view, D as withDirectives, E as vModelText, G as isRef, I as always, J as mergeWith, K as mergeAll, L as lib, M as match, N as createCommentVNode, O as vModelSelect, P as createBlock, Q as normalizeStyle, R as renderSlot, S as reactive, T as vShow, U as useRoute, W as createRouter, X as createWebHashHistory, Y as createApp } from "./vendor.834299aa.js";
 const p = function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -80,9 +80,17 @@ function randomIdentifier(len) {
   crypto.getRandomValues(bytes);
   return Array.from(bytes, (v) => v.toString(32).padStart(2, "0")).join("");
 }
+const database$1 = localforage.exports.createInstance({
+  name: "home",
+  storeName: "data",
+  driver: localforage.exports.INDEXEDDB,
+  description: "Projects Storage"
+});
 const persistence$1 = new VuexPersistence({
   key: "home",
-  storage: window.localStorage
+  storage: database$1,
+  asyncStorage: true,
+  reducer: clone
 });
 const homeStoreKey = Symbol("home");
 const homeStore = createStore({
@@ -151,103 +159,130 @@ function removeObject(state, objId) {
   delete state.objects[objId];
 }
 const defaultState = () => new Project();
-const ProjectModule = {
-  namespaced: true,
-  state() {
-    return defaultState();
-  },
-  getters: {
-    findScore: (state) => (id) => {
-      return state.scores[id];
+const ProjectModule = (database2) => {
+  return {
+    namespaced: true,
+    state() {
+      return defaultState();
     },
-    findElement: (state) => (id) => {
-      return state.objects[id];
-    },
-    findChildrenIds: (state) => (id) => {
-      return state.children[id];
-    }
-  },
-  mutations: {
-    genNextId(state, idType) {
-      if (!state.genCounters.hasOwnProperty(idType))
-        state.genCounters[idType] = 0;
-      state.genCounters[idType] += 1;
-      return state.genCounters[idType];
-    },
-    addObject(state, obj) {
-      state.objects[obj.id] = obj;
-    },
-    addChild(state, { parentId, childId }) {
-      if (!state.children.hasOwnProperty(parentId)) {
-        state.children[parentId] = [];
+    getters: {
+      findScore: (state) => (id) => {
+        return state.scores[id];
+      },
+      findElement: (state) => (id) => {
+        return state.objects[id];
+      },
+      findChildrenIds: (state) => (id) => {
+        return state.children[id];
       }
-      if (state.children[parentId].indexOf(childId) === -1) {
-        state.children[parentId].push(childId);
+    },
+    mutations: {
+      genNextId(state, idType) {
+        if (!state.genCounters.hasOwnProperty(idType))
+          state.genCounters[idType] = 0;
+        state.genCounters[idType] += 1;
+        return state.genCounters[idType];
+      },
+      addObject(state, obj) {
+        state.objects[obj.id] = obj;
+      },
+      addChild(state, { parentId, childId }) {
+        if (!state.children.hasOwnProperty(parentId)) {
+          state.children[parentId] = [];
+        }
+        if (state.children[parentId].indexOf(childId) === -1) {
+          state.children[parentId].push(childId);
+        }
+        state.parents[childId] = parentId;
+      },
+      updateObject(state, { objectId, path, data }) {
+        state.objects[objectId] = over(lensPath(path || []), mergeRight(__, data), state.objects[objectId]);
+      },
+      removeChildren(state, objectId) {
+        removeChildren(state, objectId);
+      },
+      removeObject(state, objectId) {
+        removeFromParent(state, objectId);
+        removeParent(state, objectId);
+        removeChildren(state, objectId);
+        removeObject(state, objectId);
+      },
+      addCondition(state, { objectId, data }) {
+        const current = state.objects[objectId];
+        state.objects[objectId] = __spreadProps(__spreadValues({}, current), {
+          conditions: current.conditions ? [...current.conditions, data] : [data]
+        });
+      },
+      setupProject(state, data) {
+        state.key = data.key;
+        state.name = data.name;
+      },
+      loadProject(state, data) {
+        Object.assign(state, data);
+      },
+      unloadProject(state) {
+        Object.assign(state, defaultState());
       }
-      state.parents[childId] = parentId;
     },
-    updateObject(state, { objectId, path, data }) {
-      state.objects[objectId] = over(lensPath(path || []), mergeRight(__, data), state.objects[objectId]);
-    },
-    removeChildren(state, objectId) {
-      removeChildren(state, objectId);
-    },
-    removeObject(state, objectId) {
-      removeFromParent(state, objectId);
-      removeParent(state, objectId);
-      removeChildren(state, objectId);
-      removeObject(state, objectId);
-    },
-    addCondition(state, { objectId, data }) {
-      const current = state.objects[objectId];
-      state.objects[objectId] = __spreadProps(__spreadValues({}, current), {
-        conditions: current.conditions ? [...current.conditions, data] : [data]
-      });
-    },
-    setupProject(state, data) {
-      state.key = data.key;
-      state.name = data.name;
-    },
-    loadProject(state, data) {
-      Object.assign(state, data);
-    },
-    unloadProject(state) {
-      Object.assign(state, defaultState());
+    actions: {
+      insertElement({ commit, state }, { elementType, parentId, build }) {
+        const HID = new Hashids(state.key, 5);
+        commit("genNextId", elementType);
+        const counter = state.genCounters[elementType];
+        const objectId = `${elementType}_${HID.encode(counter)}`;
+        commit("addObject", build(objectId, counter));
+        commit("addChild", { parentId, childId: objectId });
+      },
+      async restoreProject({ state, commit, getters }, { projectId, projectInfo }) {
+        console.log(`Loading project ${projectId}`);
+        const projectData = await database2.getItem(`projects/${projectId}`);
+        if (projectData) {
+          commit("loadProject", projectData);
+          console.log("Loaded from storage");
+        }
+        if (!state.key) {
+          console.log("Project requires setup");
+          commit("setupProject", projectInfo);
+        }
+      }
     }
-  },
-  actions: {
-    insertElement({ commit, state }, { elementType, parentId, build }) {
-      const HID = new Hashids(state.key, 5);
-      commit("genNextId", elementType);
-      const counter = state.genCounters[elementType];
-      const objectId = `${elementType}_${HID.encode(counter)}`;
-      commit("addObject", build(objectId, counter));
-      commit("addChild", { parentId, childId: objectId });
-    }
-  }
+  };
 };
-function parseOrDefault(storage, key, defaultF) {
-  const data = storage.getItem(key);
+const PROJECTS_BASE = `projects`;
+async function parseOrDefault(storage, key, defaultF) {
+  const data = await storage.getItem(key);
   if (data)
-    return JSON.parse(data);
+    return data;
   else
     return defaultF();
 }
+const database = localforage.exports.createInstance({
+  name: "projects",
+  storeName: "data",
+  driver: localforage.exports.INDEXEDDB,
+  description: "Projects Storage"
+});
+async function persistProject(storage, key, project) {
+  if (project.key) {
+    await storage.setItem(`${PROJECTS_BASE}/${project.key}`, project);
+  }
+}
 const persistence = new VuexPersistence({
   key: "projects",
-  storage: window.localStorage,
-  saveState(key, state, storage) {
-    if (state.project.key && storage) {
-      const projectKey = state.project.key;
-      const projectJson = JSON.stringify(state.project);
-      storage.setItem(`projects/${projectKey}`, projectJson);
-      const editorData = omit(["project"], state);
-      storage.setItem(key, JSON.stringify(editorData));
+  storage: database,
+  asyncStorage: true,
+  reducer: clone,
+  async saveState(key, state, storage) {
+    if (!storage)
+      return;
+    if (state.project) {
+      await persistProject(storage, key, state.project);
     }
+    await storage.setItem(key, omit(["project"], state));
   },
-  restoreState(key, storage) {
+  async restoreState(key, storage) {
     if (storage) {
-      return parseOrDefault(storage, key, () => new EditorData());
+      return await parseOrDefault(storage, key, () => new EditorData());
     } else {
       return void 0;
     }
@@ -257,7 +292,7 @@ const editorStoreKey = Symbol("editor");
 const editorStore = createStore({
   plugins: [createLogger(), persistence.plugin],
   modules: {
-    project: ProjectModule
+    project: ProjectModule(database)
   },
   state() {
     return new EditorData();
@@ -636,22 +671,12 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
     });
     function reloadProject(projectId) {
       console.log(`Loading project ${projectId}`);
-      const jsonData = localStorage.getItem(`projects/${projectId}`);
-      if (jsonData) {
-        const project = JSON.parse(jsonData);
-        store.commit("project/loadProject", project);
-        console.log("Loaded from storage");
-      }
-      if (!store.state.project.key) {
-        console.log("Project requires setup");
-        const homeStore2 = useStore(homeStoreKey);
-        const projectData = homeStore2.getters["findProject"](projectId);
-        if (projectData) {
-          store.commit("project/setupProject", projectData);
-        } else {
-          $router.push({ name: "home" });
-        }
-      }
+      const homeStore2 = useStore(homeStoreKey);
+      const projectInfo = homeStore2.getters["findProject"](projectId);
+      store.dispatch("project/restoreProject", {
+        projectId,
+        projectInfo
+      });
     }
     onMounted(() => {
       if (props.projectId)
