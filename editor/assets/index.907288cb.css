@@ -1,5 +1,8 @@
 
-.projects[data-v-77ae96b6] {
+h1[data-v-6cdf1c3a] {
+  text-align: center;
+}
+.projects[data-v-6cdf1c3a] {
   display: grid;
   grid-template-columns: minmax(200px, auto) minmax(100px, auto) auto;
   grid-auto-flow: row;
@@ -8,17 +11,17 @@
   align-items: center;
   justify-content: center;
 }
-.projects div.header[data-v-77ae96b6] {
+.projects div.header[data-v-6cdf1c3a] {
   display: contents;
   font-weight: bold;
 }
-.projects div.project[data-v-77ae96b6] {
+.projects div.project[data-v-6cdf1c3a] {
   display: contents;
 }
-.projects div.project span.proj-key[data-v-77ae96b6] {
+.projects div.project span.proj-key[data-v-6cdf1c3a] {
   font-family: monospace;
 }
-.projects div.tools[data-v-77ae96b6] {
+.projects div.tools[data-v-6cdf1c3a] {
   grid-column: 3 / span 1;
 }
 

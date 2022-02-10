@@ -267,8 +267,8 @@ var _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const _withScopeId$3 = (n) => (pushScopeId("data-v-77ae96b6"), n = n(), popScopeId(), n);
-const _hoisted_1$8 = /* @__PURE__ */ _withScopeId$3(() => /* @__PURE__ */ createBaseVNode("h1", null, "Home", -1));
+const _withScopeId$3 = (n) => (pushScopeId("data-v-6cdf1c3a"), n = n(), popScopeId(), n);
+const _hoisted_1$8 = /* @__PURE__ */ _withScopeId$3(() => /* @__PURE__ */ createBaseVNode("h1", null, "Moirai", -1));
 const _hoisted_2$7 = { class: "projects" };
 const _hoisted_3$6 = /* @__PURE__ */ _withScopeId$3(() => /* @__PURE__ */ createBaseVNode("div", { class: "header" }, [
   /* @__PURE__ */ createBaseVNode("span", { class: "proj-name" }, "Project"),
@@ -284,7 +284,7 @@ const _hoisted_9$3 = /* @__PURE__ */ createTextVNode("View ");
 const _hoisted_10$3 = ["onClick"];
 const _hoisted_11$3 = ["onClick"];
 const _hoisted_12$3 = { class: "tools" };
-const _hoisted_13$2 = { class: "btn-group" };
+const _hoisted_13$3 = { class: "btn-group" };
 const _sfc_main$b = /* @__PURE__ */ defineComponent({
   setup(__props) {
     const store = useStore(homeStoreKey);
@@ -336,7 +336,7 @@ const _sfc_main$b = /* @__PURE__ */ defineComponent({
             ]);
           }), 256)),
           createBaseVNode("div", _hoisted_12$3, [
-            createBaseVNode("div", _hoisted_13$2, [
+            createBaseVNode("div", _hoisted_13$3, [
               createBaseVNode("button", {
                 onClick: createProject,
                 class: "btn btn-primary"
@@ -352,7 +352,7 @@ const _sfc_main$b = /* @__PURE__ */ defineComponent({
     };
   }
 });
-var Home = /* @__PURE__ */ _export_sfc(_sfc_main$b, [["__scopeId", "data-v-77ae96b6"]]);
+var Home = /* @__PURE__ */ _export_sfc(_sfc_main$b, [["__scopeId", "data-v-6cdf1c3a"]]);
 function persist(props) {
   return Reflect.metadata("persist:props", props);
 }
@@ -372,6 +372,19 @@ var __decorateClass$1 = (decorators, target, key, kind) => {
   if (kind && result)
     __defProp$1(target, key, result);
   return result;
+};
+let PageStyle = class {
+  constructor() {
+    __publicField(this, "name");
+    __publicField(this, "children");
+  }
+};
+PageStyle = __decorateClass$1([
+  persist(["name", "children"])
+], PageStyle);
+const DefaultPageStyle = {
+  name: "default",
+  children: "default"
 };
 let SectionStyle = class {
   constructor() {
@@ -437,10 +450,27 @@ var __decorateClass = (decorators, target, key, kind) => {
 };
 var ElementType;
 (function(ElementType2) {
+  ElementType2["Page"] = "page";
   ElementType2["Section"] = "section";
   ElementType2["Choice"] = "choice";
   ElementType2["Option"] = "option";
 })(ElementType || (ElementType = {}));
+let Page = class {
+  constructor(id, title, headerText = "", footerText = "", conditions = [], style = new PageStyle()) {
+    __publicField(this, "type", ElementType.Page);
+    this.id = id;
+    this.title = title;
+    this.headerText = headerText;
+    this.footerText = footerText;
+    this.conditions = conditions;
+    this.style = style;
+  }
+};
+Page = __decorateClass([
+  persist(["id", "title", "headerText", "footerText", "conditions", "style"]),
+  inner({ "style": PageStyle }),
+  defaults({ "style": DefaultPageStyle })
+], Page);
 let Section = class {
   constructor(id, title, headerText = "", footerText = "", conditions = [], style = new SectionStyle()) {
     __publicField(this, "type", ElementType.Section);
@@ -531,25 +561,42 @@ var Editor_vue_vue_type_style_index_0_lang = "";
 const _hoisted_1$7 = { class: "toolbar" };
 const _hoisted_2$6 = { class: "nav nav-pills nav-fill editor-tabs" };
 const _hoisted_3$5 = /* @__PURE__ */ createTextVNode(" Home ");
-const _hoisted_4$5 = /* @__PURE__ */ createTextVNode(" Sections ");
-const _hoisted_5$4 = /* @__PURE__ */ createTextVNode(" Pages ");
-const _hoisted_6$4 = /* @__PURE__ */ createTextVNode(" Settings ");
-const _hoisted_7$3 = { class: "editor-actions" };
-const _hoisted_8$3 = { class: "btn-toolbar" };
-const _hoisted_9$2 = { class: "btn-group" };
-const _hoisted_10$2 = /* @__PURE__ */ createTextVNode(" New Section ");
-const _hoisted_11$2 = /* @__PURE__ */ createTextVNode(" New Score ");
-const _hoisted_12$2 = /* @__PURE__ */ createTextVNode(" New Style ");
+const _hoisted_4$5 = /* @__PURE__ */ createTextVNode(" Pages ");
+const _hoisted_5$4 = { class: "nav-item dropdown" };
+const _hoisted_6$4 = /* @__PURE__ */ createTextVNode(" Sections ");
+const _hoisted_7$3 = {
+  class: "dropdown-menu",
+  "aria-labelledby": "dropdownMenuLink"
+};
+const _hoisted_8$3 = /* @__PURE__ */ createTextVNode(" Settings ");
+const _hoisted_9$2 = { class: "editor-actions" };
+const _hoisted_10$2 = { class: "btn-toolbar" };
+const _hoisted_11$2 = { class: "btn-group" };
+const _hoisted_12$2 = /* @__PURE__ */ createTextVNode(" New Page ");
+const _hoisted_13$2 = /* @__PURE__ */ createTextVNode(" New Section ");
+const _hoisted_14$2 = /* @__PURE__ */ createTextVNode(" New Score ");
+const _hoisted_15$2 = /* @__PURE__ */ createTextVNode(" New Style ");
 const _sfc_main$9 = /* @__PURE__ */ defineComponent({
   setup(__props) {
     const $router = useRouter();
     const store = useStore(editorStoreKey);
+    const findPageIds = computed(() => store.getters["project/findChildrenIds"]("__pages__"));
+    async function createPage() {
+      const childCounter = await store.dispatch("project/genNextId", ElementType.Page);
+      const childId = `${ElementType.Page}_${childCounter}`;
+      console.log("New Page", childId);
+      store.commit("project/addObject", new Section(childId, `Page ${childCounter}`));
+      store.commit("project/addChild", { parentId: "__pages__", childId });
+    }
     async function createSection() {
+      if ($router.currentRoute.value.name !== "edit_section")
+        return;
+      const parentId = $router.currentRoute.value.params["pageId"];
       const childCounter = await store.dispatch("project/genNextId", ElementType.Section);
       const childId = `${ElementType.Section}_${childCounter}`;
       console.log("New Section", childId);
       store.commit("project/addObject", new Section(childId, `Section ${childCounter}`));
-      store.commit("project/addChild", { parentId: "root", childId });
+      store.commit("project/addChild", { parentId, childId });
     }
     function reloadProject(route) {
       const projectId = route.params["project"];
@@ -570,8 +617,6 @@ const _sfc_main$9 = /* @__PURE__ */ defineComponent({
           $router.push({ name: "home" });
         }
       }
-      if (route.name === "edit")
-        $router.push({ name: "edit_sections", params: route.params });
     }
     onMounted(() => {
       const route = useRoute();
@@ -605,26 +650,44 @@ const _sfc_main$9 = /* @__PURE__ */ defineComponent({
             }),
             createVNode(_component_router_link, {
               class: "nav-link",
-              to: { name: "edit_sections", params: _ctx.$route.params },
-              "active-class": "active"
-            }, {
-              default: withCtx(() => [
-                createVNode(_sfc_main$a, { name: "layers-triple" }),
-                _hoisted_4$5
-              ]),
-              _: 1
-            }, 8, ["to"]),
-            createVNode(_component_router_link, {
-              class: "nav-link",
               to: { name: "edit_pages", params: _ctx.$route.params },
               "active-class": "active"
             }, {
               default: withCtx(() => [
                 createVNode(_sfc_main$a, { name: "file-multiple" }),
-                _hoisted_5$4
+                _hoisted_4$5
               ]),
               _: 1
             }, 8, ["to"]),
+            createBaseVNode("div", _hoisted_5$4, [
+              createBaseVNode("a", {
+                class: normalizeClass(["nav-link", { disabled: !unref(findPageIds) || unref(findPageIds).length === 0 }, "dropdown-toggle"]),
+                href: "#",
+                role: "button",
+                id: "dropdownMenuLink",
+                "data-bs-toggle": "dropdown",
+                "aria-expanded": "false"
+              }, [
+                createVNode(_sfc_main$a, { name: "layers-triple" }),
+                _hoisted_6$4
+              ], 2),
+              createBaseVNode("ul", _hoisted_7$3, [
+                (openBlock(true), createElementBlock(Fragment, null, renderList(unref(findPageIds), (pageId) => {
+                  return openBlock(), createElementBlock("li", null, [
+                    createVNode(_component_router_link, {
+                      class: "dropdown-item",
+                      to: { name: "edit_section", params: __spreadProps(__spreadValues({}, _ctx.$route.params), { pageId }) },
+                      "active-class": "active"
+                    }, {
+                      default: withCtx(() => [
+                        createTextVNode(toDisplayString(pageId), 1)
+                      ]),
+                      _: 2
+                    }, 1032, ["to"])
+                  ]);
+                }), 256))
+              ])
+            ]),
             createVNode(_component_router_link, {
               class: "nav-link",
               to: { name: "edit_settings", params: _ctx.$route.params },
@@ -632,34 +695,41 @@ const _sfc_main$9 = /* @__PURE__ */ defineComponent({
             }, {
               default: withCtx(() => [
                 createVNode(_sfc_main$a, { name: "cog" }),
-                _hoisted_6$4
+                _hoisted_8$3
               ]),
               _: 1
             }, 8, ["to"])
           ]),
-          createBaseVNode("div", _hoisted_7$3, [
-            createBaseVNode("div", _hoisted_8$3, [
-              createBaseVNode("div", _hoisted_9$2, [
+          createBaseVNode("div", _hoisted_9$2, [
+            createBaseVNode("div", _hoisted_10$2, [
+              createBaseVNode("div", _hoisted_11$2, [
                 createBaseVNode("button", {
                   class: "btn btn-primary",
+                  onClick: createPage
+                }, [
+                  createVNode(_sfc_main$a, { name: "file-plus" }),
+                  _hoisted_12$2
+                ]),
+                createBaseVNode("button", {
+                  class: normalizeClass(["btn btn-primary", { disabled: unref($router).currentRoute.value.name !== "edit_section" }]),
                   onClick: createSection
                 }, [
                   createVNode(_sfc_main$a, { name: "layers-plus" }),
-                  _hoisted_10$2
-                ]),
+                  _hoisted_13$2
+                ], 2),
                 createBaseVNode("button", {
                   class: "btn btn-primary",
                   onClick: _cache[0] || (_cache[0] = (...args) => _ctx.createScore && _ctx.createScore(...args))
                 }, [
                   createVNode(_sfc_main$a, { name: "numeric-9-plus-box" }),
-                  _hoisted_11$2
+                  _hoisted_14$2
                 ]),
                 createBaseVNode("button", {
                   class: "btn btn-primary",
                   onClick: _cache[1] || (_cache[1] = (...args) => _ctx.screateStyle && _ctx.screateStyle(...args))
                 }, [
                   createVNode(_sfc_main$a, { name: "palette-swatch-outline" }),
-                  _hoisted_12$2
+                  _hoisted_15$2
                 ])
               ])
             ])
@@ -1300,9 +1370,14 @@ const _hoisted_4 = [
   _hoisted_3
 ];
 const _sfc_main$4 = /* @__PURE__ */ defineComponent({
+  props: {
+    pageId: String
+  },
   setup(__props) {
+    const props = __props;
+    useRoute();
     const store = useStore(editorStoreKey);
-    const findSections = computed(() => store.getters["project/findChildrenIds"]("root"));
+    const findSections = computed(() => store.getters["project/findChildrenIds"](props.pageId));
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock(Fragment, null, [
         unref(findSections) && unref(findSections).length > 0 ? (openBlock(), createElementBlock("div", _hoisted_1$2, [
@@ -1315,11 +1390,17 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$3 = {};
-function _sfc_render$1(_ctx, _cache) {
-  return openBlock(), createElementBlock("b", null, "Pages");
-}
-var EditorPages = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["render", _sfc_render$1]]);
+const _sfc_main$3 = /* @__PURE__ */ defineComponent({
+  setup(__props) {
+    const store = useStore(editorStoreKey);
+    const findPages = computed(() => store.getters["project/findChildrenIds"]("__pages__"));
+    return (_ctx, _cache) => {
+      return openBlock(true), createElementBlock(Fragment, null, renderList(unref(findPages), (pageId) => {
+        return openBlock(), createElementBlock("div", null, toDisplayString(pageId), 1);
+      }), 256);
+    };
+  }
+});
 const _sfc_main$2 = {};
 function _sfc_render(_ctx, _cache) {
   return openBlock(), createElementBlock("b", null, "Settings");
@@ -1344,13 +1425,14 @@ const routes = [
     path: "/edit/:project",
     component: _sfc_main$9,
     children: [
+      { name: "edit_pages", path: "pages", alias: "", component: _sfc_main$3 },
       {
-        name: "edit_sections",
-        path: "sections",
-        component: _sfc_main$4
+        name: "edit_section",
+        path: "pages/:pageId/sections",
+        component: _sfc_main$4,
+        props: true
       },
-      { name: "edit_pages", path: "pages", component: EditorPages },
-      { name: "edit_settings", path: "pages", component: EditorSettings }
+      { name: "edit_settings", path: "settings", component: EditorSettings }
     ]
   },
   { name: "view", path: "/view/:project", component: _sfc_main$1 }
