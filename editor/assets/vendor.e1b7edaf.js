@@ -6758,6 +6758,231 @@ var view = /* @__PURE__ */ _curry2(function view2(lens3, x) {
   return lens3(Const)(x).value;
 });
 var view$1 = view;
+const keepUnique = (content) => [
+  ...new Set(content)
+];
+const withoutChars = (chars, charsToExclude) => chars.filter((char) => !charsToExclude.includes(char));
+const onlyChars = (chars, keepChars) => chars.filter((char) => keepChars.includes(char));
+const isIntegerNumber = (n) => typeof n === "bigint" || !Number.isNaN(Number(n)) && Math.floor(Number(n)) === n;
+const isPositiveAndFinite = (n) => typeof n === "bigint" || n >= 0 && Number.isSafeInteger(n);
+function shuffle(alphabetChars, saltChars) {
+  if (saltChars.length === 0) {
+    return alphabetChars;
+  }
+  let integer;
+  const transformed = [...alphabetChars];
+  for (let i = transformed.length - 1, v = 0, p2 = 0; i > 0; i--, v++) {
+    v %= saltChars.length;
+    p2 += integer = saltChars[v].codePointAt(0);
+    const j = (integer + v + p2) % i;
+    const a = transformed[i];
+    const b = transformed[j];
+    transformed[j] = a;
+    transformed[i] = b;
+  }
+  return transformed;
+}
+const toAlphabet = (input, alphabetChars) => {
+  const id = [];
+  let value = input;
+  if (typeof value === "bigint") {
+    const alphabetLength = BigInt(alphabetChars.length);
+    do {
+      id.unshift(alphabetChars[Number(value % alphabetLength)]);
+      value /= alphabetLength;
+    } while (value > BigInt(0));
+  } else {
+    do {
+      id.unshift(alphabetChars[value % alphabetChars.length]);
+      value = Math.floor(value / alphabetChars.length);
+    } while (value > 0);
+  }
+  return id;
+};
+const fromAlphabet = (inputChars, alphabetChars) => inputChars.reduce((carry, item) => {
+  const index = alphabetChars.indexOf(item);
+  if (index === -1) {
+    throw new Error(`The provided ID (${inputChars.join("")}) is invalid, as it contains characters that do not exist in the alphabet (${alphabetChars.join("")})`);
+  }
+  if (typeof carry === "bigint") {
+    return carry * BigInt(alphabetChars.length) + BigInt(index);
+  }
+  const value = carry * alphabetChars.length + index;
+  const isSafeValue = Number.isSafeInteger(value);
+  if (isSafeValue) {
+    return value;
+  }
+  if (typeof BigInt === "function") {
+    return BigInt(carry) * BigInt(alphabetChars.length) + BigInt(index);
+  }
+  throw new Error(`Unable to decode the provided string, due to lack of support for BigInt numbers in the current environment`);
+}, 0);
+const safeToParseNumberRegExp = /^\+?\d+$/;
+const safeParseInt10 = (str) => safeToParseNumberRegExp.test(str) ? Number.parseInt(str, 10) : Number.NaN;
+const splitAtIntervalAndMap = (str, nth3, map3) => Array.from({ length: Math.ceil(str.length / nth3) }, (_, index) => map3(str.slice(index * nth3, (index + 1) * nth3)));
+const makeAnyOfCharsRegExp = (chars) => new RegExp(chars.map((char) => escapeRegExp(char)).sort((a, b) => b.length - a.length).join("|"));
+const makeAtLeastSomeCharRegExp = (chars) => new RegExp(`^[${chars.map((char) => escapeRegExp(char)).sort((a, b) => b.length - a.length).join("")}]+$`);
+const escapeRegExp = (text) => text.replace(/[\s#$()*+,.?[\\\]^{|}-]/g, "\\$&");
+const MIN_ALPHABET_LENGTH = 16;
+const SEPARATOR_DIV = 3.5;
+const GUARD_DIV = 12;
+const HEXADECIMAL = 16;
+const SPLIT_AT_EVERY_NTH = 12;
+const MODULO_PART = 100;
+class Hashids {
+  constructor(salt = "", minLength = 0, alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890", seps = "cfhistuCFHISTU") {
+    this.minLength = minLength;
+    if (typeof minLength !== "number") {
+      throw new TypeError(`Hashids: Provided 'minLength' has to be a number (is ${typeof minLength})`);
+    }
+    if (typeof salt !== "string") {
+      throw new TypeError(`Hashids: Provided 'salt' has to be a string (is ${typeof salt})`);
+    }
+    if (typeof alphabet !== "string") {
+      throw new TypeError(`Hashids: Provided alphabet has to be a string (is ${typeof alphabet})`);
+    }
+    const saltChars = Array.from(salt);
+    const alphabetChars = Array.from(alphabet);
+    const sepsChars = Array.from(seps);
+    this.salt = saltChars;
+    const uniqueAlphabet = keepUnique(alphabetChars);
+    if (uniqueAlphabet.length < MIN_ALPHABET_LENGTH) {
+      throw new Error(`Hashids: alphabet must contain at least ${MIN_ALPHABET_LENGTH} unique characters, provided: ${uniqueAlphabet.join("")}`);
+    }
+    this.alphabet = withoutChars(uniqueAlphabet, sepsChars);
+    const filteredSeps = onlyChars(sepsChars, uniqueAlphabet);
+    this.seps = shuffle(filteredSeps, saltChars);
+    let sepsLength;
+    let diff;
+    if (this.seps.length === 0 || this.alphabet.length / this.seps.length > SEPARATOR_DIV) {
+      sepsLength = Math.ceil(this.alphabet.length / SEPARATOR_DIV);
+      if (sepsLength > this.seps.length) {
+        diff = sepsLength - this.seps.length;
+        this.seps.push(...this.alphabet.slice(0, diff));
+        this.alphabet = this.alphabet.slice(diff);
+      }
+    }
+    this.alphabet = shuffle(this.alphabet, saltChars);
+    const guardCount = Math.ceil(this.alphabet.length / GUARD_DIV);
+    if (this.alphabet.length < 3) {
+      this.guards = this.seps.slice(0, guardCount);
+      this.seps = this.seps.slice(guardCount);
+    } else {
+      this.guards = this.alphabet.slice(0, guardCount);
+      this.alphabet = this.alphabet.slice(guardCount);
+    }
+    this.guardsRegExp = makeAnyOfCharsRegExp(this.guards);
+    this.sepsRegExp = makeAnyOfCharsRegExp(this.seps);
+    this.allowedCharsRegExp = makeAtLeastSomeCharRegExp([
+      ...this.alphabet,
+      ...this.guards,
+      ...this.seps
+    ]);
+  }
+  encode(first, ...inputNumbers) {
+    const ret = "";
+    let numbers = Array.isArray(first) ? first : [...first != null ? [first] : [], ...inputNumbers];
+    if (numbers.length === 0) {
+      return ret;
+    }
+    if (!numbers.every(isIntegerNumber)) {
+      numbers = numbers.map((n) => typeof n === "bigint" || typeof n === "number" ? n : safeParseInt10(String(n)));
+    }
+    if (!numbers.every(isPositiveAndFinite)) {
+      return ret;
+    }
+    return this._encode(numbers).join("");
+  }
+  decode(id) {
+    if (!id || typeof id !== "string" || id.length === 0)
+      return [];
+    return this._decode(id);
+  }
+  encodeHex(inputHex) {
+    let hex = inputHex;
+    switch (typeof hex) {
+      case "bigint":
+        hex = hex.toString(HEXADECIMAL);
+        break;
+      case "string":
+        if (!/^[\dA-Fa-f]+$/.test(hex))
+          return "";
+        break;
+      default:
+        throw new Error(`Hashids: The provided value is neither a string, nor a BigInt (got: ${typeof hex})`);
+    }
+    const numbers = splitAtIntervalAndMap(hex, SPLIT_AT_EVERY_NTH, (part) => Number.parseInt(`1${part}`, 16));
+    return this.encode(numbers);
+  }
+  decodeHex(id) {
+    return this.decode(id).map((number) => number.toString(HEXADECIMAL).slice(1)).join("");
+  }
+  isValidId(id) {
+    return this.allowedCharsRegExp.test(id);
+  }
+  _encode(numbers) {
+    let { alphabet } = this;
+    const numbersIdInt = numbers.reduce((last, number, i) => last + (typeof number === "bigint" ? Number(number % BigInt(i + MODULO_PART)) : number % (i + MODULO_PART)), 0);
+    let ret = [alphabet[numbersIdInt % alphabet.length]];
+    const lottery = [...ret];
+    const { seps } = this;
+    const { guards: guards2 } = this;
+    numbers.forEach((number, i) => {
+      const buffer = lottery.concat(this.salt, alphabet);
+      alphabet = shuffle(alphabet, buffer);
+      const last = toAlphabet(number, alphabet);
+      ret.push(...last);
+      if (i + 1 < numbers.length) {
+        const charCode = last[0].codePointAt(0) + i;
+        const extraNumber = typeof number === "bigint" ? Number(number % BigInt(charCode)) : number % charCode;
+        ret.push(seps[extraNumber % seps.length]);
+      }
+    });
+    if (ret.length < this.minLength) {
+      const prefixGuardIndex = (numbersIdInt + ret[0].codePointAt(0)) % guards2.length;
+      ret.unshift(guards2[prefixGuardIndex]);
+      if (ret.length < this.minLength) {
+        const suffixGuardIndex = (numbersIdInt + ret[2].codePointAt(0)) % guards2.length;
+        ret.push(guards2[suffixGuardIndex]);
+      }
+    }
+    const halfLength = Math.floor(alphabet.length / 2);
+    while (ret.length < this.minLength) {
+      alphabet = shuffle(alphabet, alphabet);
+      ret.unshift(...alphabet.slice(halfLength));
+      ret.push(...alphabet.slice(0, halfLength));
+      const excess = ret.length - this.minLength;
+      if (excess > 0) {
+        const halfOfExcess = excess / 2;
+        ret = ret.slice(halfOfExcess, halfOfExcess + this.minLength);
+      }
+    }
+    return ret;
+  }
+  _decode(id) {
+    if (!this.isValidId(id)) {
+      throw new Error(`The provided ID (${id}) is invalid, as it contains characters that do not exist in the alphabet (${this.guards.join("")}${this.seps.join("")}${this.alphabet.join("")})`);
+    }
+    const idGuardsArray = id.split(this.guardsRegExp);
+    const splitIndex = idGuardsArray.length === 3 || idGuardsArray.length === 2 ? 1 : 0;
+    const idBreakdown = idGuardsArray[splitIndex];
+    if (idBreakdown.length === 0)
+      return [];
+    const lotteryChar = idBreakdown[Symbol.iterator]().next().value;
+    const idArray = idBreakdown.slice(lotteryChar.length).split(this.sepsRegExp);
+    let lastAlphabet = this.alphabet;
+    const result = [];
+    for (const subId of idArray) {
+      const buffer = [lotteryChar, ...this.salt, ...lastAlphabet];
+      const nextAlphabet = shuffle(lastAlphabet, buffer.slice(0, lastAlphabet.length));
+      result.push(fromAlphabet(Array.from(subId), nextAlphabet));
+      lastAlphabet = nextAlphabet;
+    }
+    if (this._encode(result).join("") !== id)
+      return [];
+    return result;
+  }
+}
 /*!
   * vue-router v4.0.12
   * (c) 2021 Eduardo San Martin Morote
@@ -7725,24 +7950,6 @@ function useCallbacks() {
     list: () => handlers,
     reset: reset2
   };
-}
-function registerGuard(record, name, guard) {
-  const removeFromList = () => {
-    record[name].delete(guard);
-  };
-  onUnmounted(removeFromList);
-  onDeactivated(removeFromList);
-  onActivated(() => {
-    record[name].add(guard);
-  });
-  record[name].add(guard);
-}
-function onBeforeRouteUpdate(updateGuard) {
-  const activeRecord = inject(matchedRouteKey, {}).value;
-  if (!activeRecord) {
-    return;
-  }
-  registerGuard(activeRecord, "updateGuards", updateGuard);
 }
 function guardToPromiseFn(guard, to, from, record, name) {
   const enterCallbackArray = record && (record.enterCallbacks[name] = record.enterCallbacks[name] || []);
@@ -14087,4 +14294,4 @@ class Toast extends BaseComponent {
 }
 enableDismissTrigger(Toast);
 defineJQueryPlugin(Toast);
-export { useRoute as A, clone$1 as B, view$1 as C, withDirectives as D, vModelText as E, Fragment as F, isRef as G, always$1 as H, mergeWith$1 as I, mergeAll$1 as J, lib as K, match$1 as L, createCommentVNode as M, vModelSelect as N, createBlock as O, normalizeStyle as P, renderSlot as Q, reactive as R, vShow as S, createRouter as T, createWebHashHistory as U, VuexPersistence$1 as V, createApp as W, __ as _, createLogger as a, omit$1 as b, createStore as c, defineComponent as d, computed as e, createElementBlock as f, createBaseVNode as g, popScopeId as h, useStore as i, resolveComponent as j, openBlock as k, lensPath$1 as l, mergeRight$1 as m, createVNode as n, over$1 as o, pushScopeId as p, createTextVNode as q, renderList as r, normalizeClass as s, toDisplayString as t, unref as u, onMounted as v, withCtx as w, onUnmounted as x, onBeforeRouteUpdate as y, useRouter as z };
+export { clone$1 as A, view$1 as B, withDirectives as C, vModelText as D, isRef as E, Fragment as F, always$1 as G, Hashids as H, mergeWith$1 as I, mergeAll$1 as J, lib as K, match$1 as L, createCommentVNode as M, vModelSelect as N, createBlock as O, normalizeStyle as P, renderSlot as Q, reactive as R, vShow as S, useRoute as T, createRouter as U, VuexPersistence$1 as V, createWebHashHistory as W, createApp as X, __ as _, createLogger as a, omit$1 as b, createStore as c, defineComponent as d, computed as e, createElementBlock as f, createBaseVNode as g, popScopeId as h, useStore as i, resolveComponent as j, openBlock as k, lensPath$1 as l, mergeRight$1 as m, createVNode as n, over$1 as o, pushScopeId as p, createTextVNode as q, renderList as r, normalizeClass as s, toDisplayString as t, unref as u, watch as v, withCtx as w, onMounted as x, onUnmounted as y, useRouter as z };

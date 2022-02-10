@@ -21,7 +21,7 @@ var __publicField = (obj, key, value) => {
   __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
   return value;
 };
-import { V as VuexPersistence, c as createStore, a as createLogger, o as over, l as lensPath, m as mergeRight, _ as __, b as omit, d as defineComponent, e as computed, f as createElementBlock, g as createBaseVNode, F as Fragment, r as renderList, u as unref, p as pushScopeId, h as popScopeId, i as useStore, j as resolveComponent, k as openBlock, t as toDisplayString, n as createVNode, w as withCtx, q as createTextVNode, s as normalizeClass, v as onMounted, x as onUnmounted, y as onBeforeRouteUpdate, z as useRouter, A as useRoute, B as clone, C as view, D as withDirectives, E as vModelText, G as isRef, H as always, I as mergeWith, J as mergeAll, K as lib, L as match, M as createCommentVNode, N as vModelSelect, O as createBlock, P as normalizeStyle, Q as renderSlot, R as reactive, S as vShow, T as createRouter, U as createWebHashHistory, W as createApp } from "./vendor.13e1ccbb.js";
+import { V as VuexPersistence, c as createStore, a as createLogger, o as over, l as lensPath, m as mergeRight, _ as __, H as Hashids, b as omit, d as defineComponent, e as computed, f as createElementBlock, g as createBaseVNode, F as Fragment, r as renderList, u as unref, p as pushScopeId, h as popScopeId, i as useStore, j as resolveComponent, k as openBlock, t as toDisplayString, n as createVNode, w as withCtx, q as createTextVNode, s as normalizeClass, v as watch, x as onMounted, y as onUnmounted, z as useRouter, A as clone, B as view, C as withDirectives, D as vModelText, E as isRef, G as always, I as mergeWith, J as mergeAll, K as lib, L as match, M as createCommentVNode, N as vModelSelect, O as createBlock, P as normalizeStyle, Q as renderSlot, R as reactive, S as vShow, T as useRoute, U as createRouter, W as createWebHashHistory, X as createApp } from "./vendor.e1b7edaf.js";
 const p = function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -216,9 +216,13 @@ const ProjectModule = {
     }
   },
   actions: {
-    async genNextId({ commit, state }, idType) {
-      commit("genNextId", idType);
-      return state.genCounters[idType];
+    insertElement({ commit, state }, { elementType, parentId, build }) {
+      const HID = new Hashids(state.key, 5);
+      commit("genNextId", elementType);
+      const counter = state.genCounters[elementType];
+      const objectId = `${elementType}_${HID.encode(counter)}`;
+      commit("addObject", build(objectId, counter));
+      commit("addChild", { parentId, childId: objectId });
     }
   }
 };
@@ -267,7 +271,7 @@ var _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const _withScopeId$6 = (n) => (pushScopeId("data-v-6cdf1c3a"), n = n(), popScopeId(), n);
+const _withScopeId$6 = (n) => (pushScopeId("data-v-669926e0"), n = n(), popScopeId(), n);
 const _hoisted_1$a = /* @__PURE__ */ _withScopeId$6(() => /* @__PURE__ */ createBaseVNode("h1", null, "Moirai", -1));
 const _hoisted_2$9 = { class: "projects" };
 const _hoisted_3$8 = /* @__PURE__ */ _withScopeId$6(() => /* @__PURE__ */ createBaseVNode("div", { class: "header" }, [
@@ -285,12 +289,31 @@ const _hoisted_10$4 = ["onClick"];
 const _hoisted_11$4 = ["onClick"];
 const _hoisted_12$4 = { class: "tools" };
 const _hoisted_13$4 = { class: "btn-group" };
+const _hoisted_14$4 = /* @__PURE__ */ _withScopeId$6(() => /* @__PURE__ */ createBaseVNode("a", { id: "export-link" }, null, -1));
 const _sfc_main$c = /* @__PURE__ */ defineComponent({
   setup(__props) {
     const store = useStore(homeStoreKey);
     const projects = computed(() => store.state.items);
     function createProject() {
       store.commit("createProject");
+    }
+    function downloadFile(file) {
+      const link = document.getElementById("export-link");
+      if (link) {
+        const url = URL.createObjectURL(file);
+        link.href = url;
+        link.download = file.name;
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+    }
+    function exportProject(projectId) {
+      const jsonData = localStorage.getItem(`projects/${projectId}`);
+      if (jsonData) {
+        const projectData = JSON.parse(jsonData);
+        const file = new File([JSON.stringify(projectData, null, 2)], `project-${projectId}.json`, { type: "application/json" });
+        downloadFile(file);
+      }
     }
     function removeProject(projectId) {
       store.dispatch("removeProject", projectId);
@@ -308,7 +331,7 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
               createBaseVNode("div", _hoisted_7$5, [
                 createVNode(_component_router_link, {
                   class: "btn btn-outline-success",
-                  to: { name: "edit", params: { project: project.key } }
+                  to: { name: "edit", params: { projectId: project.key } }
                 }, {
                   default: withCtx(() => [
                     _hoisted_8$5
@@ -317,7 +340,7 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
                 }, 1032, ["to"]),
                 createVNode(_component_router_link, {
                   class: "btn btn-outline-success",
-                  to: { name: "view", params: { project: project.key } }
+                  to: { name: "view", params: { projectId: project.key } }
                 }, {
                   default: withCtx(() => [
                     _hoisted_9$4
@@ -326,7 +349,7 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
                 }, 1032, ["to"]),
                 createBaseVNode("button", {
                   class: "btn btn-outline-primary",
-                  onClick: ($event) => _ctx.exportProject(project.key)
+                  onClick: ($event) => exportProject(project.key)
                 }, "Export", 8, _hoisted_10$4),
                 createBaseVNode("button", {
                   class: "btn btn-outline-danger",
@@ -347,12 +370,13 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
               }, "Import")
             ])
           ])
-        ])
+        ]),
+        _hoisted_14$4
       ], 64);
     };
   }
 });
-var Home = /* @__PURE__ */ _export_sfc(_sfc_main$c, [["__scopeId", "data-v-6cdf1c3a"]]);
+var Home = /* @__PURE__ */ _export_sfc(_sfc_main$c, [["__scopeId", "data-v-669926e0"]]);
 function persist(props) {
   return Reflect.metadata("persist:props", props);
 }
@@ -578,32 +602,39 @@ const _hoisted_14$3 = /* @__PURE__ */ createTextVNode(" New Section ");
 const _hoisted_15$3 = /* @__PURE__ */ createTextVNode(" New Score ");
 const _hoisted_16$3 = /* @__PURE__ */ createTextVNode(" New Style ");
 const _sfc_main$a = /* @__PURE__ */ defineComponent({
+  props: {
+    projectId: String,
+    pageId: String
+  },
   setup(__props) {
+    const props = __props;
     const $router = useRouter();
     const store = useStore(editorStoreKey);
     const findPageIds = computed(() => store.getters["project/findChildrenIds"]("__pages__"));
     function findPage(pageId) {
       return store.getters["project/findElement"](pageId);
     }
-    async function createPage() {
-      const childCounter = await store.dispatch("project/genNextId", ElementType.Page);
-      const childId = `${ElementType.Page}_${childCounter}`;
-      console.log("New Page", childId);
-      store.commit("project/addObject", new Page(childId, `Page ${childCounter}`));
-      store.commit("project/addChild", { parentId: "__pages__", childId });
+    function createPage() {
+      store.dispatch("project/insertElement", {
+        elementType: ElementType.Page,
+        parentId: "__pages__",
+        build: (pageId, counter) => new Page(pageId, `Page ${counter}`)
+      });
     }
-    async function createSection() {
-      if ($router.currentRoute.value.name !== "edit_section")
+    function createSection() {
+      if (!props.pageId)
         return;
-      const parentId = $router.currentRoute.value.params["pageId"];
-      const childCounter = await store.dispatch("project/genNextId", ElementType.Section);
-      const childId = `${ElementType.Section}_${childCounter}`;
-      console.log("New Section", childId);
-      store.commit("project/addObject", new Section(childId, `Section ${childCounter}`));
-      store.commit("project/addChild", { parentId, childId });
+      store.dispatch("project/insertElement", {
+        elementType: ElementType.Section,
+        parentId: props.pageId,
+        build: (sectionId, counter) => new Section(sectionId, `Page ${counter}`)
+      });
     }
-    function reloadProject(route) {
-      const projectId = route.params["project"];
+    watch(() => props.projectId, (newValue) => {
+      if (newValue)
+        reloadProject(newValue);
+    });
+    function reloadProject(projectId) {
       console.log(`Loading project ${projectId}`);
       const jsonData = localStorage.getItem(`projects/${projectId}`);
       if (jsonData) {
@@ -623,18 +654,11 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
       }
     }
     onMounted(() => {
-      const route = useRoute();
-      reloadProject(route);
+      if (props.projectId)
+        reloadProject(props.projectId);
     });
     onUnmounted(() => {
       store.commit("project/unloadProject");
-    });
-    onBeforeRouteUpdate((to, from, next) => {
-      console.log(`Route change`, from, to);
-      if (from.params["project"] === to.params["project"])
-        next();
-      else
-        reloadProject(to);
     });
     return (_ctx, _cache) => {
       const _component_router_link = resolveComponent("router-link");
@@ -835,7 +859,7 @@ const _sfc_main$9 = /* @__PURE__ */ defineComponent({
 });
 var OptionView = /* @__PURE__ */ _export_sfc(_sfc_main$9, [["__scopeId", "data-v-7766e74d"]]);
 var ChoiceView_vue_vue_type_style_index_0_scoped_true_lang = "";
-const _withScopeId$4 = (n) => (pushScopeId("data-v-e1ebef2e"), n = n(), popScopeId(), n);
+const _withScopeId$4 = (n) => (pushScopeId("data-v-010c0506"), n = n(), popScopeId(), n);
 const _hoisted_1$7 = { class: "ch-header" };
 const _hoisted_2$6 = {
   key: 0,
@@ -865,7 +889,7 @@ const _hoisted_17$1 = { class: "ch-id" };
 const _sfc_main$8 = /* @__PURE__ */ defineComponent({
   props: {
     choiceId: String,
-    defaultStyle: { type: ChoiceStyle, default: DefaultChoiceStyle }
+    defaultStyle: { type: Object, default: DefaultChoiceStyle }
   },
   setup(__props) {
     const props = __props;
@@ -885,22 +909,22 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
       return mergeAll([
         lib.match(style.colSpan).with(void 0, EMPTY).with(lib.__.number, (colSpan) => {
           return { "grid-column": `span ${colSpan}` };
-        }).when(match(/^\d+$/), (colSpan) => {
+        }).with(lib.__.string, match(/^\d+$/), (colSpan) => {
           return { "grid-column": `span ${colSpan}` };
-        }).run(),
+        }).otherwise(EMPTY),
         lib.match(style.rowSpan).with(void 0, EMPTY).with(lib.__.number, (colSpan) => {
           return { "grid-row": `span ${colSpan}` };
-        }).when(match(/^\d+$/), (colSpan) => {
+        }).with(lib.__.string, match(/^\d+$/), (colSpan) => {
           return { "grid-row": `span ${colSpan}` };
-        }).run()
+        }).otherwise(EMPTY)
       ]);
     });
-    async function createOption() {
-      const childCounter = await store.dispatch("project/genNextId", ElementType.Option);
-      const childId = `${ElementType.Option}_${childCounter}`;
-      console.log("New Choice", childId);
-      store.commit("project/addObject", new Option(childId, `Option ${childCounter}`, "Bar"));
-      store.commit("project/addChild", { parentId: props.choiceId, childId });
+    function createOption() {
+      store.dispatch("project/insertElement", {
+        elementType: ElementType.Option,
+        parentId: props.choiceId,
+        build: (optionId, counter) => new Option(optionId, `Option ${counter}`, "Bar")
+      });
     }
     async function deleteChoice() {
       store.commit("project/removeObject", props.choiceId);
@@ -990,7 +1014,7 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-var ChoiceView = /* @__PURE__ */ _export_sfc(_sfc_main$8, [["__scopeId", "data-v-e1ebef2e"]]);
+var ChoiceView = /* @__PURE__ */ _export_sfc(_sfc_main$8, [["__scopeId", "data-v-010c0506"]]);
 class Condition {
   constructor(test, state) {
     this.test = test;
@@ -1048,10 +1072,10 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
   }
 });
 var SectionView_vue_vue_type_style_index_0_scoped_true_lang = "";
-const _withScopeId$3 = (n) => (pushScopeId("data-v-2777ce2c"), n = n(), popScopeId(), n);
+const _withScopeId$3 = (n) => (pushScopeId("data-v-6aaa5318"), n = n(), popScopeId(), n);
 const _hoisted_1$5 = { class: "section" };
 const _hoisted_2$4 = { class: "sec-actions" };
-const _hoisted_3$3 = { class: "sec-id" };
+const _hoisted_3$3 = { class: "object-id" };
 const _hoisted_4$3 = { class: "btn-toolbar" };
 const _hoisted_5$2 = { class: "btn-group me-2" };
 const _hoisted_6$1 = /* @__PURE__ */ createTextVNode(" Choice ");
@@ -1115,7 +1139,15 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
       M_title,
       M_headerText,
       M_footerText,
-      style: { M_name: M_style_name, M_children: M_style_children, M_gridCols, M_gridRows, M_gridFlow, M_gridDefaultColSpan, M_gridDefaultRowSpan }
+      style: {
+        M_name: M_style_name,
+        M_children: M_style_children,
+        M_gridCols,
+        M_gridRows,
+        M_gridFlow,
+        M_gridDefaultColSpan,
+        M_gridDefaultRowSpan
+      }
     } = updatePropsFor(store, {
       type: Section,
       prop: section,
@@ -1124,13 +1156,13 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
     const EMPTY = always({});
     const choicesContainerStyle = computed(() => {
       return mergeAll([
-        lib.match(section.value.style.gridCols).with(void 0, EMPTY).when(match(/^\d+$/), (numCols) => {
+        lib.match(section.value.style.gridCols).with(void 0, EMPTY).with(lib.__.string, match(/^\d+$/), (numCols) => {
           return { "grid-template-columns": `repeat(${numCols}, 1fr)` };
         }).otherwise(EMPTY),
-        lib.match(section.value.style.gridRows).with(void 0, EMPTY).when(match(/^\d+$/), (numCols) => {
+        lib.match(section.value.style.gridRows).with(void 0, EMPTY).with(lib.__.string, match(/^\d+$/), (numCols) => {
           return { "grid-template-rows": `repeat(${numCols}, 1fr)` };
         }).otherwise(EMPTY),
-        lib.match(section.value.style.gridFlow).with(void 0, EMPTY).when(match(/^row|column$/), (flow) => {
+        lib.match(section.value.style.gridFlow).with(void 0, EMPTY).with(lib.__.string, match(/^row|column$/), (flow) => {
           return { "grid-auto-flow": flow };
         }).otherwise(EMPTY)
       ]);
@@ -1140,12 +1172,12 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
         DefaultChoiceStyle,
         lib.match(section.value.style.gridDefaultColSpan).with(void 0, EMPTY).with(lib.__.number, (colSpan) => {
           return { colSpan };
-        }).when(match(/^\d+$/), (colSpan) => {
+        }).with(lib.__.string, match(/^\d+$/), (colSpan) => {
           return { colSpan: Number.parseInt(colSpan) };
         }).otherwise(EMPTY),
         lib.match(section.value.style.gridDefaultRowSpan).with(void 0, EMPTY).with(lib.__.number, (rowSpan) => {
           return { rowSpan };
-        }).when(match(/^\d+$/), (rowSpan) => {
+        }).with(lib.__.string, match(/^\d+$/), (rowSpan) => {
           return { rowSpan: Number.parseInt(rowSpan) };
         }).otherwise(EMPTY)
       ]);
@@ -1153,12 +1185,12 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
     function toggleSection() {
       _state.collapsed = !_state.collapsed;
     }
-    async function createChoice() {
-      const childCounter = await store.dispatch("project/genNextId", ElementType.Choice);
-      const childId = `${ElementType.Choice}_${childCounter}`;
-      console.log("New Choice", childId);
-      store.commit("project/addObject", new Choice(childId, `Choice ${childCounter}`, "Bar"));
-      store.commit("project/addChild", { parentId: props.sectionId, childId });
+    function createChoice() {
+      store.dispatch("project/insertElement", {
+        elementType: ElementType.Choice,
+        parentId: props.sectionId,
+        build: (choiceId, counter) => new Choice(choiceId, `Choice ${counter}`, "Bar")
+      });
     }
     function addCondition() {
       store.commit("project/addCondition", {
@@ -1367,9 +1399,9 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-var SectionView = /* @__PURE__ */ _export_sfc(_sfc_main$6, [["__scopeId", "data-v-2777ce2c"]]);
+var SectionView = /* @__PURE__ */ _export_sfc(_sfc_main$6, [["__scopeId", "data-v-6aaa5318"]]);
 var EditorSections_vue_vue_type_style_index_0_scoped_true_lang = "";
-const _withScopeId$2 = (n) => (pushScopeId("data-v-681b85fa"), n = n(), popScopeId(), n);
+const _withScopeId$2 = (n) => (pushScopeId("data-v-ec1f92fe"), n = n(), popScopeId(), n);
 const _hoisted_1$4 = { key: 0 };
 const _hoisted_2$3 = { key: 1 };
 const _hoisted_3$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", null, "No Sections", -1));
@@ -1378,6 +1410,7 @@ const _hoisted_4$2 = [
 ];
 const _sfc_main$5 = /* @__PURE__ */ defineComponent({
   props: {
+    projectId: String,
     pageId: String
   },
   setup(__props) {
@@ -1399,9 +1432,9 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-var EditorSections = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-681b85fa"]]);
+var EditorSections = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-ec1f92fe"]]);
 var PageView_vue_vue_type_style_index_0_scoped_true_lang = "";
-const _withScopeId$1 = (n) => (pushScopeId("data-v-079911a2"), n = n(), popScopeId(), n);
+const _withScopeId$1 = (n) => (pushScopeId("data-v-41f5c5e1"), n = n(), popScopeId(), n);
 const _hoisted_1$3 = { class: "page" };
 const _hoisted_2$2 = { class: "page-actions" };
 const _hoisted_3$1 = { class: "page-id" };
@@ -1444,6 +1477,9 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     function togglePage() {
       _state.collapsed = !_state.collapsed;
     }
+    async function deletePage() {
+      store.commit("project/removeObject", props.pageId);
+    }
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock("div", _hoisted_1$3, [
         createBaseVNode("div", _hoisted_2$2, [
@@ -1482,7 +1518,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             createBaseVNode("div", _hoisted_10, [
               createBaseVNode("button", {
                 class: "btn btn-sm btn-outline-danger wide",
-                onClick: _cache[0] || (_cache[0] = (...args) => _ctx.deletePage && _ctx.deletePage(...args))
+                onClick: deletePage
               }, [
                 createVNode(_sfc_main$b, { name: "delete-outline" })
               ])
@@ -1494,14 +1530,14 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             withDirectives(createBaseVNode("input", {
               class: "form-control page-title",
               type: "text",
-              "onUpdate:modelValue": _cache[1] || (_cache[1] = ($event) => isRef(M_title) ? M_title.value = $event : null)
+              "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => isRef(M_title) ? M_title.value = $event : null)
             }, null, 512), [
               [vModelText, unref(M_title)]
             ]),
             createBaseVNode("div", _hoisted_13, [
               withDirectives(createBaseVNode("textarea", {
                 class: "form-control page-header",
-                "onUpdate:modelValue": _cache[2] || (_cache[2] = ($event) => isRef(M_headerText) ? M_headerText.value = $event : null),
+                "onUpdate:modelValue": _cache[1] || (_cache[1] = ($event) => isRef(M_headerText) ? M_headerText.value = $event : null),
                 placeholder: "..."
               }, null, 512), [
                 [vModelText, unref(M_headerText)]
@@ -1511,7 +1547,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             createBaseVNode("div", _hoisted_15, [
               withDirectives(createBaseVNode("textarea", {
                 class: "form-control page-footer",
-                "onUpdate:modelValue": _cache[3] || (_cache[3] = ($event) => isRef(M_footerText) ? M_footerText.value = $event : null),
+                "onUpdate:modelValue": _cache[2] || (_cache[2] = ($event) => isRef(M_footerText) ? M_footerText.value = $event : null),
                 placeholder: "..."
               }, null, 512), [
                 [vModelText, unref(M_footerText)]
@@ -1524,9 +1560,9 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-var PageView = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-079911a2"]]);
+var PageView = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-41f5c5e1"]]);
 var EditorPages_vue_vue_type_style_index_0_scoped_true_lang = "";
-const _withScopeId = (n) => (pushScopeId("data-v-004840d1"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-02fd35cc"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("h1", null, "Pages", -1));
 const _hoisted_2$1 = { key: 0 };
 const _hoisted_3 = { key: 1 };
@@ -1535,6 +1571,10 @@ const _hoisted_5 = [
   _hoisted_4
 ];
 const _sfc_main$3 = /* @__PURE__ */ defineComponent({
+  props: {
+    projectId: String,
+    pageId: String
+  },
   setup(__props) {
     const store = useStore(editorStoreKey);
     const findPages = computed(() => store.getters["project/findChildrenIds"]("__pages__"));
@@ -1551,12 +1591,17 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-var EditorPages = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-004840d1"]]);
-const _sfc_main$2 = {};
-function _sfc_render(_ctx, _cache) {
-  return openBlock(), createElementBlock("b", null, "Settings");
-}
-var EditorSettings = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["render", _sfc_render]]);
+var EditorPages = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-02fd35cc"]]);
+const _sfc_main$2 = /* @__PURE__ */ defineComponent({
+  props: {
+    projectId: String
+  },
+  setup(__props) {
+    return (_ctx, _cache) => {
+      return openBlock(), createElementBlock("b", null, "Settings");
+    };
+  }
+});
 const _hoisted_1$1 = /* @__PURE__ */ createBaseVNode("h1", null, "Viewer", -1);
 const _hoisted_2 = [
   _hoisted_1$1
@@ -1573,20 +1618,32 @@ const routes = [
   { name: "home", path: "/", component: Home },
   {
     name: "edit",
-    path: "/edit/:project",
+    path: "/edit/:projectId",
     component: _sfc_main$a,
+    props: true,
     children: [
-      { name: "edit_pages", path: "pages", alias: "", component: EditorPages },
+      {
+        name: "edit_pages",
+        path: "pages",
+        alias: "",
+        component: EditorPages,
+        props: true
+      },
       {
         name: "edit_section",
         path: "pages/:pageId/sections",
         component: EditorSections,
         props: true
       },
-      { name: "edit_settings", path: "settings", component: EditorSettings }
+      {
+        name: "edit_settings",
+        path: "settings",
+        component: _sfc_main$2,
+        props: true
+      }
     ]
   },
-  { name: "view", path: "/view/:project", component: _sfc_main$1 }
+  { name: "view", path: "/view/:projectId", component: _sfc_main$1 }
 ];
 const router = createRouter({
   history: createWebHashHistory(),
@@ -1604,9 +1661,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-var materialdesignicons_min = "";
-var bootstrap_min = "";
 var common = "";
+var colors = "";
+var materialdesignicons = "";
+var bootstrap = "";
 const app = createApp(_sfc_main);
 app.use(homeStore, homeStoreKey);
 app.use(editorStore, editorStoreKey);
