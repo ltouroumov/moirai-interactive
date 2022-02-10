@@ -1,10 +1,12 @@
-import { Module } from "vuex";
-import { Project } from "../../data/model/project";
-import { AnyElement, ElementType, IConditionContainer, IElement, Page } from "../../data/model/element";
-import { EditorData } from "../../data/state/editor";
-import { ProjectInfo } from "../../data/state/home";
-import * as R from "ramda";
-import Hashids from "hashids";
+import { ActionContext, Module } from 'vuex';
+import { Project } from '../../data/model/project';
+import { AnyElement, ElementType, IConditionContainer, IElement, Page } from '../../data/model/element';
+import { EditorData } from '../../data/state/editor';
+import { ProjectInfo } from '../../data/state/home';
+import * as R from 'ramda';
+import Hashids from 'hashids';
+import { EditorState } from '../editor';
+import { AsyncStorage } from 'vuex-persist';
 
 function removeFromParent(state: Project, objId: string) {
   const parentId = state.parents[objId];
@@ -44,88 +46,107 @@ type InsertArgs = {
   build: ((objectId: string, counter: number) => AnyElement)
 };
 
-export const ProjectModule: Module<Project, EditorData> = {
-  namespaced: true,
-  state(): Project {
-    return defaultState();
-  },
-  getters: {
-    findScore: (state) => (id: string) => {
-      return state.scores[id];
+export const ProjectModule: (database: AsyncStorage) => Module<Project, EditorData> = (database: AsyncStorage) => {
+  return {
+    namespaced: true,
+    state(): Project {
+      return defaultState();
     },
-    findElement: (state) => (id: string) => {
-      return state.objects[id];
-    },
-    findChildrenIds: (state) => (id: string) => {
-      return state.children[id];
-    }
-  },
-  mutations: {
-    genNextId(state: Project, idType: string) {
-      if (!state.genCounters.hasOwnProperty(idType))
-        state.genCounters[idType] = 0;
-
-      state.genCounters[idType] += 1;
-      return state.genCounters[idType];
-    },
-    addObject<T extends AnyElement>(state: Project, obj: T) {
-      state.objects[obj.id] = obj;
-    },
-    addChild(state: Project, { parentId, childId }) {
-      if (!state.children.hasOwnProperty(parentId)) {
-        state.children[parentId] = [];
+    getters: {
+      findScore: (state) => (id: string) => {
+        return state.scores[id];
+      },
+      findElement: (state) => (id: string) => {
+        return state.objects[id];
+      },
+      findChildrenIds: (state) => (id: string) => {
+        return state.children[id];
       }
-      if (state.children[parentId].indexOf(childId) === -1) {
-        state.children[parentId].push(childId);
+    },
+    mutations: {
+      genNextId(state: Project, idType: string) {
+        if (!state.genCounters.hasOwnProperty(idType))
+          state.genCounters[idType] = 0;
+
+        state.genCounters[idType] += 1;
+        return state.genCounters[idType];
+      },
+      addObject<T extends AnyElement>(state: Project, obj: T) {
+        state.objects[obj.id] = obj;
+      },
+      addChild(state: Project, { parentId, childId }) {
+        if (!state.children.hasOwnProperty(parentId)) {
+          state.children[parentId] = [];
+        }
+        if (state.children[parentId].indexOf(childId) === -1) {
+          state.children[parentId].push(childId);
+        }
+        state.parents[childId] = parentId;
+      },
+      updateObject(state: Project, { objectId, path, data }) {
+        state.objects[objectId] = R.over(
+          R.lensPath(path || []),
+          R.mergeRight(R.__, data),
+          state.objects[objectId]
+        );
+      },
+      removeChildren(state: Project, objectId: string) {
+        removeChildren(state, objectId);
+      },
+      removeObject(state: Project, objectId: string) {
+        removeFromParent(state, objectId);
+        removeParent(state, objectId);
+        removeChildren(state, objectId);
+        removeObject(state, objectId);
+      },
+
+      addCondition(state: Project, { objectId, data }) {
+        const current = state.objects[objectId] as AnyElement & IConditionContainer;
+        state.objects[objectId] = {
+          ...current,
+          conditions: (
+            current.conditions ? [...current.conditions, data] : [data]
+          )
+        } as any;
+      },
+
+      setupProject(state: Project, data: ProjectInfo) {
+        state.key = data.key;
+        state.name = data.name;
+      },
+      loadProject(state: Project, data: Project) {
+        Object.assign(state, data);
+      },
+      unloadProject(state: Project) {
+        Object.assign(state, defaultState());
       }
-      state.parents[childId] = parentId;
     },
-    updateObject(state: Project, { objectId, path, data }) {
-      state.objects[objectId] = R.over(
-        R.lensPath(path || []),
-        R.mergeRight(R.__, data),
-        state.objects[objectId]
-      );
-    },
-    removeChildren(state: Project, objectId: string) {
-      removeChildren(state, objectId);
-    },
-    removeObject(state: Project, objectId: string) {
-      removeFromParent(state, objectId);
-      removeParent(state, objectId);
-      removeChildren(state, objectId);
-      removeObject(state, objectId);
-    },
+    actions: {
+      insertElement({ commit, state }, { elementType, parentId, build }: InsertArgs) {
+        const HID = new Hashids(state.key, 5);
+        commit('genNextId', elementType);
+        const counter = state.genCounters[elementType];
+        const objectId = `${elementType}_${HID.encode(counter)}`;
+        commit('addObject', build(objectId, counter));
+        commit('addChild', { parentId, childId: objectId });
+      },
 
-    addCondition(state: Project, { objectId, data }) {
-      const current = state.objects[objectId] as AnyElement & IConditionContainer;
-      state.objects[objectId] = {
-        ...current,
-        conditions: (
-          current.conditions ? [...current.conditions, data] : [data]
-        )
-      } as any;
-    },
+      async restoreProject(
+        { state, commit, getters },
+        { projectId, projectInfo }: { projectId: string, projectInfo: ProjectInfo }
+      ) {
+        console.log(`Loading project ${projectId}`);
+        const projectData = await database.getItem<Project>(`projects/${projectId}`);
+        if (projectData) {
+          commit('loadProject', projectData);
+          console.log('Loaded from storage');
+        }
 
-    setupProject(state: Project, data: ProjectInfo) {
-      state.key = data.key;
-      state.name = data.name;
-    },
-    loadProject(state: Project, data: Project) {
-      Object.assign(state, data);
-    },
-    unloadProject(state: Project) {
-      Object.assign(state, defaultState());
-    }
-  },
-  actions: {
-    insertElement({ commit, state }, { elementType, parentId, build }: InsertArgs) {
-      const HID = new Hashids(state.key, 5);
-      commit("genNextId", elementType);
-      const counter = state.genCounters[elementType];
-      const objectId = `${elementType}_${HID.encode(counter)}`;
-      commit("addObject", build(objectId, counter));
-      commit("addChild", { parentId, childId: objectId });
+        if (!state.key) {
+          console.log('Project requires setup');
+          commit('setupProject', projectInfo);
+        }
+      }
     }
   }
 };

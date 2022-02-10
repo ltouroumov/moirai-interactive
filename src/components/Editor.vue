@@ -112,22 +112,13 @@ watch(
 function reloadProject(projectId: string) {
   console.log(`Loading project ${projectId}`);
 
-  const jsonData = localStorage.getItem(`projects/${projectId}`);
-  if (jsonData) {
-    const project = JSON.parse(jsonData);
-    store.commit("project/loadProject", project);
-    console.log("Loaded from storage");
-  }
-  if (!store.state.project.key) {
-    console.log("Project requires setup");
-    const homeStore = useStore(homeStoreKey);
-    const projectData = homeStore.getters["findProject"](projectId);
-    if (projectData) {
-      store.commit("project/setupProject", projectData);
-    } else {
-      $router.push({ name: "home" });
-    }
-  }
+  const homeStore = useStore(homeStoreKey);
+  const projectInfo = homeStore.getters["findProject"](projectId);
+
+  store.dispatch('project/restoreProject', {
+    projectId,
+    projectInfo
+  })
 }
 
 onMounted(() => {

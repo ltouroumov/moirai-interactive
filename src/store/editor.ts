@@ -1,10 +1,11 @@
-import { createLogger, createStore, Store } from "vuex";
-import VuexPersistence from "vuex-persist";
-import { InjectionKey } from "vue";
-import { EditorData } from "../data/state/editor";
-import { ProjectModule } from "./modules/project";
-import { Project } from "../data/model/project";
-import * as R from "ramda";
+import { ActionContext, createLogger, createStore, Store, useStore } from 'vuex';
+import VuexPersistence, { AsyncStorage } from 'vuex-persist';
+import { InjectionKey } from 'vue';
+import { EditorData } from '../data/state/editor';
+import { ProjectModule } from './modules/project';
+import { Project } from '../data/model/project';
+import * as R from 'ramda';
+import * as localforage from 'localforage';
 
 
 export type EditorModules = {
@@ -13,29 +14,48 @@ export type EditorModules = {
 
 export type EditorState = EditorData & EditorModules
 
-function parseOrDefault(storage: Storage, key: string, defaultF: () => any) {
-  const data = storage.getItem(key);
-  if (data) return JSON.parse(data);
+const PROJECTS_BASE = `projects`;
+
+async function parseOrDefault(storage: AsyncStorage, key: string, defaultF: () => any) {
+  const data = await storage.getItem(key);
+  if (data) return data;
   else return defaultF();
 }
 
+const database = localforage.createInstance({
+  name: 'projects',
+  storeName: 'data',
+  driver: localforage.INDEXEDDB,
+  description: 'Projects Storage'
+})
+
+
+async function persistProject(storage: AsyncStorage, key: string, project: Project) {
+  if (project.key) {
+    await storage.setItem(`${PROJECTS_BASE}/${project.key}`, project);
+  }
+}
 
 const persistence = new VuexPersistence<EditorData>({
-  key: "projects",
-  storage: window.localStorage,
-  saveState(key, state: EditorState, storage) {
-    if (state.project.key && storage) {
-      const projectKey = state.project.key;
-      const projectJson = JSON.stringify(state.project);
-      storage.setItem(`projects/${projectKey}`, projectJson);
+  key: 'projects',
+  storage: database as AsyncStorage,
+  asyncStorage: true,
+  reducer: R.clone,
+  async saveState(key: string, state: Partial<EditorState>, storage: AsyncStorage) {
+    if (!storage) return;
 
-      const editorData = R.omit(["project"], state);
-      storage.setItem(key, JSON.stringify(editorData));
+    if (state.project) {
+      await persistProject(storage, key, state.project);
     }
+
+    await storage.setItem(
+      key,
+      R.omit(['project'], state)
+    );
   },
-  restoreState(key, storage) {
+  async restoreState(key: string, storage: AsyncStorage) {
     if (storage) {
-      return parseOrDefault(storage, key, () => new EditorData());
+      return await parseOrDefault(storage, key, () => new EditorData());
     } else {
       return undefined;
     }
@@ -43,11 +63,11 @@ const persistence = new VuexPersistence<EditorData>({
 });
 
 
-export const editorStoreKey: InjectionKey<Store<EditorState>> = Symbol("editor");
+export const editorStoreKey: InjectionKey<Store<EditorState>> = Symbol('editor');
 export const editorStore = createStore<EditorData>({
   plugins: [createLogger(), persistence.plugin],
   modules: {
-    project: ProjectModule
+    project: ProjectModule(database as AsyncStorage)
   },
   state(): EditorData {
     return new EditorData();

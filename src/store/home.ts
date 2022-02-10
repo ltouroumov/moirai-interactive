@@ -1,7 +1,9 @@
 import { createLogger, createStore, Store } from "vuex";
 import { ProjectInfo, HomeState } from "../data/state/home";
-import VuexPersistence from "vuex-persist";
+import VuexPersistence, { AsyncStorage } from 'vuex-persist';
 import { InjectionKey } from "vue";
+import * as R from 'ramda';
+import * as localforage from 'localforage';
 
 function randomIdentifier(len: number): string {
   const bytes = new Uint8Array(len);
@@ -12,9 +14,18 @@ function randomIdentifier(len: number): string {
   ).join("");
 }
 
+const database = localforage.createInstance({
+  name: 'home',
+  storeName: 'data',
+  driver: localforage.INDEXEDDB,
+  description: 'Projects Storage'
+})
+
 const persistence = new VuexPersistence<HomeState>({
   key: 'home',
-  storage: window.localStorage
+  storage: database as AsyncStorage,
+  asyncStorage: true,
+  reducer: R.clone
 });
 
 export const homeStoreKey: InjectionKey<Store<HomeState>> = Symbol("home");
