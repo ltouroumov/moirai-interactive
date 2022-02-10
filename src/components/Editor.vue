@@ -18,7 +18,7 @@
         <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
           <li v-for="pageId in findPageIds">
             <router-link class="dropdown-item" :to="{ name: 'edit_section', params: {...$route.params, pageId: pageId }}" active-class="active">
-              {{ pageId }} / {{ findPage(pageId).title }}
+              {{ findPage(pageId).title }} / <span class="object-id">{{ pageId }}</span>
             </router-link>
           </li>
         </ul>

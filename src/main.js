@@ -8,6 +8,8 @@ import "@mdi/font/css/materialdesignicons.min.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap";
 
+import "./common.less";
+
 const app = createApp(App);
 app.use(homeStore, homeStoreKey);
 app.use(editorStore, editorStoreKey);

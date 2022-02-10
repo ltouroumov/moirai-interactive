@@ -16,6 +16,28 @@ TODO: A proper description
 
 ## Features (In Progress)
 
-* [x] Grid Based Layout
-* [ ] Responsive Design
-* [ ] Multiple Pages
+### General
+
+* [ ] Responsive Design (Mobile & Desktop)
+
+### Structure
+
+* [ ] Score Types
+  * [ ] Points
+  * [ ] Computed
+
+* [ ] Pages
+  * [ ] Top Level Pages
+  * [ ] Nested Pages
+  * [ ] Template (can be used by Instance List)
+* [ ] Sections
+  * Section Types
+    * [x] Choices
+    * [ ] Lore
+    * [ ] Instance List (Page)
+* [ ] Choices
+  * [ ] Choice Groups (limit number per group)
+* [ ] Options
+  * Option Types
+    * [ ] Simple (sub-choice)
+    * [ ] Instance List (Page)

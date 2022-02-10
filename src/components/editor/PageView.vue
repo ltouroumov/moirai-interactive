@@ -76,6 +76,12 @@ const {
   prop: page,
   objectId: () => props.pageId
 });
+
+
+function togglePage() {
+  _state.collapsed = !_state.collapsed;
+}
+
 </script>
 
 <style scoped lang="less">
