@@ -54,7 +54,7 @@ import { Condition } from "../../data/model";
 import * as P from "ts-pattern";
 import * as R from "ramda";
 import { ChoiceStyle, DefaultChoiceStyle, DefaultSectionStyle, SectionStyle } from "../../data/model/style";
-import BModal from "../utils/b-modal.vue";
+import BModal from "../utils/bs-modal.vue";
 
 const store = useStore(editorStoreKey);
 

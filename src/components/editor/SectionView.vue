@@ -56,7 +56,7 @@
   </section>
 
   <!-- Modals -->
-  <b-modal :modalId="`style_${props.sectionId}`" title="Style Editor">
+  <bs-modal :modalId="`style_${props.sectionId}`" title="Style Editor">
     <div class="sec-style">
       <b>Section Style</b>
       <select class="form-select sec-style-select" v-model="M_style_name">
@@ -83,9 +83,9 @@
         <input class="form-control sec-grid-rows" type="text" v-model="M_gridDefaultRowSpan" />
       </div>
     </div>
-  </b-modal>
+  </bs-modal>
 
-  <b-modal :modalId="`cond_${props.sectionId}`" title="Requirements">
+  <bs-modal :modalId="`cond_${props.sectionId}`" title="Requirements">
     <div class="sec-conditions">
       <b>Conditions</b>
 
@@ -95,7 +95,7 @@
 
       <div v-for="cond in section.conditions">IF {{ cond.test }} THEN {{ cond.state }}</div>
     </div>
-  </b-modal>
+  </bs-modal>
 
 </template>
 
@@ -107,12 +107,12 @@ import { computed, reactive, ref } from "vue";
 import { updatePropsFor } from "../utils/props";
 import { editorStoreKey } from "../../store/editor";
 import MdiIcon from "../utils/mdi-icon.vue";
+import BsModal from "../utils/bs-modal.vue";
 import { Condition } from "../../data/model";
 import * as P from "ts-pattern";
 import { __ as PM } from "ts-pattern";
 import * as R from "ramda";
-import { ChoiceStyle, DefaultChoiceStyle, DefaultSectionStyle, SectionStyle } from "../../data/model/style";
-import BModal from "../utils/b-modal.vue";
+import { DefaultChoiceStyle } from "../../data/model/style";
 
 const store = useStore(editorStoreKey);
 

@@ -21,20 +21,67 @@
     <div class="tools">
       <div class="btn-group">
         <button @click="createProject" class="btn btn-primary">Create</button>
-        <button @click="importProject" class="btn btn-primary">Import</button>
+        <button class="btn btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#import-project-dialog">
+          Import
+        </button>
       </div>
     </div>
   </div>
 
   <a id="export-link" />
+
+  <bs-modal modalId="import-project-dialog" title="Import Project">
+    <div v-if="_state.projectFile">
+      <p><b>{{ _state.projectFile?.name }} ({{ _state.projectFile?.size }} bytes)</b></p>
+      <p>{{ _state.projectFile?.type }}</p>
+    </div>
+    <div v-if="_state.projectData && !_state.projectErrors">
+      {{ _state.projectData?.name }} / <span class="object-id">{{ _state.projectData?.key }}</span>
+    </div>
+    <input id="import-file" type="file" class="form-control" @change="loadFile">
+    <div class="btn-group">
+      <button class="btn btn-success" :class="{ disabled: !_state.projectFile }" type="button" @click="previewFile">
+        Preview
+      </button>
+      <button class="btn btn-success" :class="{ disabled: !_state.projectFile || !_state.projectData }" type="button"
+              @click="importFile">
+        Import
+      </button>
+      <button class="btn btn-danger" :class="{ disabled: !_state.projectFile }" type="button" @click="clearFile">
+        Clear
+      </button>
+    </div>
+    <div v-if="_state.projectErrors">
+      <ul>
+        <li v-for="error in _state.projectErrors">{{ error }}</li>
+      </ul>
+    </div>
+  </bs-modal>
 </template>
 
 <script setup lang="ts">
 import { useStore } from "vuex";
-import { computed } from "vue";
+import { computed, reactive } from "vue";
 import { homeStoreKey } from "../store/home";
+import MdiIcon from "./utils/mdi-icon.vue";
+import BsModal from "./utils/bs-modal.vue";
+import { Project } from "../data/model/project";
 
 const store = useStore(homeStoreKey);
+
+interface State {
+  projectFile?: File;
+  projectData?: Project;
+  projectErrors: string[];
+}
+
+const _state = reactive<State>({
+  projectFile: undefined,
+  projectData: undefined,
+  projectErrors: []
+});
 
 const projects = computed(() => store.state.items);
 
@@ -53,10 +100,38 @@ function downloadFile(file: File) {
   }
 }
 
+function loadFile({ target }: Event) {
+  const files = (target as HTMLInputElement).files;
+  if (files && files.length === 1) {
+    _state.projectFile = files[0];
+  } else {
+    _state.projectFile = undefined;
+  }
+}
+
+async function previewFile() {
+  if (_state.projectFile) {
+    const data = await _state.projectFile.text();
+    _state.projectData = JSON.parse(data);
+  }
+}
+
+function importFile() {
+
+}
+
+function clearFile() {
+  const input = document.getElementById("import-file") as HTMLInputElement;
+  if (input) {
+    input.value = "";
+    _state.projectFile = undefined;
+  }
+}
+
 function exportProject(projectId: string) {
   const jsonData = localStorage.getItem(`projects/${projectId}`);
   if (jsonData) {
-    const projectData = JSON.parse(jsonData)
+    const projectData = JSON.parse(jsonData);
     const file = new File(
       [JSON.stringify(projectData, null, 2)],
       `project-${projectId}.json`,
