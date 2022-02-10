@@ -18,6 +18,7 @@ import { Page, Section } from "../../data/model/element";
 
 const route = useRoute()
 const props = defineProps({
+  projectId: String,
   pageId: String
 });
 

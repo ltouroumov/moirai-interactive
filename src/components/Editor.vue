@@ -10,14 +10,17 @@
         Pages
       </router-link>
       <div class="nav-item dropdown">
-        <a :class="['nav-link', { disabled: !findPageIds || findPageIds.length === 0 }, 'dropdown-toggle']" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+        <a :class="['nav-link', { disabled: !findPageIds || findPageIds.length === 0 }, 'dropdown-toggle']" href="#"
+           role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
           <mdi-icon name="layers-triple" />
           Sections
         </a>
 
         <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
           <li v-for="pageId in findPageIds">
-            <router-link class="dropdown-item" :to="{ name: 'edit_section', params: {...$route.params, pageId: pageId }}" active-class="active">
+            <router-link class="dropdown-item"
+                         :to="{ name: 'edit_section', params: {...$route.params, pageId: pageId }}"
+                         active-class="active">
               {{ findPage(pageId).title }} / <span class="object-id">{{ pageId }}</span>
             </router-link>
           </li>
@@ -35,7 +38,8 @@
             <mdi-icon name="file-plus" />
             New Page
           </button>
-          <button class="btn btn-primary" :class="{ disabled: $router.currentRoute.value.name !== 'edit_section' }" @click="createSection">
+          <button class="btn btn-primary" :class="{ disabled: $router.currentRoute.value.name !== 'edit_section' }"
+                  @click="createSection">
             <mdi-icon name="layers-plus" />
             New Section
           </button>
@@ -59,44 +63,53 @@
 <script setup lang="ts">
 // Imports
 import { useStore } from "vuex";
-import { computed, onMounted, onUnmounted } from "vue";
+import { computed, onMounted, onUnmounted, watch } from "vue";
 import { onBeforeRouteUpdate, RouteLocationNormalizedLoaded, useRoute, useRouter } from "vue-router";
 import { editorStoreKey } from "../store/editor";
 import { homeStoreKey } from "../store/home";
-import { ElementType, Page, Section } from "../data/model/element";
+import { Choice, ElementType, Page, Section } from "../data/model/element";
 import MdiIcon from "./utils/mdi-icon.vue";
+
+const props = defineProps({
+  projectId: String,
+  pageId: String
+});
 
 const $router = useRouter();
 const store = useStore(editorStoreKey);
-const findPageIds = computed(() => store.getters['project/findChildrenIds']('__pages__') as string[])
+const findPageIds = computed(() => store.getters["project/findChildrenIds"]("__pages__") as string[]);
 
 function findPage(pageId: string) {
-  return store.getters['project/findElement'](pageId) as Page
+  return store.getters["project/findElement"](pageId) as Page;
 }
 
-async function createPage() {
-  const childCounter = await store.dispatch("project/genNextId", ElementType.Page);
-  const childId = `${ElementType.Page}_${childCounter}`;
-  console.log("New Page", childId);
-  store.commit("project/addObject", new Page(childId, `Page ${childCounter}`));
-  store.commit("project/addChild", { parentId: "__pages__", childId });
+function createPage() {
+  store.dispatch("project/insertElement", {
+    elementType: ElementType.Page,
+    parentId: "__pages__",
+    build: (pageId: string, counter: number) => new Page(pageId, `Page ${counter}`)
+  });
 }
 
-async function createSection() {
-  if ($router.currentRoute.value.name !== 'edit_section')
-    return
+function createSection() {
+  if (!props.pageId)
+    return;
 
-  const parentId = $router.currentRoute.value.params['pageId']
-
-  const childCounter = await store.dispatch("project/genNextId", ElementType.Section);
-  const childId = `${ElementType.Section}_${childCounter}`;
-  console.log("New Section", childId);
-  store.commit("project/addObject", new Section(childId, `Section ${childCounter}`));
-  store.commit("project/addChild", { parentId, childId });
+  store.dispatch("project/insertElement", {
+    elementType: ElementType.Section,
+    parentId: props.pageId,
+    build: (sectionId: string, counter: number) => new Section(sectionId, `Page ${counter}`)
+  });
 }
 
-function reloadProject(route: RouteLocationNormalizedLoaded) {
-  const projectId = route.params["project"];
+watch(
+  () => props.projectId,
+  (newValue) => {
+    if (newValue) reloadProject(newValue);
+  }
+);
+
+function reloadProject(projectId: string) {
   console.log(`Loading project ${projectId}`);
 
   const jsonData = localStorage.getItem(`projects/${projectId}`);
@@ -118,18 +131,10 @@ function reloadProject(route: RouteLocationNormalizedLoaded) {
 }
 
 onMounted(() => {
-  const route = useRoute();
-  reloadProject(route);
+  if (props.projectId) reloadProject(props.projectId);
 });
 onUnmounted(() => {
   store.commit("project/unloadProject");
-});
-onBeforeRouteUpdate((to, from, next) => {
-  console.log(`Route change`, from, to);
-  if (from.params["project"] === to.params["project"])
-    next();
-  else
-    reloadProject(to);
 });
 </script>
 

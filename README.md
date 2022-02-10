@@ -41,3 +41,23 @@ TODO: A proper description
   * Option Types
     * [ ] Simple (sub-choice)
     * [ ] Instance List (Page)
+
+### Media Library
+
+* [ ] Project-wide media library
+* [ ] Interface with style system
+
+### Style System
+
+* [ ] Define styles per component type
+  * [ ] Default styles
+  * [ ] Named styles
+* [ ] Each component can select a style from the library 
+
+### Export options
+
+* [ ] HTML Export
+  * Generate static HTML from project
+  * Lightweight JS library
+  * Compile styles as CSS
+  * Export images in a separate directory

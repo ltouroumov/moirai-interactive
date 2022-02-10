@@ -5,7 +5,7 @@
         <mdi-icon name="eye" v-show="_state.collapsed" />
         <mdi-icon name="eye-off" v-show="!_state.collapsed" />
       </button>
-      <span class="sec-id">{{ section.id }}</span>
+      <span class="object-id">{{ section.id }}</span>
       <div class="btn-toolbar">
         <div class="btn-group me-2">
           <button class="btn btn-sm btn-outline-primary" @click="createChoice">
@@ -16,11 +16,13 @@
         <div class="btn-group me-2">
           <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
                   :data-bs-target="`#cond_${props.sectionId}`">
-            <mdi-icon name="key" /> Requirements
+            <mdi-icon name="key" />
+            Requirements
           </button>
           <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
                   :data-bs-target="`#style_${props.sectionId}`">
-            <mdi-icon name="palette-swatch" /> Style
+            <mdi-icon name="palette-swatch" />
+            Style
           </button>
         </div>
         <div class="btn-group">
@@ -107,6 +109,7 @@ import { editorStoreKey } from "../../store/editor";
 import MdiIcon from "../utils/mdi-icon.vue";
 import { Condition } from "../../data/model";
 import * as P from "ts-pattern";
+import { __ as PM } from "ts-pattern";
 import * as R from "ramda";
 import { ChoiceStyle, DefaultChoiceStyle, DefaultSectionStyle, SectionStyle } from "../../data/model/style";
 import BModal from "../utils/b-modal.vue";
@@ -119,7 +122,7 @@ const props = defineProps({
 
 const _state = reactive({
   collapsed: false
-})
+});
 
 const section = computed(() => store.getters["project/findElement"](props.sectionId) as Section);
 const choices = computed(() => store.getters["project/findChildrenIds"](props.sectionId) as Choice[]);
@@ -128,7 +131,15 @@ const {
   M_title,
   M_headerText,
   M_footerText,
-  style: { M_name: M_style_name, M_children: M_style_children, M_gridCols, M_gridRows, M_gridFlow, M_gridDefaultColSpan, M_gridDefaultRowSpan }
+  style: {
+    M_name: M_style_name,
+    M_children: M_style_children,
+    M_gridCols,
+    M_gridRows,
+    M_gridFlow,
+    M_gridDefaultColSpan,
+    M_gridDefaultRowSpan
+  }
 } = updatePropsFor(store, {
   type: Section,
   prop: section,
@@ -140,19 +151,19 @@ const choicesContainerStyle = computed(() => {
   return R.mergeAll([
     P.match<string | undefined>(section.value.style.gridCols)
       .with(undefined, EMPTY)
-      .when(R.match(/^\d+$/), (numCols) => {
+      .with(PM.string, R.match(/^\d+$/), (numCols) => {
         return { "grid-template-columns": `repeat(${numCols}, 1fr)` };
       })
       .otherwise(EMPTY),
     P.match<string | undefined>(section.value.style.gridRows)
       .with(undefined, EMPTY)
-      .when(R.match(/^\d+$/), (numCols) => {
+      .with(PM.string, R.match(/^\d+$/), (numCols) => {
         return { "grid-template-rows": `repeat(${numCols}, 1fr)` };
       })
       .otherwise(EMPTY),
     P.match<string | undefined>(section.value.style.gridFlow)
       .with(undefined, EMPTY)
-      .when(R.match(/^row|column$/), (flow) => {
+      .with(PM.string, R.match(/^row|column$/), (flow) => {
         return { "grid-auto-flow": flow };
       })
       .otherwise(EMPTY)
@@ -163,19 +174,19 @@ const defaultChoiceStyle = computed(() => {
     DefaultChoiceStyle,
     P.match<number | string | undefined>(section.value.style.gridDefaultColSpan)
       .with(undefined, EMPTY)
-      .with(P.__.number, (colSpan) => {
+      .with(PM.number, (colSpan) => {
         return { colSpan };
       })
-      .when(R.match(/^\d+$/), (colSpan: string) => {
+      .with(PM.string, R.match(/^\d+$/), (colSpan: string) => {
         return { colSpan: Number.parseInt(colSpan) };
       })
       .otherwise(EMPTY),
     P.match<number | string | undefined>(section.value.style.gridDefaultRowSpan)
       .with(undefined, EMPTY)
-      .with(P.__.number, (rowSpan) => {
+      .with(PM.number, (rowSpan) => {
         return { rowSpan };
       })
-      .when(R.match(/^\d+$/), (rowSpan: string) => {
+      .with(PM.string, R.match(/^\d+$/), (rowSpan: string) => {
         return { rowSpan: Number.parseInt(rowSpan) };
       })
       .otherwise(EMPTY)
@@ -186,12 +197,12 @@ function toggleSection() {
   _state.collapsed = !_state.collapsed;
 }
 
-async function createChoice() {
-  const childCounter = await store.dispatch("project/genNextId", ElementType.Choice);
-  const childId = `${ElementType.Choice}_${childCounter}`;
-  console.log("New Choice", childId);
-  store.commit("project/addObject", new Choice(childId, `Choice ${childCounter}`, "Bar"));
-  store.commit("project/addChild", { parentId: props.sectionId, childId });
+function createChoice() {
+  store.dispatch("project/insertElement", {
+    elementType: ElementType.Choice,
+    parentId: props.sectionId,
+    build: (choiceId: string, counter: number) => new Choice(choiceId, `Choice ${counter}`, "Bar")
+  });
 }
 
 function addCondition() {
@@ -233,10 +244,6 @@ async function deleteSection() {
   background: lightgray;
   border-radius: 5px;
   padding: 5px;
-
-  .sec-id {
-    font-family: monospace;
-  }
 }
 
 .sec-header {

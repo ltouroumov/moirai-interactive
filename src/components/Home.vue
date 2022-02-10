@@ -10,9 +10,9 @@
       <span class="proj-name">{{ project.name }}</span>
       <span class="proj-key">{{ project.key }}</span>
       <div class="proj-actions btn-group">
-        <router-link class="btn btn-outline-success" :to="{ name: 'edit', params: { project: project.key }}">Edit
+        <router-link class="btn btn-outline-success" :to="{ name: 'edit', params: { projectId: project.key }}">Edit
         </router-link>
-        <router-link class="btn btn-outline-success" :to="{ name: 'view', params: { project: project.key }}">View
+        <router-link class="btn btn-outline-success" :to="{ name: 'view', params: { projectId: project.key }}">View
         </router-link>
         <button class="btn btn-outline-primary" @click="exportProject(project.key)">Export</button>
         <button class="btn btn-outline-danger" @click="removeProject(project.key)">Remove</button>
@@ -25,23 +25,50 @@
       </div>
     </div>
   </div>
+
+  <a id="export-link" />
 </template>
 
 <script setup lang="ts">
-import { useStore } from 'vuex';
-import { computed } from 'vue';
+import { useStore } from "vuex";
+import { computed } from "vue";
 import { homeStoreKey } from "../store/home";
 
-const store = useStore(homeStoreKey)
+const store = useStore(homeStoreKey);
 
-const projects = computed(() => store.state.items)
+const projects = computed(() => store.state.items);
 
 function createProject() {
-  store.commit('createProject')
+  store.commit("createProject");
+}
+
+function downloadFile(file: File) {
+  const link = document.getElementById("export-link") as HTMLLinkElement;
+  if (link) {
+    const url = URL.createObjectURL(file);
+    link.href = url;
+    link.download = file.name;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+}
+
+function exportProject(projectId: string) {
+  const jsonData = localStorage.getItem(`projects/${projectId}`);
+  if (jsonData) {
+    const projectData = JSON.parse(jsonData)
+    const file = new File(
+      [JSON.stringify(projectData, null, 2)],
+      `project-${projectId}.json`,
+      { type: "application/json" }
+    );
+
+    downloadFile(file);
+  }
 }
 
 function removeProject(projectId: string) {
-  store.dispatch('removeProject', projectId)
+  store.dispatch("removeProject", projectId);
 }
 </script>
 
@@ -77,4 +104,7 @@ h1 {
   grid-column: 3 / span 1;
 }
 
+#export-link {
+  display: none;
+}
 </style>

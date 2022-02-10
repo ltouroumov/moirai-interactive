@@ -10,15 +10,19 @@
 </template>
 
 <script setup lang="ts">
-import { useStore } from 'vuex';
-import { computed, watch } from 'vue';
-import SectionView from './SectionView.vue';
+import { useStore } from "vuex";
+import { computed, watch } from "vue";
+import SectionView from "./SectionView.vue";
 import { editorStoreKey } from "../../store/editor";
 import { useRoute } from "vue-router";
 import PageView from "./PageView.vue";
 
-const store = useStore(editorStoreKey)
-const findPages = computed(() => store.getters['project/findChildrenIds']("__pages__"))
+const props = defineProps({
+  projectId: String,
+  pageId: String
+});
+const store = useStore(editorStoreKey);
+const findPages = computed(() => store.getters["project/findChildrenIds"]("__pages__"));
 </script>
 
 <style scoped>

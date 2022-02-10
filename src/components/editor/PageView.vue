@@ -82,6 +82,9 @@ function togglePage() {
   _state.collapsed = !_state.collapsed;
 }
 
+async function deletePage() {
+  store.commit("project/removeObject", props.pageId);
+}
 </script>
 
 <style scoped lang="less">

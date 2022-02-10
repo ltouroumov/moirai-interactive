@@ -1,9 +1,10 @@
 import { Module } from "vuex";
 import { Project } from "../../data/model/project";
-import { AnyElement, IConditionContainer, IElement } from "../../data/model/element";
+import { AnyElement, ElementType, IConditionContainer, IElement, Page } from "../../data/model/element";
 import { EditorData } from "../../data/state/editor";
 import { ProjectInfo } from "../../data/state/home";
 import * as R from "ramda";
+import Hashids from "hashids";
 
 function removeFromParent(state: Project, objId: string) {
   const parentId = state.parents[objId];
@@ -36,6 +37,12 @@ function removeObject(state: Project, objId: string) {
 }
 
 const defaultState = () => new Project();
+
+type InsertArgs = {
+  elementType: ElementType,
+  parentId: string,
+  build: ((objectId: string, counter: number) => AnyElement)
+};
 
 export const ProjectModule: Module<Project, EditorData> = {
   namespaced: true,
@@ -112,9 +119,13 @@ export const ProjectModule: Module<Project, EditorData> = {
     }
   },
   actions: {
-    async genNextId({ commit, state }, idType: string) {
-      commit("genNextId", idType);
-      return state.genCounters[idType];
+    insertElement({ commit, state }, { elementType, parentId, build }: InsertArgs) {
+      const HID = new Hashids(state.key, 5);
+      commit("genNextId", elementType);
+      const counter = state.genCounters[elementType];
+      const objectId = `${elementType}_${HID.encode(counter)}`;
+      commit("addObject", build(objectId, counter));
+      commit("addChild", { parentId, childId: objectId });
     }
   }
 };

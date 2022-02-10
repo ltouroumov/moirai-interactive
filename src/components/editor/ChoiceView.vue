@@ -52,13 +52,14 @@ import { editorStoreKey } from "../../store/editor";
 import MdiIcon from "../utils/mdi-icon.vue";
 import { ChoiceStyle, DefaultChoiceStyle } from "../../data/model/style";
 import * as P from "ts-pattern";
+import { __ } from "ts-pattern";
 import * as R from "ramda";
 
 const store = useStore(editorStoreKey);
 
 const props = defineProps({
   choiceId: String,
-  defaultStyle: { type: ChoiceStyle, default: DefaultChoiceStyle }
+  defaultStyle: { type: Object, default: DefaultChoiceStyle }
 });
 
 const choice = computed(() => store.getters["project/findElement"](props.choiceId) as Choice);
@@ -78,33 +79,33 @@ const containerStyle = computed(() => {
   );
   console.log("Merged Style", style, props.defaultStyle, choice.value.style);
   return R.mergeAll([
-    P.match<number | undefined>(style.colSpan)
+    P.match<number | string | undefined>(style.colSpan)
       .with(undefined, EMPTY)
-      .with(P.__.number, colSpan => {
+      .with(__.number, colSpan => {
         return { "grid-column": `span ${colSpan}` };
       })
-      .when(R.match(/^\d+$/), colSpan => {
+      .with(__.string, R.match(/^\d+$/), colSpan => {
         return { "grid-column": `span ${colSpan}` };
       })
-      .run(),
-    P.match<number | undefined>(style.rowSpan)
+      .otherwise(EMPTY),
+    P.match<number | string | undefined>(style.rowSpan)
       .with(undefined, EMPTY)
-      .with(P.__.number, colSpan => {
+      .with(__.number, colSpan => {
         return { "grid-row": `span ${colSpan}` };
       })
-      .when(R.match(/^\d+$/), colSpan => {
+      .with(__.string, R.match(/^\d+$/), colSpan => {
         return { "grid-row": `span ${colSpan}` };
       })
-      .run()
+      .otherwise(EMPTY)
   ]);
 });
 
-async function createOption() {
-  const childCounter = await store.dispatch("project/genNextId", ElementType.Option);
-  const childId = `${ElementType.Option}_${childCounter}`;
-  console.log("New Choice", childId);
-  store.commit("project/addObject", new Option(childId, `Option ${childCounter}`, "Bar"));
-  store.commit("project/addChild", { parentId: props.choiceId, childId });
+function createOption() {
+  store.dispatch("project/insertElement", {
+    elementType: ElementType.Option,
+    parentId: props.choiceId,
+    build: (optionId: string, counter: number) => new Option(optionId, `Option ${counter}`, "Bar")
+  });
 }
 
 async function deleteChoice() {
