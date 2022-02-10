@@ -18,7 +18,7 @@
         <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
           <li v-for="pageId in findPageIds">
             <router-link class="dropdown-item" :to="{ name: 'edit_section', params: {...$route.params, pageId: pageId }}" active-class="active">
-              {{ pageId }}
+              {{ pageId }} / {{ findPage(pageId).title }}
             </router-link>
           </li>
         </ul>
@@ -63,18 +63,22 @@ import { computed, onMounted, onUnmounted } from "vue";
 import { onBeforeRouteUpdate, RouteLocationNormalizedLoaded, useRoute, useRouter } from "vue-router";
 import { editorStoreKey } from "../store/editor";
 import { homeStoreKey } from "../store/home";
-import { ElementType, Section } from "../data/model/element";
+import { ElementType, Page, Section } from "../data/model/element";
 import MdiIcon from "./utils/mdi-icon.vue";
 
 const $router = useRouter();
 const store = useStore(editorStoreKey);
 const findPageIds = computed(() => store.getters['project/findChildrenIds']('__pages__') as string[])
 
+function findPage(pageId: string) {
+  return store.getters['project/findElement'](pageId) as Page
+}
+
 async function createPage() {
   const childCounter = await store.dispatch("project/genNextId", ElementType.Page);
   const childId = `${ElementType.Page}_${childCounter}`;
   console.log("New Page", childId);
-  store.commit("project/addObject", new Section(childId, `Page ${childCounter}`));
+  store.commit("project/addObject", new Page(childId, `Page ${childCounter}`));
   store.commit("project/addChild", { parentId: "__pages__", childId });
 }
 
