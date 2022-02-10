@@ -9,6 +9,17 @@ export interface IStyleParent {
   readonly children?: string;
 }
 
+@persist(["name", "children"])
+export class PageStyle implements IStyle, IStyleParent {
+  readonly name?: string;
+  readonly children?: string;
+}
+
+export const DefaultPageStyle: PageStyle = {
+  name: "default",
+  children: "default"
+};
+
 @persist(["name", "children", "gridCols", "gridRows", "gridFlow", "gridDefaultColSpan", "gridDefaultRowSpan"])
 export class SectionStyle implements IStyle, IStyleParent {
   readonly name?: string;

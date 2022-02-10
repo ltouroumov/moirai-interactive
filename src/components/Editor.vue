@@ -5,14 +5,24 @@
         <mdi-icon name="chevron-left" />
         Home
       </router-link>
-      <router-link class="nav-link" :to="{ name: 'edit_sections', params: $route.params }" active-class="active">
-        <mdi-icon name="layers-triple" />
-        Sections
-      </router-link>
       <router-link class="nav-link" :to="{ name: 'edit_pages', params: $route.params }" active-class="active">
         <mdi-icon name="file-multiple" />
         Pages
       </router-link>
+      <div class="nav-item dropdown">
+        <a :class="['nav-link', { disabled: !findPageIds || findPageIds.length === 0 }, 'dropdown-toggle']" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+          <mdi-icon name="layers-triple" />
+          Sections
+        </a>
+
+        <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+          <li v-for="pageId in findPageIds">
+            <router-link class="dropdown-item" :to="{ name: 'edit_section', params: {...$route.params, pageId: pageId }}" active-class="active">
+              {{ pageId }}
+            </router-link>
+          </li>
+        </ul>
+      </div>
       <router-link class="nav-link" :to="{ name: 'edit_settings', params: $route.params }" active-class="active">
         <mdi-icon name="cog" />
         Settings
@@ -21,7 +31,11 @@
     <div class="editor-actions">
       <div class="btn-toolbar">
         <div class="btn-group">
-          <button class="btn btn-primary" @click="createSection">
+          <button class="btn btn-primary" @click="createPage">
+            <mdi-icon name="file-plus" />
+            New Page
+          </button>
+          <button class="btn btn-primary" :class="{ disabled: $router.currentRoute.value.name !== 'edit_section' }" @click="createSection">
             <mdi-icon name="layers-plus" />
             New Section
           </button>
@@ -45,7 +59,7 @@
 <script setup lang="ts">
 // Imports
 import { useStore } from "vuex";
-import { onMounted, onUnmounted } from "vue";
+import { computed, onMounted, onUnmounted } from "vue";
 import { onBeforeRouteUpdate, RouteLocationNormalizedLoaded, useRoute, useRouter } from "vue-router";
 import { editorStoreKey } from "../store/editor";
 import { homeStoreKey } from "../store/home";
@@ -54,13 +68,27 @@ import MdiIcon from "./utils/mdi-icon.vue";
 
 const $router = useRouter();
 const store = useStore(editorStoreKey);
+const findPageIds = computed(() => store.getters['project/findChildrenIds']('__pages__') as string[])
+
+async function createPage() {
+  const childCounter = await store.dispatch("project/genNextId", ElementType.Page);
+  const childId = `${ElementType.Page}_${childCounter}`;
+  console.log("New Page", childId);
+  store.commit("project/addObject", new Section(childId, `Page ${childCounter}`));
+  store.commit("project/addChild", { parentId: "__pages__", childId });
+}
 
 async function createSection() {
+  if ($router.currentRoute.value.name !== 'edit_section')
+    return
+
+  const parentId = $router.currentRoute.value.params['pageId']
+
   const childCounter = await store.dispatch("project/genNextId", ElementType.Section);
   const childId = `${ElementType.Section}_${childCounter}`;
   console.log("New Section", childId);
   store.commit("project/addObject", new Section(childId, `Section ${childCounter}`));
-  store.commit("project/addChild", { parentId: "root", childId });
+  store.commit("project/addChild", { parentId, childId });
 }
 
 function reloadProject(route: RouteLocationNormalizedLoaded) {
@@ -83,9 +111,6 @@ function reloadProject(route: RouteLocationNormalizedLoaded) {
       $router.push({ name: "home" });
     }
   }
-
-  if (route.name === "edit")
-    $router.push({ name: "edit_sections", params: route.params });
 }
 
 onMounted(() => {

@@ -5,15 +5,16 @@ import { defaults, inner, persist } from "./persist";
 import {
   ChoiceStyle,
   DefaultChoiceStyle,
-  DefaultOptionStyle,
+  DefaultOptionStyle, DefaultPageStyle,
   DefaultSectionStyle,
   IStyle,
-  OptionStyle,
+  OptionStyle, PageStyle,
   SectionStyle
 } from "./style";
 
 
 export enum ElementType {
+  Page = "page",
   Section = "section",
   Choice = "choice",
   Option = "option",
@@ -38,6 +39,23 @@ export interface IStyleContainer<S extends IStyle> {
 }
 
 export type AnyElement = IElement<ElementType>
+
+@persist(["id", "title", "headerText", "footerText", "conditions", "style"])
+@inner({ "style": PageStyle })
+@defaults({ "style": DefaultPageStyle })
+export class Page implements IElement<ElementType.Page>, IConditionContainer, IStyleContainer<SectionStyle> {
+  readonly type = ElementType.Page;
+
+  constructor(
+    readonly id: string,
+    readonly title: string,
+    readonly headerText: string = "",
+    readonly footerText: string = "",
+    readonly conditions: Condition[] = [],
+    readonly style: PageStyle = new PageStyle()
+  ) {
+  }
+}
 
 @persist(["id", "title", "headerText", "footerText", "conditions", "style"])
 @inner({ "style": SectionStyle })

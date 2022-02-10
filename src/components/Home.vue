@@ -1,5 +1,5 @@
 <template>
-  <h1>Home</h1>
+  <h1>Moirai</h1>
   <div class="projects">
     <div class="header">
       <span class="proj-name">Project</span>
@@ -46,6 +46,10 @@ function removeProject(projectId: string) {
 </script>
 
 <style scoped>
+h1 {
+  text-align: center;
+}
+
 .projects {
   display: grid;
   grid-template-columns: minmax(200px, auto) minmax(100px, auto) auto;
