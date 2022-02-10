@@ -34,13 +34,13 @@
     </div>
     <div class="sec-header" v-if="!_state.collapsed">
       <div class="sec-text">
-        <input class="form-control sec-header-title" type="text" v-model="M_title">
-        <div class="form-floating">
-          <textarea class="form-control sec-header-text" v-model="M_headerText" placeholder="..."></textarea>
+        <input class="form-control sec-title" type="text" v-model="M_title">
+        <div class="form-floating sec-header-text">
+          <textarea class="form-control " v-model="M_headerText" placeholder="..."></textarea>
           <label>Header Text</label>
         </div>
-        <div class="form-floating">
-          <textarea class="form-control sec-header-text" v-model="M_footerText" placeholder="..."></textarea>
+        <div class="form-floating sec-footer-text">
+          <textarea class="form-control " v-model="M_footerText" placeholder="..."></textarea>
           <label>Footer Text</label>
         </div>
       </div>
@@ -218,7 +218,7 @@ async function deleteSection() {
 
 </script>
 
-<style scoped lang="less">
+<style scoped lang="scss">
 .section {
   display: grid;
   grid-template:
@@ -261,11 +261,24 @@ async function deleteSection() {
     grid-area: text;
 
     display: grid;
-    grid-template-columns: 1fr;
-    grid-auto-rows: auto;
-    grid-auto-flow: row;
+    grid-template:
+      "title title" auto
+      "header footer" auto
+      / 1fr 1fr;
     align-content: start;
     grid-gap: 5px;
+
+    .sec-title {
+      grid-area: title;
+    }
+
+    .sec-header-text {
+      grid-area: header;
+    }
+
+    .sec-footer-text {
+      grid-area: footer;
+    }
   }
 
   .sec-conditions {

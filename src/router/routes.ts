@@ -1,9 +1,9 @@
 import { RouteRecordRaw } from "vue-router";
 import Home from "../components/Home.vue";
 import Editor from "../components/Editor.vue";
-import EditorSections from "../components/editor/EditorSections.vue";
-import EditorPages from "../components/editor/EditorPages.vue";
-import EditorSettings from "../components/editor/EditorSettings.vue";
+import EditorSections from "../components/editor/SectionsTab.vue";
+import EditorPages from "../components/editor/PagesTab.vue";
+import EditorSettings from "../components/editor/SettingsTab.vue";
 import Viewer from "../components/Viewer.vue";
 
 export const routes = [
