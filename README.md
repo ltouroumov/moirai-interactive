@@ -25,22 +25,23 @@ TODO: A proper description
 * [ ] Score Types
   * [ ] Points
   * [ ] Computed
-
 * [ ] Pages
   * [ ] Top Level Pages
   * [ ] Nested Pages
   * [ ] Template (can be used by Instance List)
 * [ ] Sections
-  * Section Types
-    * [x] Choices
-    * [ ] Lore
-    * [ ] Instance List (Page)
+  * [ ] Header & Footer Text
+  * [ ] Choices
+  * [ ] Text Components (Titles & Descriptions)
+  * [ ] Instance List (Template Page)
+  * [ ] Choice List (Pick from Sub-page)
 * [ ] Choices
   * [ ] Choice Groups (limit number per group)
+  * [ ] Text (no-selection)
+  * [ ] Form Choice (inputs)
 * [ ] Options
-  * Option Types
-    * [ ] Simple (sub-choice)
-    * [ ] Instance List (Page)
+  * [ ] Simple (sub-choice)
+  * [ ] Instance List (Page)
 
 ### Media Library
 
