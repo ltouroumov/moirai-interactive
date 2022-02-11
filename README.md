@@ -19,12 +19,19 @@ TODO: A proper description
 ### General
 
 * [ ] Responsive Design (Mobile & Desktop)
+* [ ] Editor
+* [ ] Viewer
+  * [ ] View projects from DB
+  * [ ] View projects from URL
+  * [ ] View projects from cloud storage?
+    * [ ] Google Drive
+    * [ ] DropBox
+    * [ ] OneDrive
+* [ ] Import Project (JSON)
+* [ ] Export Project (JSON)
 
 ### Structure
 
-* [ ] Score Types
-  * [ ] Points
-  * [ ] Computed
 * [ ] Pages
   * [ ] Top Level Pages
   * [ ] Nested Pages
@@ -46,11 +53,24 @@ TODO: A proper description
   * [ ] Simple (sub-choice)
   * [ ] Instance List (Page)
 
+### Interactivity
+
+* [ ] Score Types
+  * [ ] Points
+  * [ ] Computed
+* [ ] Expression Language
+  * [ ] Control Section/Choice/Option properties with expressions
+  * [ ] Use expressions to back some features transparently
+    * Requirements
+    * Incompatibilities
+    * Auto activate / deactivate
+    * Choice groups
+
 ### Content
 
-* Markdown in descriptions
-* Custom tags to reference another object
-* Custom tags to display values (scores, etc.)
+* [ ] Markdown in descriptions
+* [ ] Custom tags to reference another object
+* [ ] Custom tags to display values (scores, etc.)
 
 ### Media Library
 
