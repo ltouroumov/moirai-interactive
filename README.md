@@ -46,6 +46,12 @@ TODO: A proper description
   * [ ] Simple (sub-choice)
   * [ ] Instance List (Page)
 
+### Content
+
+* Markdown in descriptions
+* Custom tags to reference another object
+* Custom tags to display values (scores, etc.)
+
 ### Media Library
 
 * [ ] Project-wide media library
