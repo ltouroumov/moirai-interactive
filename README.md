@@ -39,6 +39,9 @@ TODO: A proper description
   * [ ] Choice Groups (limit number per group)
   * [ ] Text (no-selection)
   * [ ] Form Choice (inputs)
+* [ ] Instances (of page)
+  * [ ] Name & Description
+  * [ ] User Image
 * [ ] Options
   * [ ] Simple (sub-choice)
   * [ ] Instance List (Page)
