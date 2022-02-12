@@ -64,3 +64,12 @@ export class OptionStyle implements IStyle {
 export const DefaultOptionStyle: OptionStyle = {
   name: "default",
 };
+
+@persist(["name"])
+export class SimpleContentStyle implements IStyle {
+  readonly name?: string;
+}
+
+export const DefaultSimpleContentStyle: SimpleContentStyle = {
+  name: "default",
+};

@@ -1,16 +1,10 @@
 import "reflect-metadata";
-import { persist, sealed } from "../utils/persist";
+import { defaults, inner, persist, sealed } from "../utils/persist";
+import { DefaultSimpleContentStyle, SimpleContentStyle } from "./style";
 
 export enum ContentType {
   Empty = "empty",
   Simple = "simple",
-}
-
-enum ImagePosition {
-  Top = "top",
-  Right = "right",
-  Bottom = "bottom",
-  Left = "left",
 }
 
 export class BaseContent<T extends ContentType> {
@@ -25,13 +19,15 @@ export class EmptyContent extends BaseContent<ContentType.Empty> {
   }
 }
 
-@persist(["title", "body", "image", "imagePosition"])
+@persist(["title", "body", "image", "style"])
+@inner({ style: SimpleContentStyle })
+@defaults({ style: DefaultSimpleContentStyle })
 export class SimpleContent extends BaseContent<ContentType.Simple> {
   constructor(
     readonly title?: string,
     readonly body?: string,
     readonly image?: string,
-    readonly imagePosition: ImagePosition = ImagePosition.Top
+    readonly style?: SimpleContentStyle
   ) {
     super(ContentType.Simple);
   }

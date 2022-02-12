@@ -1,5 +1,6 @@
 import Home from "../components/Home.vue";
 import Editor from "../components/Editor.vue";
+import HomeTab from "../components/editor/HomeTab.vue";
 
 import PagesTab from "../components/editor/PagesTab.vue";
 import PagesTools from "../components/editor/PagesTools.vue";
@@ -19,10 +20,10 @@ export const routes = [
     component: Editor,
     props: true,
     children: [
+      { name: "edit_home", path: "", components: { default: HomeTab } },
       {
         name: "edit_pages",
         path: "pages",
-        alias: "",
         components: { default: PagesTab, tools: PagesTools },
         props: true,
       },

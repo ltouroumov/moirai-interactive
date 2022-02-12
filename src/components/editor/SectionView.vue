@@ -11,7 +11,7 @@
       <button class="btn btn-sm btn-link" @click="moveSection('next')">
         <mdi-icon name="arrow-down" />
       </button>
-      <span class="object-id">{{ section.id }}</span>
+      <span class="object-id">{{ section.name }} / {{ section.id }}</span>
       <div class="btn-toolbar">
         <div class="btn-group me-2">
           <button class="btn btn-sm btn-outline-primary" @click="createChoice">
@@ -21,12 +21,12 @@
         </div>
         <div class="btn-group me-2">
           <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
-                  :data-bs-target="`#cond_${props.sectionId}`">
+                  :data-bs-target="modalId('cond', true)">
             <mdi-icon name="key" />
             Requirements
           </button>
           <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
-                  :data-bs-target="`#style_${props.sectionId}`">
+                  :data-bs-target="modalId('style', true)">
             <mdi-icon name="palette-swatch" />
             Style
           </button>
@@ -56,7 +56,7 @@
   </section>
 
   <!-- Modals -->
-  <bs-modal :modalId="`style_${props.sectionId}`" title="Style Editor">
+  <bs-modal :modalId="modalId('style')" title="Style Editor">
     <div class="sec-style">
       <b>Section Style</b>
       <select class="form-select sec-style-select" v-model="M_style_name">
@@ -85,7 +85,7 @@
     </div>
   </bs-modal>
 
-  <bs-modal :modalId="`cond_${props.sectionId}`" title="Requirements">
+  <bs-modal :modalId="modalId('cond')" title="Requirements">
     <div class="sec-conditions">
       <b>Conditions</b>
 
@@ -114,16 +114,20 @@ import { __ as PM } from "ts-pattern";
 import * as R from "ramda";
 import { DefaultChoiceStyle } from "../../data/model/style";
 import ContentView from "./ContentView.vue";
+import { genModalId } from "../utils/modal";
 
 const store = useStore(editorStoreKey);
 
+
 const props = defineProps({
-  sectionId: String
+  sectionId: { type: String, required: true }
 });
 
 const _state = reactive({
   collapsed: false
 });
+
+const modalId = genModalId(["edit", props.sectionId]);
 
 const section = computed(() => store.getters["project/findElement"](props.sectionId) as Section);
 const choices = computed(() => store.getters["project/findChildrenIds"](props.sectionId) as Choice[]);

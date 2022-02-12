@@ -10,7 +10,7 @@
       <span class="proj-name">{{ project.name }}</span>
       <span class="proj-key">{{ project.key }}</span>
       <div class="proj-actions btn-group">
-        <router-link class="btn btn-outline-success" :to="{ name: 'edit', params: { projectId: project.key }}">Edit
+        <router-link class="btn btn-outline-success" :to="{ name: 'edit_home', params: { projectId: project.key }}">Edit
         </router-link>
         <router-link class="btn btn-outline-success" :to="{ name: 'view', params: { projectId: project.key }}">View
         </router-link>

@@ -36,9 +36,7 @@
         <router-view name="tools"></router-view>
       </div>
     </div>
-    <div id="editor-current">
-      <router-view></router-view>
-    </div>
+    <router-view id="editor-current"></router-view>
   </div>
   <div id="editor-loader" v-else>
     <div class="loader">
@@ -101,7 +99,7 @@ async function reloadProject(projectId: string) {
 }
 
 onMounted(async () => {
-  _state.loaded = false
+  _state.loaded = false;
   if (props.projectId) {
     await Promise.all([
       reloadProject(props.projectId),
@@ -134,8 +132,18 @@ div.toolbar .editor-actions {
   grid-column: actions / span 1;
 }
 
-#editor-current {
-  padding: 5px;
+
+#editor-main {
+  flex-grow: 1;
+
+  display: flex;
+  flex-direction: column;
+
+
+  #editor-current {
+    padding: 5px;
+    flex-grow: 1;
+  }
 }
 
 #editor-loader {

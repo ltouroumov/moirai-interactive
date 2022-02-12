@@ -4,6 +4,9 @@
   -moz-osx-font-smoothing: grayscale;
 
   height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
 
 span.object-id {

@@ -11,7 +11,7 @@
       <button class="btn btn-sm btn-link" @click="movePage('next')">
         <mdi-icon name="arrow-down" />
       </button>
-      <span class="page-id">{{ page.id }}</span>
+      <span class="page-id">{{ page.name}} / {{ page.id }}</span>
       <div class="btn-toolbar">
         <div class="btn-group me-2">
           <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"

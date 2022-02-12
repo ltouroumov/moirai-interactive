@@ -1,6 +1,6 @@
 <template>
   <div :id="modalId" class="modal fade" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered" :class="[props.size !== 0 ? props.size : '']">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">{{ title }}</h5>
@@ -18,12 +18,13 @@
 </template>
 
 <script setup lang="ts">
+import { PropType } from "vue";
+import { ModalSize } from "./modal";
 
-import { defineProps } from "vue";
-
-defineProps({
-  modalId: String,
-  title: String
+const props = defineProps({
+  modalId: { type: String, required: true },
+  title: { type: String, required: true },
+  size: String as PropType<ModalSize>
 });
 </script>
 

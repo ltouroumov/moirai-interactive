@@ -1,12 +1,13 @@
 <template>
-  <h1>Pages</h1>
-  <div v-if="findPages && findPages.length > 0">
-    <PageView v-for="pageId in findPages" :pageId="pageId" />
+  <div>
+    <h1>Pages</h1>
+    <div v-if="findPages && findPages.length > 0">
+      <PageView v-for="pageId in findPages" :pageId="pageId" />
+    </div>
+    <div v-if="!findPages || findPages.length === 0">
+      <p>No Pages</p>
+    </div>
   </div>
-  <div v-if="!findPages || findPages.length === 0">
-    <p>No Pages</p>
-  </div>
-
 </template>
 
 <script setup lang="ts">

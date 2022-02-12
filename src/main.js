@@ -4,8 +4,8 @@ import { editorStore, editorStoreKey } from "./store/editor";
 import { router } from "./router/main";
 import App from "./components/App.vue";
 
-import "./common.less";
-import "./colors.scss";
+import "./styles/common.scss";
+import "./styles/colors.scss";
 
 import "@mdi/font/scss/materialdesignicons.scss";
 import "bootstrap/scss/bootstrap.scss";

@@ -69,7 +69,7 @@ export default defineComponent({
   grid-template:
    "name type" auto
    "view view" 1fr
-   / 1fr auto;
+   / 1fr minmax(100px, auto);
 
   .editor-name {
     display: block;
