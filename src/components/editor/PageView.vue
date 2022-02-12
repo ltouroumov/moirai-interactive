@@ -5,6 +5,12 @@
         <mdi-icon name="eye" v-show="_state.collapsed" />
         <mdi-icon name="eye-off" v-show="!_state.collapsed" />
       </button>
+      <button class="btn btn-sm btn-link" @click="movePage('prev')">
+        <mdi-icon name="arrow-up" />
+      </button>
+      <button class="btn btn-sm btn-link" @click="movePage('next')">
+        <mdi-icon name="arrow-down" />
+      </button>
       <span class="page-id">{{ page.id }}</span>
       <div class="btn-toolbar">
         <div class="btn-group me-2">
@@ -82,6 +88,13 @@ function togglePage() {
   _state.collapsed = !_state.collapsed;
 }
 
+function movePage(relative: "prev" | "next") {
+  store.commit("project/moveObject", {
+    objectId: props.pageId,
+    relative
+  });
+}
+
 async function deletePage() {
   store.commit("project/removeObject", props.pageId);
 }
@@ -104,7 +117,7 @@ async function deletePage() {
   grid-area: tools;
 
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: repeat(3, auto) 1fr auto;
   grid-auto-flow: column;
   grid-gap: 5px;
   align-items: center;
@@ -142,9 +155,11 @@ async function deletePage() {
     .page-title {
       grid-area: title;
     }
+
     .page-header {
       grid-area: header;
     }
+
     .page-footer {
       grid-area: footer;
     }

@@ -1,5 +1,5 @@
 <template>
-  <div id="editor-main" v-if="project.key">
+  <div id="editor-main" v-if="_state.loaded">
     <div class="toolbar">
       <nav class="nav nav-pills nav-fill editor-tabs">
         <router-link class="nav-link" :to="{ name: 'home' }">
@@ -33,49 +33,27 @@
         </router-link>
       </nav>
       <div class="editor-actions">
-        <div class="btn-toolbar">
-          <div class="btn-group">
-            <button class="btn btn-primary" @click="createPage">
-              <mdi-icon name="file-plus" />
-              New Page
-            </button>
-            <button class="btn btn-primary" :class="{ disabled: $router.currentRoute.value.name !== 'edit_section' }"
-                    @click="createSection">
-              <mdi-icon name="layers-plus" />
-              New Section
-            </button>
-            <button class="btn btn-primary" @click="createScore">
-              <mdi-icon name="numeric-9-plus-box" />
-              New Score
-            </button>
-            <button class="btn btn-primary" @click="screateStyle">
-              <mdi-icon name="palette-swatch-outline" />
-              New Style
-            </button>
-          </div>
-        </div>
+        <router-view name="tools"></router-view>
       </div>
     </div>
     <div id="editor-current">
       <router-view></router-view>
     </div>
   </div>
-  <div id="editor-loader" v-if="!project.key">
-
+  <div id="editor-loader" v-else>
     <div class="loader">
       <div class="spinner-border" style="width: 5rem; height: 5rem;" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
       <p>Loading Project ...</p>
     </div>
-
   </div>
 </template>
 
 <script setup lang="ts">
 // Imports
 import { useStore } from "vuex";
-import { computed, onMounted, onUnmounted, watch } from "vue";
+import { computed, onMounted, onUnmounted, reactive, watch } from "vue";
 import { onBeforeRouteUpdate, RouteLocationNormalizedLoaded, useRoute, useRouter } from "vue-router";
 import { editorStoreKey } from "../store/editor";
 import { homeStoreKey } from "../store/home";
@@ -83,6 +61,10 @@ import { Choice, ElementType, Page, Section } from "../data/model/element";
 import MdiIcon from "./utils/mdi-icon.vue";
 import { Project } from "../data/model/project";
 import { sleep } from "./utils/time";
+
+const _state = reactive({
+  loaded: false
+});
 
 const props = defineProps({
   projectId: String,
@@ -96,25 +78,6 @@ const findPageIds = computed(() => store.getters["project/findChildrenIds"]("__p
 
 function findPage(pageId: string) {
   return store.getters["project/findElement"](pageId) as Page;
-}
-
-function createPage() {
-  store.dispatch("project/insertElement", {
-    elementType: ElementType.Page,
-    parentId: "__pages__",
-    build: (pageId: string, counter: number) => new Page(pageId, `Page ${counter}`)
-  });
-}
-
-function createSection() {
-  if (!props.pageId)
-    return;
-
-  store.dispatch("project/insertElement", {
-    elementType: ElementType.Section,
-    parentId: props.pageId,
-    build: (sectionId: string, counter: number) => new Section(sectionId, `Page ${counter}`)
-  });
 }
 
 watch(
@@ -138,7 +101,14 @@ async function reloadProject(projectId: string) {
 }
 
 onMounted(async () => {
-  if (props.projectId) await reloadProject(props.projectId);
+  _state.loaded = false
+  if (props.projectId) {
+    await Promise.all([
+      reloadProject(props.projectId),
+      sleep(200)
+    ]);
+    _state.loaded = true;
+  }
 });
 onUnmounted(() => {
   store.commit("project/unloadProject");

@@ -1,9 +1,14 @@
-import { RouteRecordRaw } from "vue-router";
 import Home from "../components/Home.vue";
 import Editor from "../components/Editor.vue";
-import EditorSections from "../components/editor/SectionsTab.vue";
-import EditorPages from "../components/editor/PagesTab.vue";
-import EditorSettings from "../components/editor/SettingsTab.vue";
+
+import PagesTab from "../components/editor/PagesTab.vue";
+import PagesTools from "../components/editor/PagesTools.vue";
+
+import SectionsTab from "../components/editor/SectionsTab.vue";
+import SectionsTools from "../components/editor/SectionsTools.vue";
+
+import SettingsTab from "../components/editor/SettingsTab.vue";
+
 import Viewer from "../components/Viewer.vue";
 
 export const routes = [
@@ -18,22 +23,22 @@ export const routes = [
         name: "edit_pages",
         path: "pages",
         alias: "",
-        component: EditorPages,
-        props: true
+        components: { default: PagesTab, tools: PagesTools },
+        props: true,
       },
       {
         name: "edit_section",
         path: "pages/:pageId/sections",
-        component: EditorSections,
-        props: true
+        components: { default: SectionsTab, tools: SectionsTools },
+        props: true,
       },
       {
         name: "edit_settings",
         path: "settings",
-        component: EditorSettings,
-        props: true
-      }
-    ]
+        component: SettingsTab,
+        props: true,
+      },
+    ],
   },
-  { name: "view", path: "/view/:projectId", component: Viewer }
+  { name: "view", path: "/view/:projectId", component: Viewer },
 ];

@@ -68,6 +68,8 @@ import { homeStoreKey } from "../store/home";
 import MdiIcon from "./utils/mdi-icon.vue";
 import BsModal from "./utils/bs-modal.vue";
 import { Project } from "../data/model/project";
+import { projectsDatabase } from "../store/editor";
+
 
 const store = useStore(homeStoreKey);
 
@@ -128,10 +130,9 @@ function clearFile() {
   }
 }
 
-function exportProject(projectId: string) {
-  const jsonData = localStorage.getItem(`projects/${projectId}`);
-  if (jsonData) {
-    const projectData = JSON.parse(jsonData);
+async function exportProject(projectId: string) {
+  const projectData = await projectsDatabase.getItem(`projects/${projectId}`);
+  if (projectData) {
     const file = new File(
       [JSON.stringify(projectData, null, 2)],
       `project-${projectId}.json`,

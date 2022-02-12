@@ -5,6 +5,12 @@
         <mdi-icon name="eye" v-show="_state.collapsed" />
         <mdi-icon name="eye-off" v-show="!_state.collapsed" />
       </button>
+      <button class="btn btn-sm btn-link" @click="moveSection('prev')">
+        <mdi-icon name="arrow-up" />
+      </button>
+      <button class="btn btn-sm btn-link" @click="moveSection('next')">
+        <mdi-icon name="arrow-down" />
+      </button>
       <span class="object-id">{{ section.id }}</span>
       <div class="btn-toolbar">
         <div class="btn-group me-2">
@@ -197,6 +203,13 @@ function toggleSection() {
   _state.collapsed = !_state.collapsed;
 }
 
+function moveSection(relative: "prev" | "next") {
+  store.commit("project/moveObject", {
+    objectId: props.sectionId,
+    relative
+  });
+}
+
 function createChoice() {
   store.dispatch("project/insertElement", {
     elementType: ElementType.Choice,
@@ -236,7 +249,7 @@ async function deleteSection() {
   grid-area: tools;
 
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: repeat(3, auto) 1fr auto;
   grid-auto-flow: column;
   grid-gap: 5px;
   align-items: center;

@@ -5,13 +5,15 @@ import { defaults, inner, persist } from "./persist";
 import {
   ChoiceStyle,
   DefaultChoiceStyle,
-  DefaultOptionStyle, DefaultPageStyle,
+  DefaultOptionStyle,
+  DefaultPageStyle,
   DefaultSectionStyle,
   IStyle,
-  OptionStyle, PageStyle,
-  SectionStyle
+  OptionStyle,
+  PageStyle,
+  SectionStyle,
 } from "./style";
-
+import { AnyContent, BaseContent } from "./content";
 
 export enum ElementType {
   Page = "page",
@@ -38,29 +40,49 @@ export interface IStyleContainer<S extends IStyle> {
   readonly style?: S;
 }
 
-export type AnyElement = IElement<ElementType>
+export type AnyElement = IElement<ElementType>;
 
-@persist(["id", "title", "headerText", "footerText", "conditions", "style"])
-@inner({ "style": PageStyle })
-@defaults({ "style": DefaultPageStyle })
-export class Page implements IElement<ElementType.Page>, IConditionContainer, IStyleContainer<SectionStyle> {
+@persist([
+  "id",
+  "title",
+  "headerContent",
+  "footerContent",
+  "conditions",
+  "style",
+])
+@inner({
+  style: PageStyle,
+  headerContent: BaseContent,
+  footerContent: BaseContent,
+})
+@defaults({ style: DefaultPageStyle })
+export class Page
+  implements
+    IElement<ElementType.Page>,
+    IConditionContainer,
+    IStyleContainer<SectionStyle>
+{
   readonly type = ElementType.Page;
 
   constructor(
     readonly id: string,
     readonly title: string,
-    readonly headerText: string = "",
-    readonly footerText: string = "",
+    readonly headerContent?: AnyContent,
+    readonly footerContent?: AnyContent,
     readonly conditions: Condition[] = [],
     readonly style: PageStyle = new PageStyle()
-  ) {
-  }
+  ) {}
 }
 
 @persist(["id", "title", "headerText", "footerText", "conditions", "style"])
-@inner({ "style": SectionStyle })
-@defaults({ "style": DefaultSectionStyle })
-export class Section implements IElement<ElementType.Section>, IConditionContainer, IStyleContainer<SectionStyle> {
+@inner({ style: SectionStyle })
+@defaults({ style: DefaultSectionStyle })
+export class Section
+  implements
+    IElement<ElementType.Section>,
+    IConditionContainer,
+    IStyleContainer<SectionStyle>
+{
   readonly type = ElementType.Section;
 
   constructor(
@@ -70,14 +92,19 @@ export class Section implements IElement<ElementType.Section>, IConditionContain
     readonly footerText: string = "",
     readonly conditions: Condition[] = [],
     readonly style: SectionStyle = new SectionStyle()
-  ) {
-  }
+  ) {}
 }
 
 @persist(["id", "title", "text", "scores", "conditions", "style"])
-@inner({ "style": ChoiceStyle })
-@defaults({ "style": DefaultChoiceStyle })
-export class Choice implements IElement<ElementType.Choice>, IConditionContainer, IScoreContainer, IStyleContainer<ChoiceStyle> {
+@inner({ style: ChoiceStyle })
+@defaults({ style: DefaultChoiceStyle })
+export class Choice
+  implements
+    IElement<ElementType.Choice>,
+    IConditionContainer,
+    IScoreContainer,
+    IStyleContainer<ChoiceStyle>
+{
   readonly type = ElementType.Choice;
 
   constructor(
@@ -87,14 +114,19 @@ export class Choice implements IElement<ElementType.Choice>, IConditionContainer
     readonly scores: Score[] = [],
     readonly conditions: Condition[] = [],
     readonly style: ChoiceStyle = new ChoiceStyle()
-  ) {
-  }
+  ) {}
 }
 
 @persist(["id", "title", "text", "scores", "conditions", "style"])
-@inner({ "style": OptionStyle })
-@defaults({ "style": DefaultOptionStyle })
-export class Option implements IElement<ElementType.Option>, IConditionContainer, IScoreContainer, IStyleContainer<OptionStyle> {
+@inner({ style: OptionStyle })
+@defaults({ style: DefaultOptionStyle })
+export class Option
+  implements
+    IElement<ElementType.Option>,
+    IConditionContainer,
+    IScoreContainer,
+    IStyleContainer<OptionStyle>
+{
   readonly type = ElementType.Option;
 
   constructor(
@@ -104,6 +136,5 @@ export class Option implements IElement<ElementType.Option>, IConditionContainer
     readonly scores: Score[] = [],
     readonly conditions: Condition[] = [],
     readonly style: OptionStyle = new OptionStyle()
-  ) {
-  }
+  ) {}
 }
