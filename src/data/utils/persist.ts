@@ -1,11 +1,15 @@
 import "reflect-metadata";
 
-export function sealed() {
-  return Reflect.metadata("persist:sealed", []);
-}
+type EnumValue = number | string | symbol;
+type SealedElements<D extends EnumValue, T> = { [key in D]: T };
+type Constructor<T> = { new (...args: any[]): T };
 
-export function sealedComponents(type: any, components: any[]) {
-  Reflect.defineMetadata("persist:sealed", components, type);
+export function sealed<T, DT extends EnumValue>(
+  type: Constructor<T>,
+  extract: (obj: T) => DT,
+  components: SealedElements<DT, Constructor<T>>
+) {
+  Reflect.defineMetadata("persist:sealed", { extract, components }, type);
 }
 
 export function persist(props: string[]) {

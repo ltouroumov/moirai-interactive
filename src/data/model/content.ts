@@ -1,7 +1,8 @@
 import "reflect-metadata";
-import { persist, sealed, sealedComponents } from "./persist";
+import { persist, sealed } from "../utils/persist";
 
-enum ContentType {
+export enum ContentType {
+  Empty = "empty",
   Simple = "simple",
 }
 
@@ -12,12 +13,17 @@ enum ImagePosition {
   Left = "left",
 }
 
-@sealed()
 export class BaseContent<T extends ContentType> {
   constructor(readonly type: T) {}
 }
 
 export type AnyContent = BaseContent<ContentType>;
+
+export class EmptyContent extends BaseContent<ContentType.Empty> {
+  constructor() {
+    super(ContentType.Empty);
+  }
+}
 
 @persist(["title", "body", "image", "imagePosition"])
 export class SimpleContent extends BaseContent<ContentType.Simple> {
@@ -31,4 +37,7 @@ export class SimpleContent extends BaseContent<ContentType.Simple> {
   }
 }
 
-sealedComponents(BaseContent, [SimpleContent]);
+sealed<AnyContent, ContentType>(BaseContent, (content: AnyContent) => content.type, {
+  [ContentType.Empty]: EmptyContent,
+  [ContentType.Simple]: SimpleContent,
+});

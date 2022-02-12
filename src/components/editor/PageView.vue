@@ -32,18 +32,10 @@
         </div>
       </div>
     </div>
-    <div class="page-header" v-if="!_state.collapsed">
-      <div class="page-text">
-        <input class="form-control page-title" type="text" v-model="M_title">
-        <div class="form-floating">
-          <textarea class="form-control page-header" v-model="M_headerText" placeholder="..."></textarea>
-          <label>Header Text</label>
-        </div>
-        <div class="form-floating">
-          <textarea class="form-control page-footer" v-model="M_footerText" placeholder="..."></textarea>
-          <label>Footer Text</label>
-        </div>
-      </div>
+    <div class="page-content" v-if="!_state.collapsed">
+      <input class="form-control page-name" type="text" v-model="M_name">
+      <ContentView :object-id="props.pageId" content-prop="headerContent" name="Page Header" class="page-header"></ContentView>
+      <ContentView :object-id="props.pageId" content-prop="footerContent" name="Page Footer" class="page-footer"></ContentView>
     </div>
   </div>
 </template>
@@ -61,6 +53,7 @@ import * as P from "ts-pattern";
 import * as R from "ramda";
 import { ChoiceStyle, DefaultChoiceStyle, DefaultSectionStyle, SectionStyle } from "../../data/model/style";
 import BModal from "../utils/bs-modal.vue";
+import ContentView from "./ContentView.vue";
 
 const store = useStore(editorStoreKey);
 
@@ -74,9 +67,7 @@ const _state = reactive({
 
 const page = computed(() => store.getters["project/findElement"](props.pageId) as Page);
 const {
-  M_title,
-  M_headerText,
-  M_footerText
+  M_name
 } = updatePropsFor(store, {
   type: Page,
   prop: page,
@@ -131,38 +122,23 @@ async function deletePage() {
   }
 }
 
-.page-header {
+.page-content {
   grid-area: header;
 
   display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: auto;
+  grid-template: "name name options" auto
+   "header footer options" auto
+  / 2fr 2fr 1fr;
   grid-gap: 5px;
 
-  grid-template-areas:
-    "text";
-
-  .page-text {
-    grid-area: text;
-
-    display: grid;
-    grid-template:
-      "title title" auto
-      "header footer" auto
-    / 1fr 1fr;
-    grid-gap: 5px;
-
-    .page-title {
-      grid-area: title;
-    }
-
-    .page-header {
-      grid-area: header;
-    }
-
-    .page-footer {
-      grid-area: footer;
-    }
+  .page-name {
+    grid-area: name;
+  }
+  .page-header {
+    grid-area: header;
+  }
+  .page-footer {
+    grid-area: footer;
   }
 }
 </style>

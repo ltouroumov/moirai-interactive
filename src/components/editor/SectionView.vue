@@ -40,15 +40,9 @@
     </div>
     <div class="sec-header" v-if="!_state.collapsed">
       <div class="sec-text">
-        <input class="form-control sec-title" type="text" v-model="M_title">
-        <div class="form-floating sec-header-text">
-          <textarea class="form-control " v-model="M_headerText" placeholder="..."></textarea>
-          <label>Header Text</label>
-        </div>
-        <div class="form-floating sec-footer-text">
-          <textarea class="form-control " v-model="M_footerText" placeholder="..."></textarea>
-          <label>Footer Text</label>
-        </div>
+        <input class="form-control sec-title" type="text" v-model="M_name">
+        <ContentView :object-id="props.sectionId" content-prop="headerContent" name="Section Header" />
+        <ContentView :object-id="props.sectionId" content-prop="footerContent" name="Section Footer" />
       </div>
       <div class="sec-meta">
         <b>Choices</b>
@@ -119,6 +113,7 @@ import * as P from "ts-pattern";
 import { __ as PM } from "ts-pattern";
 import * as R from "ramda";
 import { DefaultChoiceStyle } from "../../data/model/style";
+import ContentView from "./ContentView.vue";
 
 const store = useStore(editorStoreKey);
 
@@ -134,9 +129,7 @@ const section = computed(() => store.getters["project/findElement"](props.sectio
 const choices = computed(() => store.getters["project/findChildrenIds"](props.sectionId) as Choice[]);
 const styles = computed(() => ["default", "Style 1", "Style 2"]);
 const {
-  M_title,
-  M_headerText,
-  M_footerText,
+  M_name,
   style: {
     M_name: M_style_name,
     M_children: M_style_children,

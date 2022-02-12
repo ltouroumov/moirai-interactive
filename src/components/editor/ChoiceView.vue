@@ -1,7 +1,7 @@
 <template>
   <div class="choice" :style="containerStyle">
     <div class="ch-header">
-      <input class="form-control ch-title" v-model="M_title" />
+      <input class="form-control ch-title" v-model="M_name" />
       <div class="ch-conditions" v-if="choice.conditions"></div>
       <div class="ch-scores" v-if="choice.scores"></div>
       <div class="form-floating">
@@ -65,7 +65,7 @@ const props = defineProps({
 const choice = computed(() => store.getters["project/findElement"](props.choiceId) as Choice);
 const options = computed(() => store.getters["project/findChildrenIds"](props.choiceId) as Option[]);
 const styles = computed(() => ["default", "Style 1", "Style 2"]);
-const { M_title, M_text, style: { M_name: M_style_name, M_colSpan, M_rowSpan } } = updatePropsFor(store, {
+const { M_name, M_text, style: { M_name: M_style_name, M_colSpan, M_rowSpan } } = updatePropsFor(store, {
   type: Choice,
   prop: choice,
   objectId: () => props.choiceId

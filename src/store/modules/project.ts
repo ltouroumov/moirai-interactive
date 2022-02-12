@@ -1,10 +1,6 @@
 import { Module } from "vuex";
 import { Project } from "../../data/model/project";
-import {
-  AnyElement,
-  ElementType,
-  IConditionContainer,
-} from "../../data/model/element";
+import { AnyElement, ElementType, IConditionContainer } from "../../data/model/element";
 import { EditorData } from "../../data/state/editor";
 import { ProjectInfo } from "../../data/state/home";
 import * as R from "ramda";
@@ -43,11 +39,7 @@ const utils = {
     delete state.objects[objId];
   },
 
-  generateIdForElement(
-    projectKey: string | undefined,
-    elementType: ElementType,
-    counter: number
-  ) {
+  generateIdForElement(projectKey: string | undefined, elementType: ElementType, counter: number) {
     const HID = new Hashids(projectKey || "project", 5);
 
     const elementTypeIdx: number = match<ElementType>(elementType)
@@ -69,9 +61,7 @@ type InsertArgs = {
   build: (objectId: string, counter: number) => AnyElement;
 };
 
-export const ProjectModule: (
-  database: AsyncStorage
-) => Module<Project, EditorData> = (database: AsyncStorage) => {
+export const ProjectModule: (database: AsyncStorage) => Module<Project, EditorData> = (database: AsyncStorage) => {
   return {
     namespaced: true,
     state(): Project {
@@ -90,8 +80,7 @@ export const ProjectModule: (
     },
     mutations: {
       genNextId(state: Project, idType: string) {
-        if (!state.genCounters.hasOwnProperty(idType))
-          state.genCounters[idType] = 0;
+        if (!state.genCounters.hasOwnProperty(idType)) state.genCounters[idType] = 0;
 
         state.genCounters[idType] += 1;
         return state.genCounters[idType];
@@ -108,12 +97,12 @@ export const ProjectModule: (
         }
         state.parents[childId] = parentId;
       },
-      updateObject(state: Project, { objectId, path, data }) {
-        state.objects[objectId] = R.over(
-          R.lensPath(path || []),
-          R.mergeRight(R.__, data),
-          state.objects[objectId]
-        );
+      updateObject(state: Project, { objectId, path, data, replace }) {
+        if (replace) {
+          state.objects[objectId] = R.set(R.lensPath(path || []), data, state.objects[objectId]);
+        } else {
+          state.objects[objectId] = R.over(R.lensPath(path || []), R.mergeRight(R.__, data), state.objects[objectId]);
+        }
       },
       moveObject(state: Project, { objectId, relative, afterIdx, beforeIdx }) {
         if (!state.parents.hasOwnProperty(objectId)) return;
@@ -161,13 +150,10 @@ export const ProjectModule: (
       },
 
       addCondition(state: Project, { objectId, data }) {
-        const current = state.objects[objectId] as AnyElement &
-          IConditionContainer;
+        const current = state.objects[objectId] as AnyElement & IConditionContainer;
         state.objects[objectId] = {
           ...current,
-          conditions: current.conditions
-            ? [...current.conditions, data]
-            : [data],
+          conditions: current.conditions ? [...current.conditions, data] : [data],
         } as any;
       },
 
@@ -183,32 +169,20 @@ export const ProjectModule: (
       },
     },
     actions: {
-      insertElement(
-        { commit, state },
-        { elementType, parentId, build }: InsertArgs
-      ) {
+      insertElement({ commit, state }, { elementType, parentId, build }: InsertArgs) {
         commit("genNextId", elementType);
         const counter = state.genCounters[elementType];
-        const objectId = utils.generateIdForElement(
-          state.key,
-          elementType,
-          counter
-        );
+        const objectId = utils.generateIdForElement(state.key, elementType, counter);
         commit("addObject", build(objectId, counter));
         commit("addChild", { parentId, childId: objectId });
       },
 
       async restoreProject(
         { state, commit, getters },
-        {
-          projectId,
-          projectInfo,
-        }: { projectId: string; projectInfo: ProjectInfo }
+        { projectId, projectInfo }: { projectId: string; projectInfo: ProjectInfo }
       ) {
         console.log(`Loading project ${projectId}`);
-        const projectData = await database.getItem<Project>(
-          `projects/${projectId}`
-        );
+        const projectData = await database.getItem<Project>(`projects/${projectId}`);
         if (projectData) {
           commit("loadProject", projectData);
           console.log("Loaded from storage");

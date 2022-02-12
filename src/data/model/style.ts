@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { persist } from "./persist";
+import { persist } from "../utils/persist";
 
 export interface IStyle {
   readonly name?: string;
@@ -17,7 +17,7 @@ export class PageStyle implements IStyle, IStyleParent {
 
 export const DefaultPageStyle: PageStyle = {
   name: "default",
-  children: "default"
+  children: "default",
 };
 
 @persist(["name", "children", "gridCols", "gridRows", "gridFlow", "gridDefaultColSpan", "gridDefaultRowSpan"])
@@ -38,7 +38,7 @@ export const DefaultSectionStyle: SectionStyle = {
   gridRows: "auto",
   gridFlow: "row",
   gridDefaultColSpan: 1,
-  gridDefaultRowSpan: 1
+  gridDefaultRowSpan: 1,
 };
 
 @persist(["name", "children", "colSpan", "rowSpan"])
@@ -53,7 +53,7 @@ export const DefaultChoiceStyle: ChoiceStyle = {
   name: "default",
   children: "default",
   colSpan: 1,
-  rowSpan: 1
+  rowSpan: 1,
 };
 
 @persist(["name"])
@@ -62,5 +62,5 @@ export class OptionStyle implements IStyle {
 }
 
 export const DefaultOptionStyle: OptionStyle = {
-  name: "default"
+  name: "default",
 };

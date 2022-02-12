@@ -1,5 +1,5 @@
 <template>
-  <h1>{{ page.title }} - Sections</h1>
+  <h1>{{ page.name }} - Sections</h1>
   <div v-if="findSections && findSections.length > 0">
     <SectionView v-for="sectionId in findSections" :sectionId="sectionId"/>
   </div>

@@ -1,7 +1,7 @@
 <template>
   <div class="option">
     <div class="opt-header">
-      <input class="form-control opt-title" v-model="M_title" />
+      <input class="form-control opt-title" v-model="M_name" />
       <div class="opt-conditions"></div>
       <div class="opt-scores"></div>
     </div>
@@ -31,7 +31,7 @@ const props = defineProps({
 });
 
 const option = computed(() => store.getters["project/findElement"](props.optionId) as Option);
-const { M_title, M_text } = updatePropsFor(store, {
+const { M_name, M_text } = updatePropsFor(store, {
   type: Option,
   prop: option,
   objectId: () => props.optionId

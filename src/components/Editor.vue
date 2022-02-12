@@ -22,7 +22,7 @@
               <router-link class="dropdown-item"
                            :to="{ name: 'edit_section', params: {...$route.params, pageId: pageId }}"
                            active-class="active">
-                {{ findPage(pageId).title }} / <span class="object-id">{{ pageId }}</span>
+                {{ findPage(pageId).name }} / <span class="object-id">{{ pageId }}</span>
               </router-link>
             </li>
           </ul>
