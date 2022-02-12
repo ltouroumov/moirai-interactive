@@ -21,7 +21,7 @@ var __publicField = (obj, key, value) => {
   __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
   return value;
 };
-import { H as Hashids, l as localforage, V as VuexPersistence, c as clone, a as createStore, b as createLogger, o as over, d as lensPath, m as mergeRight, _ as __, e as lib, f as always, g as omit, h as defineComponent, i as openBlock, j as createElementBlock, k as createBaseVNode, t as toDisplayString, r as renderSlot, n as createCommentVNode, p as reactive, q as computed, F as Fragment, s as renderList, u as unref, v as createVNode, w as withCtx, x as pushScopeId, y as popScopeId, z as useStore, A as resolveComponent, B as createTextVNode, C as normalizeClass, D as watch, E as onMounted, G as onUnmounted, I as useRouter, J as view, K as withDirectives, L as vShow, M as vModelText, N as isRef, O as createBlock, P as mergeWith, Q as mergeAll, R as match, S as vModelSelect, T as normalizeStyle, U as useRoute, W as createRouter, X as createWebHashHistory, Y as createApp } from "./vendor.e47f32f8.js";
+import { H as Hashids, l as localforage, V as VuexPersistence, c as clone, a as createStore, b as createLogger, s as set, d as lensPath, o as over, m as mergeRight, _ as __, e as lib, f as always, g as omit, h as defineComponent, i as openBlock, j as createElementBlock, k as createBaseVNode, t as toDisplayString, r as renderSlot, n as createCommentVNode, u as useStore, p as reactive, q as computed, v as resolveComponent, F as Fragment, w as renderList, x as unref, y as createVNode, z as withCtx, A as pushScopeId, B as popScopeId, C as createTextVNode, D as normalizeClass, E as useRouter, G as watch, I as onMounted, J as onUnmounted, K as view, L as lensProp, M as withDirectives, N as vModelText, O as isRef, P as toRefs, Q as h, R as vShow, S as createBlock, T as mergeWith, U as mergeAll, W as match, X as vModelSelect, Y as normalizeStyle, Z as useRoute, $ as createRouter, a0 as createWebHashHistory, a1 as createApp } from "./vendor.9c47fcf9.js";
 const p = function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -133,11 +133,8 @@ class Project {
     __publicField(this, "genCounters", {});
   }
 }
-function sealed() {
-  return Reflect.metadata("persist:sealed", []);
-}
-function sealedComponents(type, components) {
-  Reflect.defineMetadata("persist:sealed", components, type);
+function sealed(type, extract, components) {
+  Reflect.defineMetadata("persist:sealed", { extract, components }, type);
 }
 function persist(props) {
   return Reflect.metadata("persist:props", props);
@@ -236,6 +233,7 @@ var __decorateClass$1 = (decorators, target, key, kind) => {
 };
 var ContentType;
 (function(ContentType2) {
+  ContentType2["Empty"] = "empty";
   ContentType2["Simple"] = "simple";
 })(ContentType || (ContentType = {}));
 var ImagePosition;
@@ -245,14 +243,16 @@ var ImagePosition;
   ImagePosition2["Bottom"] = "bottom";
   ImagePosition2["Left"] = "left";
 })(ImagePosition || (ImagePosition = {}));
-let BaseContent = class {
+class BaseContent {
   constructor(type) {
     this.type = type;
   }
-};
-BaseContent = __decorateClass$1([
-  sealed()
-], BaseContent);
+}
+class EmptyContent extends BaseContent {
+  constructor() {
+    super(ContentType.Empty);
+  }
+}
 let SimpleContent = class extends BaseContent {
   constructor(title, body, image, imagePosition = ImagePosition.Top) {
     super(ContentType.Simple);
@@ -265,7 +265,10 @@ let SimpleContent = class extends BaseContent {
 SimpleContent = __decorateClass$1([
   persist(["title", "body", "image", "imagePosition"])
 ], SimpleContent);
-sealedComponents(BaseContent, [SimpleContent]);
+sealed(BaseContent, (content) => content.type, {
+  [ContentType.Empty]: EmptyContent,
+  [ContentType.Simple]: SimpleContent
+});
 var __defProp2 = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
@@ -285,10 +288,10 @@ var ElementType;
   ElementType2["Option"] = "option";
 })(ElementType || (ElementType = {}));
 let Page = class {
-  constructor(id, title, headerContent, footerContent, conditions = [], style = new PageStyle()) {
+  constructor(id, name, headerContent, footerContent, conditions = [], style = new PageStyle()) {
     __publicField(this, "type", ElementType.Page);
     this.id = id;
-    this.title = title;
+    this.name = name;
     this.headerContent = headerContent;
     this.footerContent = footerContent;
     this.conditions = conditions;
@@ -296,14 +299,7 @@ let Page = class {
   }
 };
 Page = __decorateClass([
-  persist([
-    "id",
-    "title",
-    "headerContent",
-    "footerContent",
-    "conditions",
-    "style"
-  ]),
+  persist(["id", "name", "headerContent", "footerContent", "conditions", "style"]),
   inner({
     style: PageStyle,
     headerContent: BaseContent,
@@ -312,51 +308,55 @@ Page = __decorateClass([
   defaults({ style: DefaultPageStyle })
 ], Page);
 let Section = class {
-  constructor(id, title, headerText = "", footerText = "", conditions = [], style = new SectionStyle()) {
+  constructor(id, name, headerContent, footerContent, conditions = [], style = new SectionStyle()) {
     __publicField(this, "type", ElementType.Section);
     this.id = id;
-    this.title = title;
-    this.headerText = headerText;
-    this.footerText = footerText;
+    this.name = name;
+    this.headerContent = headerContent;
+    this.footerContent = footerContent;
     this.conditions = conditions;
     this.style = style;
   }
 };
 Section = __decorateClass([
-  persist(["id", "title", "headerText", "footerText", "conditions", "style"]),
-  inner({ style: SectionStyle }),
+  persist(["id", "name", "headerContent", "footerContent", "conditions", "style"]),
+  inner({
+    style: SectionStyle,
+    headerContent: BaseContent,
+    footerContent: BaseContent
+  }),
   defaults({ style: DefaultSectionStyle })
 ], Section);
 let Choice = class {
-  constructor(id, title, text, scores = [], conditions = [], style = new ChoiceStyle()) {
+  constructor(id, name, content, scores = [], conditions = [], style = new ChoiceStyle()) {
     __publicField(this, "type", ElementType.Choice);
     this.id = id;
-    this.title = title;
-    this.text = text;
+    this.name = name;
+    this.content = content;
     this.scores = scores;
     this.conditions = conditions;
     this.style = style;
   }
 };
 Choice = __decorateClass([
-  persist(["id", "title", "text", "scores", "conditions", "style"]),
-  inner({ style: ChoiceStyle }),
+  persist(["id", "name", "content", "scores", "conditions", "style"]),
+  inner({ style: ChoiceStyle, content: SimpleContent }),
   defaults({ style: DefaultChoiceStyle })
 ], Choice);
 let Option = class {
-  constructor(id, title, text, scores = [], conditions = [], style = new OptionStyle()) {
+  constructor(id, name, content, scores = [], conditions = [], style = new OptionStyle()) {
     __publicField(this, "type", ElementType.Option);
     this.id = id;
-    this.title = title;
-    this.text = text;
+    this.name = name;
+    this.content = content;
     this.scores = scores;
     this.conditions = conditions;
     this.style = style;
   }
 };
 Option = __decorateClass([
-  persist(["id", "title", "text", "scores", "conditions", "style"]),
-  inner({ style: OptionStyle }),
+  persist(["id", "name", "content", "scores", "conditions", "style"]),
+  inner({ style: OptionStyle, content: SimpleContent }),
   defaults({ style: DefaultOptionStyle })
 ], Option);
 const utils = {
@@ -429,8 +429,12 @@ const ProjectModule = (database2) => {
         }
         state.parents[childId] = parentId;
       },
-      updateObject(state, { objectId, path, data }) {
-        state.objects[objectId] = over(lensPath(path || []), mergeRight(__, data), state.objects[objectId]);
+      updateObject(state, { objectId, path, data, replace }) {
+        if (replace) {
+          state.objects[objectId] = set(lensPath(path || []), data, state.objects[objectId]);
+        } else {
+          state.objects[objectId] = over(lensPath(path || []), mergeRight(__, data), state.objects[objectId]);
+        }
       },
       moveObject(state, { objectId, relative, afterIdx, beforeIdx }) {
         if (!state.parents.hasOwnProperty(objectId))
@@ -497,10 +501,7 @@ const ProjectModule = (database2) => {
         commit("addObject", build(objectId, counter));
         commit("addChild", { parentId, childId: objectId });
       },
-      async restoreProject({ state, commit, getters }, {
-        projectId,
-        projectInfo
-      }) {
+      async restoreProject({ state, commit, getters }, { projectId, projectInfo }) {
         console.log(`Loading project ${projectId}`);
         const projectData = await database2.getItem(`projects/${projectId}`);
         if (projectData) {
@@ -565,12 +566,12 @@ const editorStore = createStore({
     return new EditorData();
   }
 });
-const _hoisted_1$b = ["id"];
-const _hoisted_2$b = { class: "modal-dialog modal-dialog-centered" };
-const _hoisted_3$a = { class: "modal-content" };
-const _hoisted_4$9 = { class: "modal-header" };
-const _hoisted_5$8 = { class: "modal-title" };
-const _hoisted_6$6 = /* @__PURE__ */ createBaseVNode("button", {
+const _hoisted_1$c = ["id"];
+const _hoisted_2$c = { class: "modal-dialog modal-dialog-centered" };
+const _hoisted_3$b = { class: "modal-content" };
+const _hoisted_4$a = { class: "modal-header" };
+const _hoisted_5$9 = { class: "modal-title" };
+const _hoisted_6$7 = /* @__PURE__ */ createBaseVNode("button", {
   type: "button",
   class: "btn-close",
   "data-bs-dismiss": "modal",
@@ -581,7 +582,7 @@ const _hoisted_8$5 = {
   key: 0,
   class: "modal-footer"
 };
-const _sfc_main$e = /* @__PURE__ */ defineComponent({
+const _sfc_main$h = /* @__PURE__ */ defineComponent({
   props: {
     modalId: String,
     title: String
@@ -594,11 +595,11 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
         tabindex: "-1",
         "aria-hidden": "true"
       }, [
-        createBaseVNode("div", _hoisted_2$b, [
-          createBaseVNode("div", _hoisted_3$a, [
-            createBaseVNode("div", _hoisted_4$9, [
-              createBaseVNode("h5", _hoisted_5$8, toDisplayString(__props.title), 1),
-              _hoisted_6$6
+        createBaseVNode("div", _hoisted_2$c, [
+          createBaseVNode("div", _hoisted_3$b, [
+            createBaseVNode("div", _hoisted_4$a, [
+              createBaseVNode("h5", _hoisted_5$9, toDisplayString(__props.title), 1),
+              _hoisted_6$7
             ]),
             createBaseVNode("div", _hoisted_7$5, [
               renderSlot(_ctx.$slots, "default")
@@ -608,7 +609,7 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
             ])) : createCommentVNode("", true)
           ])
         ])
-      ], 8, _hoisted_1$b);
+      ], 8, _hoisted_1$c);
     };
   }
 });
@@ -620,34 +621,34 @@ var _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const _withScopeId$6 = (n) => (pushScopeId("data-v-51645dc5"), n = n(), popScopeId(), n);
-const _hoisted_1$a = /* @__PURE__ */ _withScopeId$6(() => /* @__PURE__ */ createBaseVNode("h1", null, "Moirai", -1));
-const _hoisted_2$a = { class: "projects" };
-const _hoisted_3$9 = /* @__PURE__ */ _withScopeId$6(() => /* @__PURE__ */ createBaseVNode("div", { class: "header" }, [
+const _withScopeId$5 = (n) => (pushScopeId("data-v-51645dc5"), n = n(), popScopeId(), n);
+const _hoisted_1$b = /* @__PURE__ */ _withScopeId$5(() => /* @__PURE__ */ createBaseVNode("h1", null, "Moirai", -1));
+const _hoisted_2$b = { class: "projects" };
+const _hoisted_3$a = /* @__PURE__ */ _withScopeId$5(() => /* @__PURE__ */ createBaseVNode("div", { class: "header" }, [
   /* @__PURE__ */ createBaseVNode("span", { class: "proj-name" }, "Project"),
   /* @__PURE__ */ createBaseVNode("span", { class: "proj-key" }, "Key"),
   /* @__PURE__ */ createBaseVNode("span", { class: "proj-actions" }, "Actions")
 ], -1));
-const _hoisted_4$8 = { class: "project" };
-const _hoisted_5$7 = { class: "proj-name" };
-const _hoisted_6$5 = { class: "proj-key" };
+const _hoisted_4$9 = { class: "project" };
+const _hoisted_5$8 = { class: "proj-name" };
+const _hoisted_6$6 = { class: "proj-key" };
 const _hoisted_7$4 = { class: "proj-actions btn-group" };
 const _hoisted_8$4 = /* @__PURE__ */ createTextVNode("Edit ");
 const _hoisted_9$4 = /* @__PURE__ */ createTextVNode("View ");
 const _hoisted_10$4 = ["onClick"];
 const _hoisted_11$4 = ["onClick"];
-const _hoisted_12$4 = /* @__PURE__ */ _withScopeId$6(() => /* @__PURE__ */ createBaseVNode("button", {
+const _hoisted_12$3 = /* @__PURE__ */ _withScopeId$5(() => /* @__PURE__ */ createBaseVNode("button", {
   class: "btn btn-primary",
   "data-bs-toggle": "modal",
   "data-bs-target": "#import-project-dialog"
 }, " Import ", -1));
-const _hoisted_13$4 = /* @__PURE__ */ _withScopeId$6(() => /* @__PURE__ */ createBaseVNode("a", { id: "export-link" }, null, -1));
-const _hoisted_14$4 = { key: 0 };
-const _hoisted_15$4 = { key: 1 };
-const _hoisted_16$3 = { class: "object-id" };
+const _hoisted_13$3 = /* @__PURE__ */ _withScopeId$5(() => /* @__PURE__ */ createBaseVNode("a", { id: "export-link" }, null, -1));
+const _hoisted_14$3 = { key: 0 };
+const _hoisted_15$3 = { key: 1 };
+const _hoisted_16$2 = { class: "object-id" };
 const _hoisted_17$2 = { class: "btn-group" };
 const _hoisted_18$1 = { key: 2 };
-const _sfc_main$d = /* @__PURE__ */ defineComponent({
+const _sfc_main$g = /* @__PURE__ */ defineComponent({
   setup(__props) {
     const store = useStore(homeStoreKey);
     const _state = reactive({
@@ -705,13 +706,13 @@ const _sfc_main$d = /* @__PURE__ */ defineComponent({
     return (_ctx, _cache) => {
       const _component_router_link = resolveComponent("router-link");
       return openBlock(), createElementBlock(Fragment, null, [
-        _hoisted_1$a,
-        createBaseVNode("div", _hoisted_2$a, [
-          _hoisted_3$9,
+        _hoisted_1$b,
+        createBaseVNode("div", _hoisted_2$b, [
+          _hoisted_3$a,
           (openBlock(true), createElementBlock(Fragment, null, renderList(unref(projects), (project) => {
-            return openBlock(), createElementBlock("div", _hoisted_4$8, [
-              createBaseVNode("span", _hoisted_5$7, toDisplayString(project.name), 1),
-              createBaseVNode("span", _hoisted_6$5, toDisplayString(project.key), 1),
+            return openBlock(), createElementBlock("div", _hoisted_4$9, [
+              createBaseVNode("span", _hoisted_5$8, toDisplayString(project.name), 1),
+              createBaseVNode("span", _hoisted_6$6, toDisplayString(project.key), 1),
               createBaseVNode("div", _hoisted_7$4, [
                 createVNode(_component_router_link, {
                   class: "btn btn-outline-success",
@@ -748,27 +749,27 @@ const _sfc_main$d = /* @__PURE__ */ defineComponent({
                 onClick: createProject,
                 class: "btn btn-primary"
               }, "Create"),
-              _hoisted_12$4
+              _hoisted_12$3
             ])
           ])
         ]),
-        _hoisted_13$4,
-        createVNode(_sfc_main$e, {
+        _hoisted_13$3,
+        createVNode(_sfc_main$h, {
           modalId: "import-project-dialog",
           title: "Import Project"
         }, {
           default: withCtx(() => {
             var _a, _b, _c, _d, _e;
             return [
-              unref(_state).projectFile ? (openBlock(), createElementBlock("div", _hoisted_14$4, [
+              unref(_state).projectFile ? (openBlock(), createElementBlock("div", _hoisted_14$3, [
                 createBaseVNode("p", null, [
                   createBaseVNode("b", null, toDisplayString((_a = unref(_state).projectFile) == null ? void 0 : _a.name) + " (" + toDisplayString((_b = unref(_state).projectFile) == null ? void 0 : _b.size) + " bytes)", 1)
                 ]),
                 createBaseVNode("p", null, toDisplayString((_c = unref(_state).projectFile) == null ? void 0 : _c.type), 1)
               ])) : createCommentVNode("", true),
-              unref(_state).projectData && !unref(_state).projectErrors ? (openBlock(), createElementBlock("div", _hoisted_15$4, [
+              unref(_state).projectData && !unref(_state).projectErrors ? (openBlock(), createElementBlock("div", _hoisted_15$3, [
                 createTextVNode(toDisplayString((_d = unref(_state).projectData) == null ? void 0 : _d.name) + " / ", 1),
-                createBaseVNode("span", _hoisted_16$3, toDisplayString((_e = unref(_state).projectData) == null ? void 0 : _e.key), 1)
+                createBaseVNode("span", _hoisted_16$2, toDisplayString((_e = unref(_state).projectData) == null ? void 0 : _e.key), 1)
               ])) : createCommentVNode("", true),
               createBaseVNode("input", {
                 id: "import-file",
@@ -808,8 +809,8 @@ const _sfc_main$d = /* @__PURE__ */ defineComponent({
     };
   }
 });
-var Home = /* @__PURE__ */ _export_sfc(_sfc_main$d, [["__scopeId", "data-v-51645dc5"]]);
-const _sfc_main$c = {
+var Home = /* @__PURE__ */ _export_sfc(_sfc_main$g, [["__scopeId", "data-v-51645dc5"]]);
+const _sfc_main$f = {
   props: {
     name: { type: String, required: true },
     size: { type: String, default: void 0 },
@@ -851,15 +852,15 @@ function sleep(time) {
   return new Promise((resolve) => setTimeout(resolve, time));
 }
 var Editor_vue_vue_type_style_index_0_lang = "";
-const _hoisted_1$9 = {
+const _hoisted_1$a = {
   key: 0,
   id: "editor-main"
 };
-const _hoisted_2$9 = { class: "toolbar" };
-const _hoisted_3$8 = { class: "nav nav-pills nav-fill editor-tabs" };
-const _hoisted_4$7 = /* @__PURE__ */ createTextVNode(" Home ");
-const _hoisted_5$6 = /* @__PURE__ */ createTextVNode(" Pages ");
-const _hoisted_6$4 = { class: "nav-item dropdown" };
+const _hoisted_2$a = { class: "toolbar" };
+const _hoisted_3$9 = { class: "nav nav-pills nav-fill editor-tabs" };
+const _hoisted_4$8 = /* @__PURE__ */ createTextVNode(" Home ");
+const _hoisted_5$7 = /* @__PURE__ */ createTextVNode(" Pages ");
+const _hoisted_6$5 = { class: "nav-item dropdown" };
 const _hoisted_7$3 = /* @__PURE__ */ createTextVNode(" Sections ");
 const _hoisted_8$3 = {
   class: "dropdown-menu",
@@ -868,12 +869,12 @@ const _hoisted_8$3 = {
 const _hoisted_9$3 = { class: "object-id" };
 const _hoisted_10$3 = /* @__PURE__ */ createTextVNode(" Settings ");
 const _hoisted_11$3 = { class: "editor-actions" };
-const _hoisted_12$3 = { id: "editor-current" };
-const _hoisted_13$3 = {
+const _hoisted_12$2 = { id: "editor-current" };
+const _hoisted_13$2 = {
   key: 1,
   id: "editor-loader"
 };
-const _hoisted_14$3 = /* @__PURE__ */ createBaseVNode("div", { class: "loader" }, [
+const _hoisted_14$2 = /* @__PURE__ */ createBaseVNode("div", { class: "loader" }, [
   /* @__PURE__ */ createBaseVNode("div", {
     class: "spinner-border",
     style: { "width": "5rem", "height": "5rem" },
@@ -883,10 +884,10 @@ const _hoisted_14$3 = /* @__PURE__ */ createBaseVNode("div", { class: "loader" }
   ]),
   /* @__PURE__ */ createBaseVNode("p", null, "Loading Project ...")
 ], -1);
-const _hoisted_15$3 = [
-  _hoisted_14$3
+const _hoisted_15$2 = [
+  _hoisted_14$2
 ];
-const _sfc_main$b = /* @__PURE__ */ defineComponent({
+const _sfc_main$e = /* @__PURE__ */ defineComponent({
   props: {
     projectId: String,
     pageId: String
@@ -933,16 +934,16 @@ const _sfc_main$b = /* @__PURE__ */ defineComponent({
     return (_ctx, _cache) => {
       const _component_router_link = resolveComponent("router-link");
       const _component_router_view = resolveComponent("router-view");
-      return unref(_state).loaded ? (openBlock(), createElementBlock("div", _hoisted_1$9, [
-        createBaseVNode("div", _hoisted_2$9, [
-          createBaseVNode("nav", _hoisted_3$8, [
+      return unref(_state).loaded ? (openBlock(), createElementBlock("div", _hoisted_1$a, [
+        createBaseVNode("div", _hoisted_2$a, [
+          createBaseVNode("nav", _hoisted_3$9, [
             createVNode(_component_router_link, {
               class: "nav-link",
               to: { name: "home" }
             }, {
               default: withCtx(() => [
-                createVNode(_sfc_main$c, { name: "chevron-left" }),
-                _hoisted_4$7
+                createVNode(_sfc_main$f, { name: "chevron-left" }),
+                _hoisted_4$8
               ]),
               _: 1
             }),
@@ -952,12 +953,12 @@ const _sfc_main$b = /* @__PURE__ */ defineComponent({
               "active-class": "active"
             }, {
               default: withCtx(() => [
-                createVNode(_sfc_main$c, { name: "file-multiple" }),
-                _hoisted_5$6
+                createVNode(_sfc_main$f, { name: "file-multiple" }),
+                _hoisted_5$7
               ]),
               _: 1
             }, 8, ["to"]),
-            createBaseVNode("div", _hoisted_6$4, [
+            createBaseVNode("div", _hoisted_6$5, [
               createBaseVNode("a", {
                 class: normalizeClass(["nav-link", { disabled: !unref(findPageIds) || unref(findPageIds).length === 0 }, "dropdown-toggle"]),
                 href: "#",
@@ -966,7 +967,7 @@ const _sfc_main$b = /* @__PURE__ */ defineComponent({
                 "data-bs-toggle": "dropdown",
                 "aria-expanded": "false"
               }, [
-                createVNode(_sfc_main$c, { name: "layers-triple" }),
+                createVNode(_sfc_main$f, { name: "layers-triple" }),
                 _hoisted_7$3
               ], 2),
               createBaseVNode("ul", _hoisted_8$3, [
@@ -978,7 +979,7 @@ const _sfc_main$b = /* @__PURE__ */ defineComponent({
                       "active-class": "active"
                     }, {
                       default: withCtx(() => [
-                        createTextVNode(toDisplayString(findPage(pageId).title) + " / ", 1),
+                        createTextVNode(toDisplayString(findPage(pageId).name) + " / ", 1),
                         createBaseVNode("span", _hoisted_9$3, toDisplayString(pageId), 1)
                       ]),
                       _: 2
@@ -993,7 +994,7 @@ const _sfc_main$b = /* @__PURE__ */ defineComponent({
               "active-class": "active"
             }, {
               default: withCtx(() => [
-                createVNode(_sfc_main$c, { name: "cog" }),
+                createVNode(_sfc_main$f, { name: "cog" }),
                 _hoisted_10$3
               ]),
               _: 1
@@ -1003,48 +1004,180 @@ const _sfc_main$b = /* @__PURE__ */ defineComponent({
             createVNode(_component_router_view, { name: "tools" })
           ])
         ]),
-        createBaseVNode("div", _hoisted_12$3, [
+        createBaseVNode("div", _hoisted_12$2, [
           createVNode(_component_router_view)
         ])
-      ])) : (openBlock(), createElementBlock("div", _hoisted_13$3, _hoisted_15$3));
+      ])) : (openBlock(), createElementBlock("div", _hoisted_13$2, _hoisted_15$2));
     };
   }
 });
-function updatePropsFor(store, { type, prop, objectId }) {
-  function computedPropFor(key, path = [], defaultValue = void 0) {
-    return [`M_${key}`, computed({
+function updatePropsFor(store, { type, prop, provider, objectId, path }) {
+  const _provider = provider || (() => prop == null ? void 0 : prop.value);
+  function computedPropFor(key, path2 = [], defaultValue = void 0) {
+    return [
+      `M_${key}`,
+      computed({
+        get: () => {
+          let obj = _provider();
+          const cur = view(lensPath([...path2, key]), obj);
+          return cur !== void 0 ? cur : defaultValue;
+        },
+        set: (value) => {
+          let _objectId = objectId();
+          if (!_objectId)
+            return;
+          store.commit("project/updateObject", {
+            objectId: _objectId,
+            path: path2,
+            data: { [key]: value }
+          });
+        }
+      })
+    ];
+  }
+  function computedProps(type2, path2 = [], defaultValues = {}) {
+    const sealed2 = Reflect.getOwnMetadata("persist:sealed", type2);
+    if (sealed2) {
+      return {};
+    } else {
+      const propsToPersist = Reflect.getMetadata("persist:props", type2);
+      const innerProps = Reflect.getMetadata("persist:inner", type2);
+      const defaults2 = Reflect.getMetadata("persist:defaults", type2);
+      return Object.fromEntries(propsToPersist.map((key) => {
+        if (innerProps && key in innerProps) {
+          return [key, computedProps(innerProps[key], [...path2, key], clone(defaults2[key]))];
+        } else {
+          return computedPropFor(key, path2, defaultValues[key]);
+        }
+      }));
+    }
+  }
+  return computedProps(type, path || []);
+}
+const _sfc_main$d = /* @__PURE__ */ defineComponent({
+  props: {
+    name: String
+  },
+  setup(__props) {
+    return (_ctx, _cache) => {
+      return openBlock(), createElementBlock("div", null, "No content");
+    };
+  }
+});
+var SimpleContentView_vue_vue_type_style_index_0_scoped_true_lang = "";
+const _hoisted_1$9 = { class: "simple-content-edit" };
+const _hoisted_2$9 = ["src", "alt"];
+const _hoisted_3$8 = {
+  key: 1,
+  class: "img-placeholder"
+};
+const _hoisted_4$7 = { class: "content-body" };
+const _hoisted_5$6 = { class: "btn btn-outline-primary" };
+const _hoisted_6$4 = ["innerHTML"];
+const _sfc_main$c = /* @__PURE__ */ defineComponent({
+  props: {
+    objectId: { type: String, required: true },
+    contentProp: { type: String, required: true },
+    name: { type: String, required: true }
+  },
+  setup(__props) {
+    const props = __props;
+    const store = useStore(editorStoreKey);
+    const content = computed(() => {
+      const element = store.getters["project/findElement"](props.objectId);
+      return view(lensProp(props.contentProp), element);
+    });
+    const {
+      M_title
+    } = updatePropsFor(store, {
+      type: SimpleContent,
+      provider: () => store.getters["project/findElement"](props.objectId),
+      objectId: () => props.objectId,
+      path: [props.contentProp]
+    });
+    return (_ctx, _cache) => {
+      return openBlock(), createElementBlock("div", _hoisted_1$9, [
+        withDirectives(createBaseVNode("input", {
+          class: "form-control content-title",
+          type: "text",
+          "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => isRef(M_title) ? M_title.value = $event : null)
+        }, null, 512), [
+          [vModelText, unref(M_title)]
+        ]),
+        createBaseVNode("div", {
+          class: normalizeClass(["content-image", { "img-ph": !unref(content).image }])
+        }, [
+          unref(content).image ? (openBlock(), createElementBlock("img", {
+            key: 0,
+            src: unref(content).image,
+            alt: unref(content).title,
+            class: "img-thumbnail"
+          }, null, 8, _hoisted_2$9)) : (openBlock(), createElementBlock("div", _hoisted_3$8, "No Image"))
+        ], 2),
+        createBaseVNode("div", _hoisted_4$7, [
+          createBaseVNode("button", _hoisted_5$6, [
+            createVNode(_sfc_main$f, { name: "pencil-outline" })
+          ]),
+          createBaseVNode("div", {
+            class: "content-body-render",
+            innerHTML: unref(content).body
+          }, null, 8, _hoisted_6$4)
+        ])
+      ]);
+    };
+  }
+});
+var SimpleContentView = /* @__PURE__ */ _export_sfc(_sfc_main$c, [["__scopeId", "data-v-450a9c0c"]]);
+var ContentView_vue_vue_type_style_index_0_scoped_true_lang = "";
+const _sfc_main$b = defineComponent({
+  name: "ContentView",
+  components: { EmptyContentView: _sfc_main$d, SimpleContentView },
+  props: {
+    objectId: { type: String, required: true },
+    contentProp: { type: String, required: true },
+    name: { type: String, required: true }
+  },
+  setup(props) {
+    const store = useStore(editorStoreKey);
+    const { objectId, contentProp } = toRefs(props);
+    const contentType = computed({
       get: () => {
-        const cur = view(lensPath([...path, key]), prop.value);
-        return cur !== void 0 ? cur : defaultValue;
+        const element = store.getters["project/findElement"](objectId.value);
+        const content = view(lensProp(contentProp.value), element);
+        return (content == null ? void 0 : content.type) || ContentType.Empty;
       },
       set: (value) => {
-        let _objectId = objectId();
-        if (!_objectId)
-          return;
         store.commit("project/updateObject", {
-          objectId: _objectId,
-          path,
-          data: { [key]: value }
+          objectId: objectId.value,
+          path: [contentProp.value],
+          data: { type: value },
+          replace: true
         });
       }
-    })];
+    });
+    return {
+      contentType
+    };
+  },
+  render() {
+    return h("div", { class: "content-editor" }, [
+      h("span", { class: "editor-name" }, this.$props.name),
+      h("select", {
+        class: "form-select content-type",
+        value: this.contentType,
+        onChange: (evt) => {
+          console.log("Select Changed", evt);
+          this.contentType = evt.target.value;
+        }
+      }, Object.values(ContentType).map((key) => {
+        return h("option", { value: key }, key);
+      })),
+      lib.match(this.contentType).with(ContentType.Empty, () => h(_sfc_main$d, __spreadValues({ class: "editor-view" }, this.$props))).with(ContentType.Simple, () => h(SimpleContentView, __spreadValues({ class: "editor-view" }, this.$props))).exhaustive()
+    ]);
   }
-  function computedProps(type2, path = [], defaultValues = {}) {
-    const propsToPersist = Reflect.getMetadata("persist:props", type2);
-    const innerProps = Reflect.getMetadata("persist:inner", type2);
-    const defaults2 = Reflect.getMetadata("persist:defaults", type2);
-    return Object.fromEntries(propsToPersist.map((key) => {
-      if (innerProps && key in innerProps) {
-        return [key, computedProps(innerProps[key], [...path, key], clone(defaults2[key]))];
-      } else {
-        return computedPropFor(key, path, defaultValues[key]);
-      }
-    }));
-  }
-  return computedProps(type, []);
-}
+});
+var ContentView = /* @__PURE__ */ _export_sfc(_sfc_main$b, [["__scopeId", "data-v-dee7cd24"]]);
 var PageView_vue_vue_type_style_index_0_scoped_true_lang = "";
-const _withScopeId$5 = (n) => (pushScopeId("data-v-3efd4446"), n = n(), popScopeId(), n);
 const _hoisted_1$8 = { class: "page" };
 const _hoisted_2$8 = { class: "page-actions" };
 const _hoisted_3$7 = { class: "page-id" };
@@ -1057,13 +1190,8 @@ const _hoisted_9$2 = /* @__PURE__ */ createTextVNode(" Style ");
 const _hoisted_10$2 = { class: "btn-group" };
 const _hoisted_11$2 = {
   key: 0,
-  class: "page-header"
+  class: "page-content"
 };
-const _hoisted_12$2 = { class: "page-text" };
-const _hoisted_13$2 = { class: "form-floating" };
-const _hoisted_14$2 = /* @__PURE__ */ _withScopeId$5(() => /* @__PURE__ */ createBaseVNode("label", null, "Header Text", -1));
-const _hoisted_15$2 = { class: "form-floating" };
-const _hoisted_16$2 = /* @__PURE__ */ _withScopeId$5(() => /* @__PURE__ */ createBaseVNode("label", null, "Footer Text", -1));
 const _sfc_main$a = /* @__PURE__ */ defineComponent({
   props: {
     pageId: String
@@ -1076,9 +1204,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
     });
     const page = computed(() => store.getters["project/findElement"](props.pageId));
     const {
-      M_title,
-      M_headerText,
-      M_footerText
+      M_name
     } = updatePropsFor(store, {
       type: Page,
       prop: page,
@@ -1103,10 +1229,10 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
             class: "btn btn-sm btn-link",
             onClick: togglePage
           }, [
-            withDirectives(createVNode(_sfc_main$c, { name: "eye" }, null, 512), [
+            withDirectives(createVNode(_sfc_main$f, { name: "eye" }, null, 512), [
               [vShow, unref(_state).collapsed]
             ]),
-            withDirectives(createVNode(_sfc_main$c, { name: "eye-off" }, null, 512), [
+            withDirectives(createVNode(_sfc_main$f, { name: "eye-off" }, null, 512), [
               [vShow, !unref(_state).collapsed]
             ])
           ]),
@@ -1114,13 +1240,13 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
             class: "btn btn-sm btn-link",
             onClick: _cache[0] || (_cache[0] = ($event) => movePage("prev"))
           }, [
-            createVNode(_sfc_main$c, { name: "arrow-up" })
+            createVNode(_sfc_main$f, { name: "arrow-up" })
           ]),
           createBaseVNode("button", {
             class: "btn btn-sm btn-link",
             onClick: _cache[1] || (_cache[1] = ($event) => movePage("next"))
           }, [
-            createVNode(_sfc_main$c, { name: "arrow-down" })
+            createVNode(_sfc_main$f, { name: "arrow-down" })
           ]),
           createBaseVNode("span", _hoisted_3$7, toDisplayString(unref(page).id), 1),
           createBaseVNode("div", _hoisted_4$6, [
@@ -1130,7 +1256,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
                 "data-bs-toggle": "modal",
                 "data-bs-target": `#cond_${props.sectionId}`
               }, [
-                createVNode(_sfc_main$c, { name: "key" }),
+                createVNode(_sfc_main$f, { name: "key" }),
                 _hoisted_7$2
               ], 8, _hoisted_6$3),
               createBaseVNode("button", {
@@ -1139,7 +1265,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
                 "data-bs-toggle": "modal",
                 "data-bs-target": `#style_${props.sectionId}`
               }, [
-                createVNode(_sfc_main$c, { name: "palette-swatch" }),
+                createVNode(_sfc_main$f, { name: "palette-swatch" }),
                 _hoisted_9$2
               ], 8, _hoisted_8$2)
             ]),
@@ -1148,47 +1274,37 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
                 class: "btn btn-sm btn-outline-danger wide",
                 onClick: deletePage
               }, [
-                createVNode(_sfc_main$c, { name: "delete-outline" })
+                createVNode(_sfc_main$f, { name: "delete-outline" })
               ])
             ])
           ])
         ]),
         !unref(_state).collapsed ? (openBlock(), createElementBlock("div", _hoisted_11$2, [
-          createBaseVNode("div", _hoisted_12$2, [
-            withDirectives(createBaseVNode("input", {
-              class: "form-control page-title",
-              type: "text",
-              "onUpdate:modelValue": _cache[2] || (_cache[2] = ($event) => isRef(M_title) ? M_title.value = $event : null)
-            }, null, 512), [
-              [vModelText, unref(M_title)]
-            ]),
-            createBaseVNode("div", _hoisted_13$2, [
-              withDirectives(createBaseVNode("textarea", {
-                class: "form-control page-header",
-                "onUpdate:modelValue": _cache[3] || (_cache[3] = ($event) => isRef(M_headerText) ? M_headerText.value = $event : null),
-                placeholder: "..."
-              }, null, 512), [
-                [vModelText, unref(M_headerText)]
-              ]),
-              _hoisted_14$2
-            ]),
-            createBaseVNode("div", _hoisted_15$2, [
-              withDirectives(createBaseVNode("textarea", {
-                class: "form-control page-footer",
-                "onUpdate:modelValue": _cache[4] || (_cache[4] = ($event) => isRef(M_footerText) ? M_footerText.value = $event : null),
-                placeholder: "..."
-              }, null, 512), [
-                [vModelText, unref(M_footerText)]
-              ]),
-              _hoisted_16$2
-            ])
-          ])
+          withDirectives(createBaseVNode("input", {
+            class: "form-control page-name",
+            type: "text",
+            "onUpdate:modelValue": _cache[2] || (_cache[2] = ($event) => isRef(M_name) ? M_name.value = $event : null)
+          }, null, 512), [
+            [vModelText, unref(M_name)]
+          ]),
+          createVNode(ContentView, {
+            "object-id": props.pageId,
+            "content-prop": "headerContent",
+            name: "Page Header",
+            class: "page-header"
+          }, null, 8, ["object-id"]),
+          createVNode(ContentView, {
+            "object-id": props.pageId,
+            "content-prop": "footerContent",
+            name: "Page Footer",
+            class: "page-footer"
+          }, null, 8, ["object-id"])
         ])) : createCommentVNode("", true)
       ]);
     };
   }
 });
-var PageView = /* @__PURE__ */ _export_sfc(_sfc_main$a, [["__scopeId", "data-v-3efd4446"]]);
+var PageView = /* @__PURE__ */ _export_sfc(_sfc_main$a, [["__scopeId", "data-v-1535c8f0"]]);
 var PagesTab_vue_vue_type_style_index_0_scoped_true_lang = "";
 const _withScopeId$4 = (n) => (pushScopeId("data-v-2d0942ac"), n = n(), popScopeId(), n);
 const _hoisted_1$7 = /* @__PURE__ */ _withScopeId$4(() => /* @__PURE__ */ createBaseVNode("h1", null, "Pages", -1));
@@ -1243,7 +1359,7 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
             class: "btn btn-primary",
             onClick: createPage
           }, [
-            createVNode(_sfc_main$c, { name: "file-plus" }),
+            createVNode(_sfc_main$f, { name: "file-plus" }),
             _hoisted_3$5
           ])
         ])
@@ -1252,7 +1368,7 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
   }
 });
 var OptionView_vue_vue_type_style_index_0_scoped_true_lang = "";
-const _withScopeId$3 = (n) => (pushScopeId("data-v-7766e74d"), n = n(), popScopeId(), n);
+const _withScopeId$3 = (n) => (pushScopeId("data-v-a6c2451e"), n = n(), popScopeId(), n);
 const _hoisted_1$5 = { class: "option" };
 const _hoisted_2$5 = { class: "opt-header" };
 const _hoisted_3$4 = /* @__PURE__ */ _withScopeId$3(() => /* @__PURE__ */ createBaseVNode("div", { class: "opt-conditions" }, null, -1));
@@ -1267,7 +1383,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
     const props = __props;
     const store = useStore(editorStoreKey);
     const option = computed(() => store.getters["project/findElement"](props.optionId));
-    const { M_title, M_text } = updatePropsFor(store, {
+    const { M_name, M_text } = updatePropsFor(store, {
       type: Option,
       prop: option,
       objectId: () => props.optionId
@@ -1280,9 +1396,9 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
         createBaseVNode("div", _hoisted_2$5, [
           withDirectives(createBaseVNode("input", {
             class: "form-control opt-title",
-            "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => isRef(M_title) ? M_title.value = $event : null)
+            "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => isRef(M_name) ? M_name.value = $event : null)
           }, null, 512), [
-            [vModelText, unref(M_title)]
+            [vModelText, unref(M_name)]
           ]),
           _hoisted_3$4,
           _hoisted_4$4
@@ -1293,7 +1409,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
             class: "btn btn-sm btn-outline-danger",
             onClick: deleteOption
           }, [
-            createVNode(_sfc_main$c, { name: "delete-outline" })
+            createVNode(_sfc_main$f, { name: "delete-outline" })
           ])
         ]),
         withDirectives(createBaseVNode("textarea", {
@@ -1306,9 +1422,9 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-var OptionView = /* @__PURE__ */ _export_sfc(_sfc_main$7, [["__scopeId", "data-v-7766e74d"]]);
+var OptionView = /* @__PURE__ */ _export_sfc(_sfc_main$7, [["__scopeId", "data-v-a6c2451e"]]);
 var ChoiceView_vue_vue_type_style_index_0_scoped_true_lang = "";
-const _withScopeId$2 = (n) => (pushScopeId("data-v-010c0506"), n = n(), popScopeId(), n);
+const _withScopeId$2 = (n) => (pushScopeId("data-v-76302d8b"), n = n(), popScopeId(), n);
 const _hoisted_1$4 = { class: "ch-header" };
 const _hoisted_2$4 = {
   key: 0,
@@ -1346,7 +1462,7 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
     const choice = computed(() => store.getters["project/findElement"](props.choiceId));
     const options = computed(() => store.getters["project/findChildrenIds"](props.choiceId));
     const styles = computed(() => ["default", "Style 1", "Style 2"]);
-    const { M_title, M_text, style: { M_name: M_style_name, M_colSpan, M_rowSpan } } = updatePropsFor(store, {
+    const { M_name, M_text, style: { M_name: M_style_name, M_colSpan, M_rowSpan } } = updatePropsFor(store, {
       type: Choice,
       prop: choice,
       objectId: () => props.choiceId
@@ -1386,9 +1502,9 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
         createBaseVNode("div", _hoisted_1$4, [
           withDirectives(createBaseVNode("input", {
             class: "form-control ch-title",
-            "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => isRef(M_title) ? M_title.value = $event : null)
+            "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => isRef(M_name) ? M_name.value = $event : null)
           }, null, 512), [
-            [vModelText, unref(M_title)]
+            [vModelText, unref(M_name)]
           ]),
           unref(choice).conditions ? (openBlock(), createElementBlock("div", _hoisted_2$4)) : createCommentVNode("", true),
           unref(choice).scores ? (openBlock(), createElementBlock("div", _hoisted_3$3)) : createCommentVNode("", true),
@@ -1450,20 +1566,20 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
             class: "btn btn-sm btn-outline-primary",
             onClick: createOption
           }, [
-            createVNode(_sfc_main$c, { name: "plus-circle" })
+            createVNode(_sfc_main$f, { name: "plus-circle" })
           ]),
           createBaseVNode("button", {
             class: "btn btn-sm btn-outline-danger",
             onClick: deleteChoice
           }, [
-            createVNode(_sfc_main$c, { name: "delete-outline" })
+            createVNode(_sfc_main$f, { name: "delete-outline" })
           ])
         ])
       ], 4);
     };
   }
 });
-var ChoiceView = /* @__PURE__ */ _export_sfc(_sfc_main$6, [["__scopeId", "data-v-010c0506"]]);
+var ChoiceView = /* @__PURE__ */ _export_sfc(_sfc_main$6, [["__scopeId", "data-v-76302d8b"]]);
 class Condition {
   constructor(test, state) {
     this.test = test;
@@ -1471,7 +1587,7 @@ class Condition {
   }
 }
 var SectionView_vue_vue_type_style_index_0_scoped_true_lang = "";
-const _withScopeId$1 = (n) => (pushScopeId("data-v-8fdafb8c"), n = n(), popScopeId(), n);
+const _withScopeId$1 = (n) => (pushScopeId("data-v-89827d52"), n = n(), popScopeId(), n);
 const _hoisted_1$3 = { class: "section" };
 const _hoisted_2$3 = { class: "sec-actions" };
 const _hoisted_3$2 = { class: "object-id" };
@@ -1489,11 +1605,7 @@ const _hoisted_13 = {
   class: "sec-header"
 };
 const _hoisted_14 = { class: "sec-text" };
-const _hoisted_15 = { class: "form-floating sec-header-text" };
-const _hoisted_16 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("label", null, "Header Text", -1));
-const _hoisted_17 = { class: "form-floating sec-footer-text" };
-const _hoisted_18 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("label", null, "Footer Text", -1));
-const _hoisted_19 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("div", { class: "sec-meta" }, [
+const _hoisted_15 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("div", { class: "sec-meta" }, [
   /* @__PURE__ */ createBaseVNode("b", null, "Choices"),
   /* @__PURE__ */ createBaseVNode("label", null, "Maximum Selected"),
   /* @__PURE__ */ createBaseVNode("input", {
@@ -1501,26 +1613,26 @@ const _hoisted_19 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createB
     type: "number"
   })
 ], -1));
-const _hoisted_20 = { class: "sec-style" };
-const _hoisted_21 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("b", null, "Section Style", -1));
-const _hoisted_22 = ["value"];
-const _hoisted_23 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("b", null, "Choices Style (default)", -1));
-const _hoisted_24 = ["value"];
-const _hoisted_25 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("b", null, "Grid", -1));
-const _hoisted_26 = { class: "sec-grid" };
-const _hoisted_27 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("label", null, "Direction", -1));
-const _hoisted_28 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("option", null, "row", -1));
-const _hoisted_29 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("option", null, "column", -1));
-const _hoisted_30 = [
-  _hoisted_28,
-  _hoisted_29
+const _hoisted_16 = { class: "sec-style" };
+const _hoisted_17 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("b", null, "Section Style", -1));
+const _hoisted_18 = ["value"];
+const _hoisted_19 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("b", null, "Choices Style (default)", -1));
+const _hoisted_20 = ["value"];
+const _hoisted_21 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("b", null, "Grid", -1));
+const _hoisted_22 = { class: "sec-grid" };
+const _hoisted_23 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("label", null, "Direction", -1));
+const _hoisted_24 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("option", null, "row", -1));
+const _hoisted_25 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("option", null, "column", -1));
+const _hoisted_26 = [
+  _hoisted_24,
+  _hoisted_25
 ];
-const _hoisted_31 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("label", null, "Columns", -1));
-const _hoisted_32 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("label", null, "Rows", -1));
-const _hoisted_33 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("label", null, "Default Width", -1));
-const _hoisted_34 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("label", null, "Default Height", -1));
-const _hoisted_35 = { class: "sec-conditions" };
-const _hoisted_36 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("b", null, "Conditions", -1));
+const _hoisted_27 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("label", null, "Columns", -1));
+const _hoisted_28 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("label", null, "Rows", -1));
+const _hoisted_29 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("label", null, "Default Width", -1));
+const _hoisted_30 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("label", null, "Default Height", -1));
+const _hoisted_31 = { class: "sec-conditions" };
+const _hoisted_32 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("b", null, "Conditions", -1));
 const _sfc_main$5 = /* @__PURE__ */ defineComponent({
   props: {
     sectionId: String
@@ -1535,9 +1647,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
     const choices = computed(() => store.getters["project/findChildrenIds"](props.sectionId));
     const styles = computed(() => ["default", "Style 1", "Style 2"]);
     const {
-      M_title,
-      M_headerText,
-      M_footerText,
+      M_name,
       style: {
         M_name: M_style_name,
         M_children: M_style_children,
@@ -1614,10 +1724,10 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
               class: "btn btn-sm btn-link",
               onClick: toggleSection
             }, [
-              withDirectives(createVNode(_sfc_main$c, { name: "eye" }, null, 512), [
+              withDirectives(createVNode(_sfc_main$f, { name: "eye" }, null, 512), [
                 [vShow, unref(_state).collapsed]
               ]),
-              withDirectives(createVNode(_sfc_main$c, { name: "eye-off" }, null, 512), [
+              withDirectives(createVNode(_sfc_main$f, { name: "eye-off" }, null, 512), [
                 [vShow, !unref(_state).collapsed]
               ])
             ]),
@@ -1625,13 +1735,13 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
               class: "btn btn-sm btn-link",
               onClick: _cache[0] || (_cache[0] = ($event) => moveSection("prev"))
             }, [
-              createVNode(_sfc_main$c, { name: "arrow-up" })
+              createVNode(_sfc_main$f, { name: "arrow-up" })
             ]),
             createBaseVNode("button", {
               class: "btn btn-sm btn-link",
               onClick: _cache[1] || (_cache[1] = ($event) => moveSection("next"))
             }, [
-              createVNode(_sfc_main$c, { name: "arrow-down" })
+              createVNode(_sfc_main$f, { name: "arrow-down" })
             ]),
             createBaseVNode("span", _hoisted_3$2, toDisplayString(unref(section).id), 1),
             createBaseVNode("div", _hoisted_4$2, [
@@ -1640,7 +1750,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                   class: "btn btn-sm btn-outline-primary",
                   onClick: createChoice
                 }, [
-                  createVNode(_sfc_main$c, { name: "plus-circle" }),
+                  createVNode(_sfc_main$f, { name: "plus-circle" }),
                   _hoisted_6
                 ])
               ]),
@@ -1650,7 +1760,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                   "data-bs-toggle": "modal",
                   "data-bs-target": `#cond_${props.sectionId}`
                 }, [
-                  createVNode(_sfc_main$c, { name: "key" }),
+                  createVNode(_sfc_main$f, { name: "key" }),
                   _hoisted_9
                 ], 8, _hoisted_8),
                 createBaseVNode("button", {
@@ -1659,7 +1769,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                   "data-bs-toggle": "modal",
                   "data-bs-target": `#style_${props.sectionId}`
                 }, [
-                  createVNode(_sfc_main$c, { name: "palette-swatch" }),
+                  createVNode(_sfc_main$f, { name: "palette-swatch" }),
                   _hoisted_11
                 ], 8, _hoisted_10)
               ]),
@@ -1668,7 +1778,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                   class: "btn btn-sm btn-outline-danger wide",
                   onClick: deleteSection
                 }, [
-                  createVNode(_sfc_main$c, { name: "delete-outline" })
+                  createVNode(_sfc_main$f, { name: "delete-outline" })
                 ])
               ])
             ])
@@ -1678,32 +1788,22 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
               withDirectives(createBaseVNode("input", {
                 class: "form-control sec-title",
                 type: "text",
-                "onUpdate:modelValue": _cache[2] || (_cache[2] = ($event) => isRef(M_title) ? M_title.value = $event : null)
+                "onUpdate:modelValue": _cache[2] || (_cache[2] = ($event) => isRef(M_name) ? M_name.value = $event : null)
               }, null, 512), [
-                [vModelText, unref(M_title)]
+                [vModelText, unref(M_name)]
               ]),
-              createBaseVNode("div", _hoisted_15, [
-                withDirectives(createBaseVNode("textarea", {
-                  class: "form-control",
-                  "onUpdate:modelValue": _cache[3] || (_cache[3] = ($event) => isRef(M_headerText) ? M_headerText.value = $event : null),
-                  placeholder: "..."
-                }, null, 512), [
-                  [vModelText, unref(M_headerText)]
-                ]),
-                _hoisted_16
-              ]),
-              createBaseVNode("div", _hoisted_17, [
-                withDirectives(createBaseVNode("textarea", {
-                  class: "form-control",
-                  "onUpdate:modelValue": _cache[4] || (_cache[4] = ($event) => isRef(M_footerText) ? M_footerText.value = $event : null),
-                  placeholder: "..."
-                }, null, 512), [
-                  [vModelText, unref(M_footerText)]
-                ]),
-                _hoisted_18
-              ])
+              createVNode(ContentView, {
+                "object-id": props.sectionId,
+                "content-prop": "headerContent",
+                name: "Section Header"
+              }, null, 8, ["object-id"]),
+              createVNode(ContentView, {
+                "object-id": props.sectionId,
+                "content-prop": "footerContent",
+                name: "Section Footer"
+              }, null, 8, ["object-id"])
             ]),
-            _hoisted_19
+            _hoisted_15
           ])) : createCommentVNode("", true),
           !unref(_state).collapsed ? (openBlock(), createElementBlock("div", {
             key: 1,
@@ -1718,72 +1818,72 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
             }), 256))
           ], 4)) : createCommentVNode("", true)
         ]),
-        createVNode(_sfc_main$e, {
+        createVNode(_sfc_main$h, {
           modalId: `style_${props.sectionId}`,
           title: "Style Editor"
         }, {
           default: withCtx(() => [
-            createBaseVNode("div", _hoisted_20, [
-              _hoisted_21,
+            createBaseVNode("div", _hoisted_16, [
+              _hoisted_17,
               withDirectives(createBaseVNode("select", {
                 class: "form-select sec-style-select",
-                "onUpdate:modelValue": _cache[5] || (_cache[5] = ($event) => isRef(M_style_name) ? M_style_name.value = $event : null)
+                "onUpdate:modelValue": _cache[3] || (_cache[3] = ($event) => isRef(M_style_name) ? M_style_name.value = $event : null)
               }, [
                 (openBlock(true), createElementBlock(Fragment, null, renderList(unref(styles), (style) => {
-                  return openBlock(), createElementBlock("option", { value: style }, toDisplayString(style), 9, _hoisted_22);
+                  return openBlock(), createElementBlock("option", { value: style }, toDisplayString(style), 9, _hoisted_18);
                 }), 256))
               ], 512), [
                 [vModelSelect, unref(M_style_name)]
               ]),
-              _hoisted_23,
+              _hoisted_19,
               withDirectives(createBaseVNode("select", {
                 class: "form-select sec-style-select",
-                "onUpdate:modelValue": _cache[6] || (_cache[6] = ($event) => isRef(M_style_children) ? M_style_children.value = $event : null)
+                "onUpdate:modelValue": _cache[4] || (_cache[4] = ($event) => isRef(M_style_children) ? M_style_children.value = $event : null)
               }, [
                 (openBlock(true), createElementBlock(Fragment, null, renderList(unref(styles), (style) => {
-                  return openBlock(), createElementBlock("option", { value: style }, toDisplayString(style), 9, _hoisted_24);
+                  return openBlock(), createElementBlock("option", { value: style }, toDisplayString(style), 9, _hoisted_20);
                 }), 256))
               ], 512), [
                 [vModelSelect, unref(M_style_children)]
               ]),
-              _hoisted_25,
-              createBaseVNode("div", _hoisted_26, [
-                _hoisted_27,
+              _hoisted_21,
+              createBaseVNode("div", _hoisted_22, [
+                _hoisted_23,
                 withDirectives(createBaseVNode("select", {
                   class: "form-select sec-style-dir span3",
-                  "onUpdate:modelValue": _cache[7] || (_cache[7] = ($event) => isRef(M_gridFlow) ? M_gridFlow.value = $event : null)
-                }, _hoisted_30, 512), [
+                  "onUpdate:modelValue": _cache[5] || (_cache[5] = ($event) => isRef(M_gridFlow) ? M_gridFlow.value = $event : null)
+                }, _hoisted_26, 512), [
                   [vModelSelect, unref(M_gridFlow)]
                 ]),
-                _hoisted_31,
+                _hoisted_27,
                 withDirectives(createBaseVNode("input", {
                   class: "form-control sec-grid-cols",
                   type: "text",
-                  "onUpdate:modelValue": _cache[8] || (_cache[8] = ($event) => isRef(M_gridCols) ? M_gridCols.value = $event : null)
+                  "onUpdate:modelValue": _cache[6] || (_cache[6] = ($event) => isRef(M_gridCols) ? M_gridCols.value = $event : null)
                 }, null, 512), [
                   [vModelText, unref(M_gridCols)]
                 ]),
-                _hoisted_32,
+                _hoisted_28,
                 withDirectives(createBaseVNode("input", {
                   class: "form-control sec-grid-rows",
                   type: "text",
-                  "onUpdate:modelValue": _cache[9] || (_cache[9] = ($event) => isRef(M_gridRows) ? M_gridRows.value = $event : null)
+                  "onUpdate:modelValue": _cache[7] || (_cache[7] = ($event) => isRef(M_gridRows) ? M_gridRows.value = $event : null)
                 }, null, 512), [
                   [vModelText, unref(M_gridRows)]
                 ]),
-                _hoisted_33,
+                _hoisted_29,
                 withDirectives(createBaseVNode("input", {
                   class: "form-control sec-grid-cols",
                   type: "text",
-                  "onUpdate:modelValue": _cache[10] || (_cache[10] = ($event) => isRef(M_gridDefaultColSpan) ? M_gridDefaultColSpan.value = $event : null)
+                  "onUpdate:modelValue": _cache[8] || (_cache[8] = ($event) => isRef(M_gridDefaultColSpan) ? M_gridDefaultColSpan.value = $event : null)
                 }, null, 512), [
                   [vModelText, unref(M_gridDefaultColSpan)]
                 ]),
-                _hoisted_34,
+                _hoisted_30,
                 withDirectives(createBaseVNode("input", {
                   class: "form-control sec-grid-rows",
                   type: "text",
-                  "onUpdate:modelValue": _cache[11] || (_cache[11] = ($event) => isRef(M_gridDefaultRowSpan) ? M_gridDefaultRowSpan.value = $event : null)
+                  "onUpdate:modelValue": _cache[9] || (_cache[9] = ($event) => isRef(M_gridDefaultRowSpan) ? M_gridDefaultRowSpan.value = $event : null)
                 }, null, 512), [
                   [vModelText, unref(M_gridDefaultRowSpan)]
                 ])
@@ -1792,18 +1892,18 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
           ]),
           _: 1
         }, 8, ["modalId"]),
-        createVNode(_sfc_main$e, {
+        createVNode(_sfc_main$h, {
           modalId: `cond_${props.sectionId}`,
           title: "Requirements"
         }, {
           default: withCtx(() => [
-            createBaseVNode("div", _hoisted_35, [
-              _hoisted_36,
+            createBaseVNode("div", _hoisted_31, [
+              _hoisted_32,
               createBaseVNode("button", {
                 class: "btn btn-sm btn-outline-primary",
                 onClick: addCondition
               }, [
-                createVNode(_sfc_main$c, { name: "key-plus" })
+                createVNode(_sfc_main$f, { name: "key-plus" })
               ]),
               (openBlock(true), createElementBlock(Fragment, null, renderList(unref(section).conditions, (cond) => {
                 return openBlock(), createElementBlock("div", null, "IF " + toDisplayString(cond.test) + " THEN " + toDisplayString(cond.state), 1);
@@ -1816,9 +1916,9 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-var SectionView = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-8fdafb8c"]]);
+var SectionView = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-89827d52"]]);
 var SectionsTab_vue_vue_type_style_index_0_scoped_true_lang = "";
-const _withScopeId = (n) => (pushScopeId("data-v-3a540889"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-41ffd520"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = { key: 0 };
 const _hoisted_2$2 = { key: 1 };
 const _hoisted_3$1 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", null, "No Sections", -1));
@@ -1838,7 +1938,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     const findSections = computed(() => store.getters["project/findChildrenIds"](props.pageId));
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock(Fragment, null, [
-        createBaseVNode("h1", null, toDisplayString(unref(page).title) + " - Sections", 1),
+        createBaseVNode("h1", null, toDisplayString(unref(page).name) + " - Sections", 1),
         unref(findSections) && unref(findSections).length > 0 ? (openBlock(), createElementBlock("div", _hoisted_1$2, [
           (openBlock(true), createElementBlock(Fragment, null, renderList(unref(findSections), (sectionId) => {
             return openBlock(), createBlock(SectionView, { sectionId }, null, 8, ["sectionId"]);
@@ -1849,7 +1949,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-var SectionsTab = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-3a540889"]]);
+var SectionsTab = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-41ffd520"]]);
 const _hoisted_1$1 = { class: "btn-toolbar" };
 const _hoisted_2$1 = { class: "btn-group" };
 const _hoisted_3 = /* @__PURE__ */ createTextVNode(" New Section ");
@@ -1879,21 +1979,21 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             class: "btn btn-primary",
             onClick: createSection
           }, [
-            createVNode(_sfc_main$c, { name: "layers-plus" }),
+            createVNode(_sfc_main$f, { name: "layers-plus" }),
             _hoisted_3
           ]),
           createBaseVNode("button", {
             class: "btn btn-primary",
             onClick: _cache[0] || (_cache[0] = (...args) => _ctx.createScore && _ctx.createScore(...args))
           }, [
-            createVNode(_sfc_main$c, { name: "numeric-9-plus-box" }),
+            createVNode(_sfc_main$f, { name: "numeric-9-plus-box" }),
             _hoisted_4
           ]),
           createBaseVNode("button", {
             class: "btn btn-primary",
             onClick: _cache[1] || (_cache[1] = (...args) => _ctx.screateStyle && _ctx.screateStyle(...args))
           }, [
-            createVNode(_sfc_main$c, { name: "palette-swatch-outline" }),
+            createVNode(_sfc_main$f, { name: "palette-swatch-outline" }),
             _hoisted_5
           ])
         ])
@@ -1928,7 +2028,7 @@ const routes = [
   {
     name: "edit",
     path: "/edit/:projectId",
-    component: _sfc_main$b,
+    component: _sfc_main$e,
     props: true,
     children: [
       {
