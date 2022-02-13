@@ -2,15 +2,15 @@
   <div class="btn-toolbar">
     <div class="btn-group">
       <button class="btn btn-primary" @click="createSection">
-        <mdi-icon name="layers-plus" />
+        <MdIcon name="layers-plus" />
         New Section
       </button>
       <button class="btn btn-primary" @click="createScore">
-        <mdi-icon name="numeric-9-plus-box" />
+        <MdIcon name="numeric-9-plus-box" />
         New Score
       </button>
       <button class="btn btn-primary" @click="screateStyle">
-        <mdi-icon name="palette-swatch-outline" />
+        <MdIcon name="palette-swatch-outline" />
         New Style
       </button>
     </div>
@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import MdiIcon from "../utils/mdi-icon.vue";
+import MdIcon from "../utils/MdIcon.vue";
 import { ElementType, Section } from "../../data/model/element";
 import { useStore } from "vuex";
 import { editorStoreKey } from "../../store/editor";

@@ -9,6 +9,19 @@ export interface IStyleParent {
   readonly children?: string;
 }
 
+export interface IGridContainerStyle {
+  readonly gridCols?: string;
+  readonly gridRows?: string;
+  readonly gridFlow?: string;
+  readonly gridDefaultColSpan?: number;
+  readonly gridDefaultRowSpan?: number;
+}
+
+export interface IGridChildStyle {
+  readonly colSpan?: number;
+  readonly rowSpan?: number;
+}
+
 @persist(["name", "children"])
 export class PageStyle implements IStyle, IStyleParent {
   readonly name?: string;
@@ -21,7 +34,7 @@ export const DefaultPageStyle: PageStyle = {
 };
 
 @persist(["name", "children", "gridCols", "gridRows", "gridFlow", "gridDefaultColSpan", "gridDefaultRowSpan"])
-export class SectionStyle implements IStyle, IStyleParent {
+export class SectionStyle implements IStyle, IStyleParent, IGridContainerStyle {
   readonly name?: string;
   readonly children?: string;
   readonly gridCols?: string;
@@ -42,7 +55,7 @@ export const DefaultSectionStyle: SectionStyle = {
 };
 
 @persist(["name", "children", "colSpan", "rowSpan"])
-export class ChoiceStyle implements IStyle, IStyleParent {
+export class ChoiceStyle implements IStyle, IStyleParent, IGridChildStyle {
   readonly name?: string;
   readonly children?: string;
   readonly colSpan?: number;

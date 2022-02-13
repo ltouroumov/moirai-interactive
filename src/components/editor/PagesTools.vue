@@ -2,7 +2,7 @@
   <div class="btn-toolbar">
     <div class="btn-group">
       <button class="btn btn-primary" @click="createPage">
-        <mdi-icon name="file-plus" />
+        <MdIcon name="file-plus" />
         New Page
       </button>
     </div>
@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import MdiIcon from "../utils/mdi-icon.vue";
+import MdIcon from "../utils/MdIcon.vue";
 import { ElementType, Page } from "../../data/model/element";
 import { useStore } from "vuex";
 import { editorStoreKey } from "../../store/editor";

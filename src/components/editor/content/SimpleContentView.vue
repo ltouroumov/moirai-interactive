@@ -2,14 +2,14 @@
   <div class="simple-content-edit">
     <input class="form-control content-title" type="text" v-model="M_title" placeholder="Title">
     <button class="btn btn-outline-primary">
-      <MdiIcon name="palette-swatch" />
+      <MdIcon name="palette-swatch" />
       Style
     </button>
     <div class="content-image" :class="{ 'ph-empty': !content.image }">
       <button class="btn btn-outline-primary edit-btn"
               data-bs-toggle="modal"
               :data-bs-target="modalId('image', true)">
-        <MdiIcon name="image-edit-outline" />
+        <MdIcon name="image-edit-outline" />
       </button>
       <img :src="content.image" v-if="content.image" :alt="content.title" class="img-thumbnail">
       <div class="ph-empty-text" v-else>No Image</div>
@@ -18,7 +18,7 @@
       <button class="btn btn-outline-primary edit-btn"
               data-bs-toggle="modal"
               :data-bs-target="modalId('body', true)">
-        <MdiIcon name="playlist-edit" />
+        <MdIcon name="playlist-edit" />
       </button>
       <div class="content-body-render" v-if="content.body" v-html="marked.parse(content.body)"></div>
       <div class="ph-empty-text" v-else>No content</div>
@@ -45,8 +45,8 @@ import { SimpleContent } from "../../../data/model/content";
 import { updatePropsFor } from "../../utils/props";
 import { computed, ref } from "vue";
 import * as R from "ramda";
-import MdiIcon from "../../utils/mdi-icon.vue";
-import BsModal from "../../utils/bs-modal.vue";
+import MdIcon from "../../utils/MdIcon.vue";
+import BsModal from "../../utils/BsModal.vue";
 import { genModalId, ModalSize } from "../../utils/modal";
 import { marked } from "marked";
 

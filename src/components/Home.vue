@@ -32,7 +32,7 @@
 
   <a id="export-link" />
 
-  <bs-modal modalId="import-project-dialog" title="Import Project">
+  <BsModal modalId="import-project-dialog" title="Import Project">
     <div v-if="_state.projectFile">
       <p><b>{{ _state.projectFile?.name }} ({{ _state.projectFile?.size }} bytes)</b></p>
       <p>{{ _state.projectFile?.type }}</p>
@@ -58,15 +58,15 @@
         <li v-for="error in _state.projectErrors">{{ error }}</li>
       </ul>
     </div>
-  </bs-modal>
+  </BsModal>
 </template>
 
 <script setup lang="ts">
 import { useStore } from "vuex";
 import { computed, reactive } from "vue";
 import { homeStoreKey } from "../store/home";
-import MdiIcon from "./utils/mdi-icon.vue";
-import BsModal from "./utils/bs-modal.vue";
+import MdIcon from "./utils/MdIcon.vue";
+import BsModal from "./utils/BsModal.vue";
 import { Project } from "../data/model/project";
 import { projectsDatabase } from "../store/editor";
 

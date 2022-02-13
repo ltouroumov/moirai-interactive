@@ -3,17 +3,17 @@
     <div class="toolbar">
       <nav class="nav nav-pills nav-fill editor-tabs">
         <router-link class="nav-link" :to="{ name: 'home' }">
-          <mdi-icon name="chevron-left" />
+          <MdIcon name="chevron-left" />
           Home
         </router-link>
         <router-link class="nav-link" :to="{ name: 'edit_pages', params: $route.params }" active-class="active">
-          <mdi-icon name="file-multiple" />
+          <MdIcon name="file-multiple" />
           Pages
         </router-link>
         <div class="nav-item dropdown">
           <a :class="['nav-link', { disabled: !findPageIds || findPageIds.length === 0 }, 'dropdown-toggle']" href="#"
              role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
-            <mdi-icon name="layers-triple" />
+            <MdIcon name="layers-triple" />
             Sections
           </a>
 
@@ -28,7 +28,7 @@
           </ul>
         </div>
         <router-link class="nav-link" :to="{ name: 'edit_settings', params: $route.params }" active-class="active">
-          <mdi-icon name="cog" />
+          <MdIcon name="cog" />
           Settings
         </router-link>
       </nav>
@@ -56,7 +56,7 @@ import { onBeforeRouteUpdate, RouteLocationNormalizedLoaded, useRoute, useRouter
 import { editorStoreKey } from "../store/editor";
 import { homeStoreKey } from "../store/home";
 import { Choice, ElementType, Page, Section } from "../data/model/element";
-import MdiIcon from "./utils/mdi-icon.vue";
+import MdIcon from "./utils/MdIcon.vue";
 import { Project } from "../data/model/project";
 import { sleep } from "./utils/time";
 

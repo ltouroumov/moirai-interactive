@@ -1,43 +1,31 @@
 <template>
   <section class="section">
-    <div class="sec-actions">
-      <button class="btn btn-sm btn-link" @click="toggleSection">
-        <mdi-icon name="eye" v-show="_state.collapsed" />
-        <mdi-icon name="eye-off" v-show="!_state.collapsed" />
-      </button>
-      <button class="btn btn-sm btn-link" @click="moveSection('prev')">
-        <mdi-icon name="arrow-up" />
-      </button>
-      <button class="btn btn-sm btn-link" @click="moveSection('next')">
-        <mdi-icon name="arrow-down" />
-      </button>
-      <span class="object-id">{{ section.name }} / {{ section.id }}</span>
-      <div class="btn-toolbar">
-        <div class="btn-group me-2">
-          <button class="btn btn-sm btn-outline-primary" @click="createChoice">
-            <mdi-icon name="plus-circle" />
-            Choice
-          </button>
-        </div>
-        <div class="btn-group me-2">
-          <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
-                  :data-bs-target="modalId('cond', true)">
-            <mdi-icon name="key" />
-            Requirements
-          </button>
-          <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
-                  :data-bs-target="modalId('style', true)">
-            <mdi-icon name="palette-swatch" />
-            Style
-          </button>
-        </div>
-        <div class="btn-group">
-          <button class="btn btn-sm btn-outline-danger wide" @click="deleteSection">
-            <mdi-icon name="delete-outline" />
-          </button>
-        </div>
+    <ElementToolbar class="sec-actions" :element="section" :collapsed="_state.collapsed" arrows="vertical"
+                    @toggle="toggleSection" @move="moveSection">
+      <div class="btn-group me-2">
+        <button class="btn btn-sm btn-outline-primary" @click="createChoice">
+          <MdIcon name="plus-circle" />
+          Choice
+        </button>
       </div>
-    </div>
+      <div class="btn-group me-2">
+        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                :data-bs-target="modalId('cond', true)">
+          <MdIcon name="key" />
+          Requirements
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                :data-bs-target="modalId('style', true)">
+          <MdIcon name="palette-swatch" />
+          Style
+        </button>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-sm btn-outline-danger wide" @click="deleteSection">
+          <MdIcon name="delete-outline" />
+        </button>
+      </div>
+    </ElementToolbar>
     <div class="sec-header" v-if="!_state.collapsed">
       <div class="sec-text">
         <input class="form-control sec-title" type="text" v-model="M_name">
@@ -56,7 +44,7 @@
   </section>
 
   <!-- Modals -->
-  <bs-modal :modalId="modalId('style')" title="Style Editor">
+  <BsModal :modalId="modalId('style')" title="Style Editor">
     <div class="sec-style">
       <b>Section Style</b>
       <select class="form-select sec-style-select" v-model="M_style_name">
@@ -83,19 +71,19 @@
         <input class="form-control sec-grid-rows" type="text" v-model="M_gridDefaultRowSpan" />
       </div>
     </div>
-  </bs-modal>
+  </BsModal>
 
-  <bs-modal :modalId="modalId('cond')" title="Requirements">
+  <BsModal :modalId="modalId('cond')" title="Requirements">
     <div class="sec-conditions">
       <b>Conditions</b>
 
       <button class="btn btn-sm btn-outline-primary" @click="addCondition">
-        <mdi-icon name="key-plus" />
+        <MdIcon name="key-plus" />
       </button>
 
       <div v-for="cond in section.conditions">IF {{ cond.test }} THEN {{ cond.state }}</div>
     </div>
-  </bs-modal>
+  </BsModal>
 
 </template>
 
@@ -106,15 +94,15 @@ import { useStore } from "vuex";
 import { computed, reactive, ref } from "vue";
 import { updatePropsFor } from "../utils/props";
 import { editorStoreKey } from "../../store/editor";
-import MdiIcon from "../utils/mdi-icon.vue";
-import BsModal from "../utils/bs-modal.vue";
+import MdIcon from "../utils/MdIcon.vue";
+import BsModal from "../utils/BsModal.vue";
 import { Condition } from "../../data/model";
-import * as P from "ts-pattern";
-import { __ as PM } from "ts-pattern";
 import * as R from "ramda";
 import { DefaultChoiceStyle } from "../../data/model/style";
 import ContentView from "./ContentView.vue";
 import { genModalId } from "../utils/modal";
+import { computeDefaultGridSpans, computeGridStyle } from "../utils/style";
+import ElementToolbar from "./ElementToolbar.vue";
 
 const store = useStore(editorStoreKey);
 
@@ -149,50 +137,13 @@ const {
   objectId: () => props.sectionId
 });
 
-const EMPTY = R.always<object>({});
 const choicesContainerStyle = computed(() => {
-  return R.mergeAll([
-    P.match<string | undefined>(section.value.style.gridCols)
-      .with(undefined, EMPTY)
-      .with(PM.string, R.match(/^\d+$/), (numCols) => {
-        return { "grid-template-columns": `repeat(${numCols}, 1fr)` };
-      })
-      .otherwise(EMPTY),
-    P.match<string | undefined>(section.value.style.gridRows)
-      .with(undefined, EMPTY)
-      .with(PM.string, R.match(/^\d+$/), (numCols) => {
-        return { "grid-template-rows": `repeat(${numCols}, 1fr)` };
-      })
-      .otherwise(EMPTY),
-    P.match<string | undefined>(section.value.style.gridFlow)
-      .with(undefined, EMPTY)
-      .with(PM.string, R.match(/^row|column$/), (flow) => {
-        return { "grid-auto-flow": flow };
-      })
-      .otherwise(EMPTY)
-  ]);
+  return computeGridStyle(section.value.style);
 });
 const defaultChoiceStyle = computed(() => {
   return R.mergeAll([
     DefaultChoiceStyle,
-    P.match<number | string | undefined>(section.value.style.gridDefaultColSpan)
-      .with(undefined, EMPTY)
-      .with(PM.number, (colSpan) => {
-        return { colSpan };
-      })
-      .with(PM.string, R.match(/^\d+$/), (colSpan: string) => {
-        return { colSpan: Number.parseInt(colSpan) };
-      })
-      .otherwise(EMPTY),
-    P.match<number | string | undefined>(section.value.style.gridDefaultRowSpan)
-      .with(undefined, EMPTY)
-      .with(PM.number, (rowSpan) => {
-        return { rowSpan };
-      })
-      .with(PM.string, R.match(/^\d+$/), (rowSpan: string) => {
-        return { rowSpan: Number.parseInt(rowSpan) };
-      })
-      .otherwise(EMPTY)
+    computeDefaultGridSpans(section.value.style)
   ]);
 });
 
@@ -240,20 +191,6 @@ async function deleteSection() {
 
   padding: 5px 0;
   margin-bottom: 10px;
-}
-
-.sec-actions {
-  grid-area: tools;
-
-  display: grid;
-  grid-template-columns: repeat(3, auto) 1fr auto;
-  grid-auto-flow: column;
-  grid-gap: 5px;
-  align-items: center;
-
-  background: lightgray;
-  border-radius: 5px;
-  padding: 5px;
 }
 
 .sec-header {
@@ -310,13 +247,13 @@ async function deleteSection() {
 
   .sec-grid {
     display: grid;
-    grid-template-columns: auto 1fr auto 1fr;
+    grid-template-columns: auto 1fr;
     grid-auto-flow: row;
     grid-gap: 5px;
     align-items: center;
 
     .span3 {
-      grid-area: span 1 / span 3;
+      grid-area: span 1 / span 2;
     }
   }
 }
@@ -331,6 +268,7 @@ async function deleteSection() {
   grid-gap: 5px;
   justify-items: stretch;
   align-items: stretch;
+  overflow: auto;
 }
 
 </style>

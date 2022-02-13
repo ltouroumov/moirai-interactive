@@ -2,32 +2,32 @@
   <div class="page">
     <div class="page-actions">
       <button class="btn btn-sm btn-link" @click="togglePage">
-        <mdi-icon name="eye" v-show="_state.collapsed" />
-        <mdi-icon name="eye-off" v-show="!_state.collapsed" />
+        <MdIcon name="eye" v-show="_state.collapsed" />
+        <MdIcon name="eye-off" v-show="!_state.collapsed" />
       </button>
       <button class="btn btn-sm btn-link" @click="movePage('prev')">
-        <mdi-icon name="arrow-up" />
+        <MdIcon name="arrow-up" />
       </button>
       <button class="btn btn-sm btn-link" @click="movePage('next')">
-        <mdi-icon name="arrow-down" />
+        <MdIcon name="arrow-down" />
       </button>
       <span class="page-id">{{ page.name}} / {{ page.id }}</span>
       <div class="btn-toolbar">
         <div class="btn-group me-2">
           <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
                   :data-bs-target="`#cond_${props.sectionId}`">
-            <mdi-icon name="key" />
+            <MdIcon name="key" />
             Requirements
           </button>
           <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
                   :data-bs-target="`#style_${props.sectionId}`">
-            <mdi-icon name="palette-swatch" />
+            <MdIcon name="palette-swatch" />
             Style
           </button>
         </div>
         <div class="btn-group">
           <button class="btn btn-sm btn-outline-danger wide" @click="deletePage">
-            <mdi-icon name="delete-outline" />
+            <MdIcon name="delete-outline" />
           </button>
         </div>
       </div>
@@ -47,12 +47,12 @@ import { useStore } from "vuex";
 import { computed, reactive, ref } from "vue";
 import { updatePropsFor } from "../utils/props";
 import { editorStoreKey } from "../../store/editor";
-import MdiIcon from "../utils/mdi-icon.vue";
+import MdIcon from "../utils/MdIcon.vue";
 import { Condition } from "../../data/model";
 import * as P from "ts-pattern";
 import * as R from "ramda";
 import { ChoiceStyle, DefaultChoiceStyle, DefaultSectionStyle, SectionStyle } from "../../data/model/style";
-import BModal from "../utils/bs-modal.vue";
+import BModal from "../utils/BsModal.vue";
 import ContentView from "./ContentView.vue";
 
 const store = useStore(editorStoreKey);
