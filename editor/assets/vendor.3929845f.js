@@ -5172,8 +5172,8 @@ function formatStoreForInspectorTree(module, path3) {
     })
   };
 }
-function flattenStoreForInspectorTree(result, module, filter, path3) {
-  if (path3.includes(filter)) {
+function flattenStoreForInspectorTree(result, module, filter2, path3) {
+  if (path3.includes(filter2)) {
     result.push({
       id: path3 || "root",
       label: path3.endsWith("/") ? path3.slice(0, path3.length - 1) : path3 || "Root",
@@ -5181,7 +5181,7 @@ function flattenStoreForInspectorTree(result, module, filter, path3) {
     });
   }
   Object.keys(module._children).forEach(function(moduleName) {
-    flattenStoreForInspectorTree(result, module._children[moduleName], filter, path3 + moduleName + "/");
+    flattenStoreForInspectorTree(result, module._children[moduleName], filter2, path3 + moduleName + "/");
   });
 }
 function formatStoreForInspectorState(module, getters, path3) {
@@ -5476,7 +5476,7 @@ Store.prototype.dispatch = function dispatch(_type, _payload) {
   var result = entry.length > 1 ? Promise.all(entry.map(function(handler) {
     return handler(payload);
   })) : entry[0](payload);
-  return new Promise(function(resolve2, reject) {
+  return new Promise(function(resolve2, reject3) {
     result.then(function(res) {
       try {
         this$1$1._actionSubscribers.filter(function(sub) {
@@ -5496,7 +5496,7 @@ Store.prototype.dispatch = function dispatch(_type, _payload) {
         });
       } catch (e) {
       }
-      reject(error);
+      reject3(error);
     });
   });
 };
@@ -5564,9 +5564,9 @@ function createLogger(ref2) {
   var collapsed = ref2.collapsed;
   if (collapsed === void 0)
     collapsed = true;
-  var filter = ref2.filter;
-  if (filter === void 0)
-    filter = function(mutation, stateBefore, stateAfter) {
+  var filter2 = ref2.filter;
+  if (filter2 === void 0)
+    filter2 = function(mutation, stateBefore, stateAfter) {
       return true;
     };
   var transformer = ref2.transformer;
@@ -5606,7 +5606,7 @@ function createLogger(ref2) {
     if (logMutations) {
       store.subscribe(function(mutation, state) {
         var nextState = deepCopy(state);
-        if (filter(mutation, prevState, nextState)) {
+        if (filter2(mutation, prevState, nextState)) {
           var formattedTime = getFormattedTime();
           var formattedMutation = mutationTransformer(mutation);
           var message = "mutation " + mutation.type + formattedTime;
@@ -5650,12 +5650,12 @@ function endMessage(logger) {
 }
 function getFormattedTime() {
   var time = new Date();
-  return " @ " + pad(time.getHours(), 2) + ":" + pad(time.getMinutes(), 2) + ":" + pad(time.getSeconds(), 2) + "." + pad(time.getMilliseconds(), 3);
+  return " @ " + pad$1(time.getHours(), 2) + ":" + pad$1(time.getMinutes(), 2) + ":" + pad$1(time.getSeconds(), 2) + "." + pad$1(time.getMilliseconds(), 3);
 }
 function repeat(str, times) {
   return new Array(times + 1).join(str);
 }
-function pad(num, maxLength) {
+function pad$1(num, maxLength) {
   return repeat("0", maxLength - num.toString().length) + num;
 }
 var commonjsGlobal = typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : {};
@@ -5816,7 +5816,7 @@ const options = {
     arrayMerge: (target, source, options2) => target.concat(...source)
   }
 };
-function merge(into, from, mergeOption) {
+function merge$1(into, from, mergeOption) {
   return cjs(into, from, options[mergeOption]);
 }
 let FlattedJSON = JSON;
@@ -5848,11 +5848,11 @@ class VuexPersistence {
     } else {
       throw new Error("Neither 'window' is defined, nor 'MockStorage' is available");
     }
-    this.reducer = options2.reducer != null ? options2.reducer : options2.modules == null ? (state) => state : (state) => options2.modules.reduce((a, i) => merge(a, { [i]: state[i] }, this.mergeOption), {});
+    this.reducer = options2.reducer != null ? options2.reducer : options2.modules == null ? (state) => state : (state) => options2.modules.reduce((a, i) => merge$1(a, { [i]: state[i] }, this.mergeOption), {});
     this.filter = options2.filter || ((mutation) => true);
     this.strictMode = options2.strictMode || false;
     this.RESTORE_MUTATION = function RESTORE_MUTATION(state, savedState) {
-      const mergedState = merge(state, savedState || {}, this.mergeOption);
+      const mergedState = merge$1(state, savedState || {}, this.mergeOption);
       for (const propertyName of Object.keys(mergedState)) {
         this._vm.$set(state, propertyName, mergedState[propertyName]);
       }
@@ -5860,13 +5860,13 @@ class VuexPersistence {
     this.asyncStorage = options2.asyncStorage || false;
     if (this.asyncStorage) {
       this.restoreState = options2.restoreState != null ? options2.restoreState : (key, storage) => storage.getItem(key).then((value) => typeof value === "string" ? this.supportCircular ? FlattedJSON.parse(value || "{}") : JSON.parse(value || "{}") : value || {});
-      this.saveState = options2.saveState != null ? options2.saveState : (key, state, storage) => storage.setItem(key, this.asyncStorage ? merge({}, state || {}, this.mergeOption) : this.supportCircular ? FlattedJSON.stringify(state) : JSON.stringify(state));
+      this.saveState = options2.saveState != null ? options2.saveState : (key, state, storage) => storage.setItem(key, this.asyncStorage ? merge$1({}, state || {}, this.mergeOption) : this.supportCircular ? FlattedJSON.stringify(state) : JSON.stringify(state));
       this.plugin = (store) => {
         store.restored = this.restoreState(this.key, this.storage).then((savedState) => {
           if (this.strictMode) {
             store.commit("RESTORE_MUTATION", savedState);
           } else {
-            store.replaceState(merge(store.state, savedState || {}, this.mergeOption));
+            store.replaceState(merge$1(store.state, savedState || {}, this.mergeOption));
           }
           this.subscriber(store)((mutation, state) => {
             if (this.filter(mutation)) {
@@ -5891,7 +5891,7 @@ class VuexPersistence {
         if (this.strictMode) {
           store.commit("RESTORE_MUTATION", savedState);
         } else {
-          store.replaceState(merge(store.state, savedState || {}, this.mergeOption));
+          store.replaceState(merge$1(store.state, savedState || {}, this.mergeOption));
         }
         this.subscriber(store)((mutation, state) => {
           if (this.filter(mutation)) {
@@ -5904,7 +5904,7 @@ class VuexPersistence {
   }
 }
 var VuexPersistence$1 = VuexPersistence;
-var __ = {
+var __$1 = {
   "@@functional/placeholder": true
 };
 function _isPlaceholder(a) {
@@ -6215,10 +6215,10 @@ var _xmap$1 = _xmap;
 function _has(prop3, obj) {
   return Object.prototype.hasOwnProperty.call(obj, prop3);
 }
-var toString = Object.prototype.toString;
+var toString$2 = Object.prototype.toString;
 var _isArguments = /* @__PURE__ */ function() {
-  return toString.call(arguments) === "[object Arguments]" ? function _isArguments2(x) {
-    return toString.call(x) === "[object Arguments]";
+  return toString$2.call(arguments) === "[object Arguments]" ? function _isArguments2(x) {
+    return toString$2.call(x) === "[object Arguments]";
   } : function _isArguments2(x) {
     return _has("callee", x);
   };
@@ -6393,6 +6393,303 @@ var clone = /* @__PURE__ */ _curry1(function clone2(value) {
   return value != null && typeof value.clone === "function" ? value.clone() : _clone(value, [], [], true);
 });
 var clone$1 = clone;
+function _arrayFromIterator(iter) {
+  var list = [];
+  var next;
+  while (!(next = iter.next()).done) {
+    list.push(next.value);
+  }
+  return list;
+}
+function _includesWith(pred, x, list) {
+  var idx = 0;
+  var len = list.length;
+  while (idx < len) {
+    if (pred(x, list[idx])) {
+      return true;
+    }
+    idx += 1;
+  }
+  return false;
+}
+function _functionName(f) {
+  var match3 = String(f).match(/^function (\w*)/);
+  return match3 == null ? "" : match3[1];
+}
+function _objectIs(a, b) {
+  if (a === b) {
+    return a !== 0 || 1 / a === 1 / b;
+  } else {
+    return a !== a && b !== b;
+  }
+}
+var _objectIs$1 = typeof Object.is === "function" ? Object.is : _objectIs;
+function _uniqContentEquals(aIterator, bIterator, stackA, stackB) {
+  var a = _arrayFromIterator(aIterator);
+  var b = _arrayFromIterator(bIterator);
+  function eq(_a, _b) {
+    return _equals(_a, _b, stackA.slice(), stackB.slice());
+  }
+  return !_includesWith(function(b2, aItem) {
+    return !_includesWith(eq, aItem, b2);
+  }, b, a);
+}
+function _equals(a, b, stackA, stackB) {
+  if (_objectIs$1(a, b)) {
+    return true;
+  }
+  var typeA = type$1(a);
+  if (typeA !== type$1(b)) {
+    return false;
+  }
+  if (typeof a["fantasy-land/equals"] === "function" || typeof b["fantasy-land/equals"] === "function") {
+    return typeof a["fantasy-land/equals"] === "function" && a["fantasy-land/equals"](b) && typeof b["fantasy-land/equals"] === "function" && b["fantasy-land/equals"](a);
+  }
+  if (typeof a.equals === "function" || typeof b.equals === "function") {
+    return typeof a.equals === "function" && a.equals(b) && typeof b.equals === "function" && b.equals(a);
+  }
+  switch (typeA) {
+    case "Arguments":
+    case "Array":
+    case "Object":
+      if (typeof a.constructor === "function" && _functionName(a.constructor) === "Promise") {
+        return a === b;
+      }
+      break;
+    case "Boolean":
+    case "Number":
+    case "String":
+      if (!(typeof a === typeof b && _objectIs$1(a.valueOf(), b.valueOf()))) {
+        return false;
+      }
+      break;
+    case "Date":
+      if (!_objectIs$1(a.valueOf(), b.valueOf())) {
+        return false;
+      }
+      break;
+    case "Error":
+      return a.name === b.name && a.message === b.message;
+    case "RegExp":
+      if (!(a.source === b.source && a.global === b.global && a.ignoreCase === b.ignoreCase && a.multiline === b.multiline && a.sticky === b.sticky && a.unicode === b.unicode)) {
+        return false;
+      }
+      break;
+  }
+  var idx = stackA.length - 1;
+  while (idx >= 0) {
+    if (stackA[idx] === a) {
+      return stackB[idx] === b;
+    }
+    idx -= 1;
+  }
+  switch (typeA) {
+    case "Map":
+      if (a.size !== b.size) {
+        return false;
+      }
+      return _uniqContentEquals(a.entries(), b.entries(), stackA.concat([a]), stackB.concat([b]));
+    case "Set":
+      if (a.size !== b.size) {
+        return false;
+      }
+      return _uniqContentEquals(a.values(), b.values(), stackA.concat([a]), stackB.concat([b]));
+    case "Arguments":
+    case "Array":
+    case "Object":
+    case "Boolean":
+    case "Number":
+    case "String":
+    case "Date":
+    case "Error":
+    case "RegExp":
+    case "Int8Array":
+    case "Uint8Array":
+    case "Uint8ClampedArray":
+    case "Int16Array":
+    case "Uint16Array":
+    case "Int32Array":
+    case "Uint32Array":
+    case "Float32Array":
+    case "Float64Array":
+    case "ArrayBuffer":
+      break;
+    default:
+      return false;
+  }
+  var keysA = keys$1(a);
+  if (keysA.length !== keys$1(b).length) {
+    return false;
+  }
+  var extendedStackA = stackA.concat([a]);
+  var extendedStackB = stackB.concat([b]);
+  idx = keysA.length - 1;
+  while (idx >= 0) {
+    var key = keysA[idx];
+    if (!(_has(key, b) && _equals(b[key], a[key], extendedStackA, extendedStackB))) {
+      return false;
+    }
+    idx -= 1;
+  }
+  return true;
+}
+var equals = /* @__PURE__ */ _curry2(function equals2(a, b) {
+  return _equals(a, b, [], []);
+});
+var equals$1 = equals;
+function _indexOf(list, a, idx) {
+  var inf, item;
+  if (typeof list.indexOf === "function") {
+    switch (typeof a) {
+      case "number":
+        if (a === 0) {
+          inf = 1 / a;
+          while (idx < list.length) {
+            item = list[idx];
+            if (item === 0 && 1 / item === inf) {
+              return idx;
+            }
+            idx += 1;
+          }
+          return -1;
+        } else if (a !== a) {
+          while (idx < list.length) {
+            item = list[idx];
+            if (typeof item === "number" && item !== item) {
+              return idx;
+            }
+            idx += 1;
+          }
+          return -1;
+        }
+        return list.indexOf(a, idx);
+      case "string":
+      case "boolean":
+      case "function":
+      case "undefined":
+        return list.indexOf(a, idx);
+      case "object":
+        if (a === null) {
+          return list.indexOf(a, idx);
+        }
+    }
+  }
+  while (idx < list.length) {
+    if (equals$1(list[idx], a)) {
+      return idx;
+    }
+    idx += 1;
+  }
+  return -1;
+}
+function _includes(a, list) {
+  return _indexOf(list, a, 0) >= 0;
+}
+function _quote(s) {
+  var escaped = s.replace(/\\/g, "\\\\").replace(/[\b]/g, "\\b").replace(/\f/g, "\\f").replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t").replace(/\v/g, "\\v").replace(/\0/g, "\\0");
+  return '"' + escaped.replace(/"/g, '\\"') + '"';
+}
+var pad = function pad2(n) {
+  return (n < 10 ? "0" : "") + n;
+};
+var _toISOString = typeof Date.prototype.toISOString === "function" ? function _toISOString2(d) {
+  return d.toISOString();
+} : function _toISOString3(d) {
+  return d.getUTCFullYear() + "-" + pad(d.getUTCMonth() + 1) + "-" + pad(d.getUTCDate()) + "T" + pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes()) + ":" + pad(d.getUTCSeconds()) + "." + (d.getUTCMilliseconds() / 1e3).toFixed(3).slice(2, 5) + "Z";
+};
+var _toISOString$1 = _toISOString;
+function _complement(f) {
+  return function() {
+    return !f.apply(this, arguments);
+  };
+}
+function _filter(fn2, list) {
+  var idx = 0;
+  var len = list.length;
+  var result = [];
+  while (idx < len) {
+    if (fn2(list[idx])) {
+      result[result.length] = list[idx];
+    }
+    idx += 1;
+  }
+  return result;
+}
+function _isObject(x) {
+  return Object.prototype.toString.call(x) === "[object Object]";
+}
+var XFilter = /* @__PURE__ */ function() {
+  function XFilter2(f, xf) {
+    this.xf = xf;
+    this.f = f;
+  }
+  XFilter2.prototype["@@transducer/init"] = _xfBase.init;
+  XFilter2.prototype["@@transducer/result"] = _xfBase.result;
+  XFilter2.prototype["@@transducer/step"] = function(result, input) {
+    return this.f(input) ? this.xf["@@transducer/step"](result, input) : result;
+  };
+  return XFilter2;
+}();
+var _xfilter = /* @__PURE__ */ _curry2(function _xfilter2(f, xf) {
+  return new XFilter(f, xf);
+});
+var _xfilter$1 = _xfilter;
+var filter = /* @__PURE__ */ _curry2(/* @__PURE__ */ _dispatchable(["fantasy-land/filter", "filter"], _xfilter$1, function(pred, filterable) {
+  return _isObject(filterable) ? _reduce(function(acc, key) {
+    if (pred(filterable[key])) {
+      acc[key] = filterable[key];
+    }
+    return acc;
+  }, {}, keys$1(filterable)) : _filter(pred, filterable);
+}));
+var filter$1 = filter;
+var reject = /* @__PURE__ */ _curry2(function reject2(pred, filterable) {
+  return filter$1(_complement(pred), filterable);
+});
+var reject$1 = reject;
+function _toString(x, seen) {
+  var recur = function recur2(y) {
+    var xs = seen.concat([x]);
+    return _includes(y, xs) ? "<Circular>" : _toString(y, xs);
+  };
+  var mapPairs = function(obj, keys4) {
+    return _map(function(k) {
+      return _quote(k) + ": " + recur(obj[k]);
+    }, keys4.slice().sort());
+  };
+  switch (Object.prototype.toString.call(x)) {
+    case "[object Arguments]":
+      return "(function() { return arguments; }(" + _map(recur, x).join(", ") + "))";
+    case "[object Array]":
+      return "[" + _map(recur, x).concat(mapPairs(x, reject$1(function(k) {
+        return /^\d+$/.test(k);
+      }, keys$1(x)))).join(", ") + "]";
+    case "[object Boolean]":
+      return typeof x === "object" ? "new Boolean(" + recur(x.valueOf()) + ")" : x.toString();
+    case "[object Date]":
+      return "new Date(" + (isNaN(x.valueOf()) ? recur(NaN) : _quote(_toISOString$1(x))) + ")";
+    case "[object Null]":
+      return "null";
+    case "[object Number]":
+      return typeof x === "object" ? "new Number(" + recur(x.valueOf()) + ")" : 1 / x === -Infinity ? "-0" : x.toString(10);
+    case "[object String]":
+      return typeof x === "object" ? "new String(" + recur(x.valueOf()) + ")" : _quote(x);
+    case "[object Undefined]":
+      return "undefined";
+    default:
+      if (typeof x.toString === "function") {
+        var repr = x.toString();
+        if (repr !== "[object Object]") {
+          return repr;
+        }
+      }
+      return "{" + mapPairs(x, keys$1(x)).join(", ") + "}";
+  }
+}
+var toString = /* @__PURE__ */ _curry1(function toString2(val) {
+  return _toString(val, []);
+});
+var toString$1 = toString;
 function _objectAssign(target) {
   if (target == null) {
     throw new TypeError("Cannot convert undefined or null to object");
@@ -6522,6 +6819,16 @@ var set = /* @__PURE__ */ _curry3(function set2(lens3, v, x) {
   return over$1(lens3, always$1(v), x);
 });
 var set$1 = set;
+function _isRegExp(x) {
+  return Object.prototype.toString.call(x) === "[object RegExp]";
+}
+var test = /* @__PURE__ */ _curry2(function test2(pattern, str) {
+  if (!_isRegExp(pattern)) {
+    throw new TypeError("\u2018test\u2019 requires a value of type RegExp as its first argument; received " + toString$1(pattern));
+  }
+  return _cloneRegExp(pattern).test(str);
+});
+var test$1 = test;
 var Const = function(x) {
   return {
     value: x,
@@ -6786,8 +7093,8 @@ var localforage = { exports: {} };
         }
         return handlers.resolve(new this(INTERNAL), value);
       }
-      Promise2.reject = reject;
-      function reject(reason) {
+      Promise2.reject = reject3;
+      function reject3(reason) {
         var promise = new this(INTERNAL);
         return handlers.reject(promise, reason);
       }
@@ -6961,7 +7268,7 @@ var localforage = { exports: {} };
       var DETECT_BLOB_SUPPORT_STORE = "local-forage-detect-blob-support";
       var supportsBlobs = void 0;
       var dbContexts = {};
-      var toString2 = Object.prototype.toString;
+      var toString3 = Object.prototype.toString;
       var READ_ONLY = "readonly";
       var READ_WRITE = "readwrite";
       function _binStringToArrayBuffer(bin) {
@@ -7004,9 +7311,9 @@ var localforage = { exports: {} };
       function _deferReadiness(dbInfo) {
         var dbContext = dbContexts[dbInfo.name];
         var deferredOperation = {};
-        deferredOperation.promise = new Promise$1(function(resolve2, reject) {
+        deferredOperation.promise = new Promise$1(function(resolve2, reject3) {
           deferredOperation.resolve = resolve2;
-          deferredOperation.reject = reject;
+          deferredOperation.reject = reject3;
         });
         dbContext.deferredOperations.push(deferredOperation);
         if (!dbContext.dbReady) {
@@ -7034,7 +7341,7 @@ var localforage = { exports: {} };
         }
       }
       function _getConnection(dbInfo, upgradeNeeded) {
-        return new Promise$1(function(resolve2, reject) {
+        return new Promise$1(function(resolve2, reject3) {
           dbContexts[dbInfo.name] = dbContexts[dbInfo.name] || createDbContext();
           if (dbInfo.db) {
             if (upgradeNeeded) {
@@ -7068,7 +7375,7 @@ var localforage = { exports: {} };
           }
           openreq.onerror = function(e) {
             e.preventDefault();
-            reject(openreq.error);
+            reject3(openreq.error);
           };
           openreq.onsuccess = function() {
             var db = openreq.result;
@@ -7111,9 +7418,9 @@ var localforage = { exports: {} };
         return false;
       }
       function _encodeBlob(blob) {
-        return new Promise$1(function(resolve2, reject) {
+        return new Promise$1(function(resolve2, reject3) {
           var reader = new FileReader();
-          reader.onerror = reject;
+          reader.onerror = reject3;
           reader.onloadend = function(e) {
             var base64 = btoa(e.target.result || "");
             resolve2({
@@ -7259,11 +7566,11 @@ var localforage = { exports: {} };
       function getItem(key2, callback) {
         var self2 = this;
         key2 = normalizeKey2(key2);
-        var promise = new Promise$1(function(resolve2, reject) {
+        var promise = new Promise$1(function(resolve2, reject3) {
           self2.ready().then(function() {
             createTransaction(self2._dbInfo, READ_ONLY, function(err, transaction) {
               if (err) {
-                return reject(err);
+                return reject3(err);
               }
               try {
                 var store = transaction.objectStore(self2._dbInfo.storeName);
@@ -7279,24 +7586,24 @@ var localforage = { exports: {} };
                   resolve2(value);
                 };
                 req.onerror = function() {
-                  reject(req.error);
+                  reject3(req.error);
                 };
               } catch (e) {
-                reject(e);
+                reject3(e);
               }
             });
-          })["catch"](reject);
+          })["catch"](reject3);
         });
         executeCallback(promise, callback);
         return promise;
       }
       function iterate(iterator, callback) {
         var self2 = this;
-        var promise = new Promise$1(function(resolve2, reject) {
+        var promise = new Promise$1(function(resolve2, reject3) {
           self2.ready().then(function() {
             createTransaction(self2._dbInfo, READ_ONLY, function(err, transaction) {
               if (err) {
-                return reject(err);
+                return reject3(err);
               }
               try {
                 var store = transaction.objectStore(self2._dbInfo.storeName);
@@ -7320,13 +7627,13 @@ var localforage = { exports: {} };
                   }
                 };
                 req.onerror = function() {
-                  reject(req.error);
+                  reject3(req.error);
                 };
               } catch (e) {
-                reject(e);
+                reject3(e);
               }
             });
-          })["catch"](reject);
+          })["catch"](reject3);
         });
         executeCallback(promise, callback);
         return promise;
@@ -7334,11 +7641,11 @@ var localforage = { exports: {} };
       function setItem(key2, value, callback) {
         var self2 = this;
         key2 = normalizeKey2(key2);
-        var promise = new Promise$1(function(resolve2, reject) {
+        var promise = new Promise$1(function(resolve2, reject3) {
           var dbInfo;
           self2.ready().then(function() {
             dbInfo = self2._dbInfo;
-            if (toString2.call(value) === "[object Blob]") {
+            if (toString3.call(value) === "[object Blob]") {
               return _checkBlobSupport(dbInfo.db).then(function(blobSupport) {
                 if (blobSupport) {
                   return value;
@@ -7350,7 +7657,7 @@ var localforage = { exports: {} };
           }).then(function(value2) {
             createTransaction(self2._dbInfo, READ_WRITE, function(err, transaction) {
               if (err) {
-                return reject(err);
+                return reject3(err);
               }
               try {
                 var store = transaction.objectStore(self2._dbInfo.storeName);
@@ -7366,13 +7673,13 @@ var localforage = { exports: {} };
                 };
                 transaction.onabort = transaction.onerror = function() {
                   var err2 = req.error ? req.error : req.transaction.error;
-                  reject(err2);
+                  reject3(err2);
                 };
               } catch (e) {
-                reject(e);
+                reject3(e);
               }
             });
-          })["catch"](reject);
+          })["catch"](reject3);
         });
         executeCallback(promise, callback);
         return promise;
@@ -7380,11 +7687,11 @@ var localforage = { exports: {} };
       function removeItem(key2, callback) {
         var self2 = this;
         key2 = normalizeKey2(key2);
-        var promise = new Promise$1(function(resolve2, reject) {
+        var promise = new Promise$1(function(resolve2, reject3) {
           self2.ready().then(function() {
             createTransaction(self2._dbInfo, READ_WRITE, function(err, transaction) {
               if (err) {
-                return reject(err);
+                return reject3(err);
               }
               try {
                 var store = transaction.objectStore(self2._dbInfo.storeName);
@@ -7393,28 +7700,28 @@ var localforage = { exports: {} };
                   resolve2();
                 };
                 transaction.onerror = function() {
-                  reject(req.error);
+                  reject3(req.error);
                 };
                 transaction.onabort = function() {
                   var err2 = req.error ? req.error : req.transaction.error;
-                  reject(err2);
+                  reject3(err2);
                 };
               } catch (e) {
-                reject(e);
+                reject3(e);
               }
             });
-          })["catch"](reject);
+          })["catch"](reject3);
         });
         executeCallback(promise, callback);
         return promise;
       }
       function clear2(callback) {
         var self2 = this;
-        var promise = new Promise$1(function(resolve2, reject) {
+        var promise = new Promise$1(function(resolve2, reject3) {
           self2.ready().then(function() {
             createTransaction(self2._dbInfo, READ_WRITE, function(err, transaction) {
               if (err) {
-                return reject(err);
+                return reject3(err);
               }
               try {
                 var store = transaction.objectStore(self2._dbInfo.storeName);
@@ -7424,24 +7731,24 @@ var localforage = { exports: {} };
                 };
                 transaction.onabort = transaction.onerror = function() {
                   var err2 = req.error ? req.error : req.transaction.error;
-                  reject(err2);
+                  reject3(err2);
                 };
               } catch (e) {
-                reject(e);
+                reject3(e);
               }
             });
-          })["catch"](reject);
+          })["catch"](reject3);
         });
         executeCallback(promise, callback);
         return promise;
       }
       function length(callback) {
         var self2 = this;
-        var promise = new Promise$1(function(resolve2, reject) {
+        var promise = new Promise$1(function(resolve2, reject3) {
           self2.ready().then(function() {
             createTransaction(self2._dbInfo, READ_ONLY, function(err, transaction) {
               if (err) {
-                return reject(err);
+                return reject3(err);
               }
               try {
                 var store = transaction.objectStore(self2._dbInfo.storeName);
@@ -7450,20 +7757,20 @@ var localforage = { exports: {} };
                   resolve2(req.result);
                 };
                 req.onerror = function() {
-                  reject(req.error);
+                  reject3(req.error);
                 };
               } catch (e) {
-                reject(e);
+                reject3(e);
               }
             });
-          })["catch"](reject);
+          })["catch"](reject3);
         });
         executeCallback(promise, callback);
         return promise;
       }
       function key(n, callback) {
         var self2 = this;
-        var promise = new Promise$1(function(resolve2, reject) {
+        var promise = new Promise$1(function(resolve2, reject3) {
           if (n < 0) {
             resolve2(null);
             return;
@@ -7471,7 +7778,7 @@ var localforage = { exports: {} };
           self2.ready().then(function() {
             createTransaction(self2._dbInfo, READ_ONLY, function(err, transaction) {
               if (err) {
-                return reject(err);
+                return reject3(err);
               }
               try {
                 var store = transaction.objectStore(self2._dbInfo.storeName);
@@ -7495,24 +7802,24 @@ var localforage = { exports: {} };
                   }
                 };
                 req.onerror = function() {
-                  reject(req.error);
+                  reject3(req.error);
                 };
               } catch (e) {
-                reject(e);
+                reject3(e);
               }
             });
-          })["catch"](reject);
+          })["catch"](reject3);
         });
         executeCallback(promise, callback);
         return promise;
       }
       function keys4(callback) {
         var self2 = this;
-        var promise = new Promise$1(function(resolve2, reject) {
+        var promise = new Promise$1(function(resolve2, reject3) {
           self2.ready().then(function() {
             createTransaction(self2._dbInfo, READ_ONLY, function(err, transaction) {
               if (err) {
-                return reject(err);
+                return reject3(err);
               }
               try {
                 var store = transaction.objectStore(self2._dbInfo.storeName);
@@ -7528,13 +7835,13 @@ var localforage = { exports: {} };
                   cursor["continue"]();
                 };
                 req.onerror = function() {
-                  reject(req.error);
+                  reject3(req.error);
                 };
               } catch (e) {
-                reject(e);
+                reject3(e);
               }
             });
-          })["catch"](reject);
+          })["catch"](reject3);
         });
         executeCallback(promise, callback);
         return promise;
@@ -7572,14 +7879,14 @@ var localforage = { exports: {} };
                 var forage = forages[i];
                 forage._dbInfo.db = null;
               }
-              var dropDBPromise = new Promise$1(function(resolve2, reject) {
+              var dropDBPromise = new Promise$1(function(resolve2, reject3) {
                 var req = idb.deleteDatabase(options2.name);
                 req.onerror = function() {
                   var db2 = req.result;
                   if (db2) {
                     db2.close();
                   }
-                  reject(req.error);
+                  reject3(req.error);
                 };
                 req.onblocked = function() {
                   console.warn('dropInstance blocked for database "' + options2.name + '" until all open connections are closed');
@@ -7619,12 +7926,12 @@ var localforage = { exports: {} };
                 forage._dbInfo.db = null;
                 forage._dbInfo.version = newVersion;
               }
-              var dropObjectPromise = new Promise$1(function(resolve2, reject) {
+              var dropObjectPromise = new Promise$1(function(resolve2, reject3) {
                 var req = idb.open(options2.name, newVersion);
                 req.onerror = function(err) {
                   var db2 = req.result;
                   db2.close();
-                  reject(err);
+                  reject3(err);
                 };
                 req.onupgradeneeded = function() {
                   var db2 = req.result;
@@ -7688,7 +7995,7 @@ var localforage = { exports: {} };
       var TYPE_FLOAT32ARRAY = "fl32";
       var TYPE_FLOAT64ARRAY = "fl64";
       var TYPE_SERIALIZED_MARKER_LENGTH = SERIALIZED_MARKER_LENGTH + TYPE_ARRAYBUFFER.length;
-      var toString$1 = Object.prototype.toString;
+      var toString$12 = Object.prototype.toString;
       function stringToBuffer(serializedString) {
         var bufferLength = serializedString.length * 0.75;
         var len = serializedString.length;
@@ -7734,9 +8041,9 @@ var localforage = { exports: {} };
       function serialize(value, callback) {
         var valueType = "";
         if (value) {
-          valueType = toString$1.call(value);
+          valueType = toString$12.call(value);
         }
-        if (value && (valueType === "[object ArrayBuffer]" || value.buffer && toString$1.call(value.buffer) === "[object ArrayBuffer]")) {
+        if (value && (valueType === "[object ArrayBuffer]" || value.buffer && toString$12.call(value.buffer) === "[object ArrayBuffer]")) {
           var buffer;
           var marker = SERIALIZED_MARKER;
           if (value instanceof ArrayBuffer) {
@@ -7842,20 +8149,20 @@ var localforage = { exports: {} };
             dbInfo[i] = typeof options2[i] !== "string" ? options2[i].toString() : options2[i];
           }
         }
-        var dbInfoPromise = new Promise$1(function(resolve2, reject) {
+        var dbInfoPromise = new Promise$1(function(resolve2, reject3) {
           try {
             dbInfo.db = openDatabase(dbInfo.name, String(dbInfo.version), dbInfo.description, dbInfo.size);
           } catch (e) {
-            return reject(e);
+            return reject3(e);
           }
           dbInfo.db.transaction(function(t) {
             createDbTable(t, dbInfo, function() {
               self2._dbInfo = dbInfo;
               resolve2();
             }, function(t2, error) {
-              reject(error);
+              reject3(error);
             });
-          }, reject);
+          }, reject3);
         });
         dbInfo.serializer = localforageSerializer;
         return dbInfoPromise;
@@ -7880,7 +8187,7 @@ var localforage = { exports: {} };
       function getItem$1(key2, callback) {
         var self2 = this;
         key2 = normalizeKey2(key2);
-        var promise = new Promise$1(function(resolve2, reject) {
+        var promise = new Promise$1(function(resolve2, reject3) {
           self2.ready().then(function() {
             var dbInfo = self2._dbInfo;
             dbInfo.db.transaction(function(t) {
@@ -7891,17 +8198,17 @@ var localforage = { exports: {} };
                 }
                 resolve2(result);
               }, function(t2, error) {
-                reject(error);
+                reject3(error);
               });
             });
-          })["catch"](reject);
+          })["catch"](reject3);
         });
         executeCallback(promise, callback);
         return promise;
       }
       function iterate$1(iterator, callback) {
         var self2 = this;
-        var promise = new Promise$1(function(resolve2, reject) {
+        var promise = new Promise$1(function(resolve2, reject3) {
           self2.ready().then(function() {
             var dbInfo = self2._dbInfo;
             dbInfo.db.transaction(function(t) {
@@ -7922,10 +8229,10 @@ var localforage = { exports: {} };
                 }
                 resolve2();
               }, function(t2, error) {
-                reject(error);
+                reject3(error);
               });
             });
-          })["catch"](reject);
+          })["catch"](reject3);
         });
         executeCallback(promise, callback);
         return promise;
@@ -7933,7 +8240,7 @@ var localforage = { exports: {} };
       function _setItem(key2, value, callback, retriesLeft) {
         var self2 = this;
         key2 = normalizeKey2(key2);
-        var promise = new Promise$1(function(resolve2, reject) {
+        var promise = new Promise$1(function(resolve2, reject3) {
           self2.ready().then(function() {
             if (value === void 0) {
               value = null;
@@ -7942,13 +8249,13 @@ var localforage = { exports: {} };
             var dbInfo = self2._dbInfo;
             dbInfo.serializer.serialize(value, function(value2, error) {
               if (error) {
-                reject(error);
+                reject3(error);
               } else {
                 dbInfo.db.transaction(function(t) {
                   tryExecuteSql(t, dbInfo, "INSERT OR REPLACE INTO " + dbInfo.storeName + " (key, value) VALUES (?, ?)", [key2, value2], function() {
                     resolve2(originalValue);
                   }, function(t2, error2) {
-                    reject(error2);
+                    reject3(error2);
                   });
                 }, function(sqlError) {
                   if (sqlError.code === sqlError.QUOTA_ERR) {
@@ -7956,12 +8263,12 @@ var localforage = { exports: {} };
                       resolve2(_setItem.apply(self2, [key2, originalValue, callback, retriesLeft - 1]));
                       return;
                     }
-                    reject(sqlError);
+                    reject3(sqlError);
                   }
                 });
               }
             });
-          })["catch"](reject);
+          })["catch"](reject3);
         });
         executeCallback(promise, callback);
         return promise;
@@ -7972,41 +8279,41 @@ var localforage = { exports: {} };
       function removeItem$1(key2, callback) {
         var self2 = this;
         key2 = normalizeKey2(key2);
-        var promise = new Promise$1(function(resolve2, reject) {
+        var promise = new Promise$1(function(resolve2, reject3) {
           self2.ready().then(function() {
             var dbInfo = self2._dbInfo;
             dbInfo.db.transaction(function(t) {
               tryExecuteSql(t, dbInfo, "DELETE FROM " + dbInfo.storeName + " WHERE key = ?", [key2], function() {
                 resolve2();
               }, function(t2, error) {
-                reject(error);
+                reject3(error);
               });
             });
-          })["catch"](reject);
+          })["catch"](reject3);
         });
         executeCallback(promise, callback);
         return promise;
       }
       function clear$1(callback) {
         var self2 = this;
-        var promise = new Promise$1(function(resolve2, reject) {
+        var promise = new Promise$1(function(resolve2, reject3) {
           self2.ready().then(function() {
             var dbInfo = self2._dbInfo;
             dbInfo.db.transaction(function(t) {
               tryExecuteSql(t, dbInfo, "DELETE FROM " + dbInfo.storeName, [], function() {
                 resolve2();
               }, function(t2, error) {
-                reject(error);
+                reject3(error);
               });
             });
-          })["catch"](reject);
+          })["catch"](reject3);
         });
         executeCallback(promise, callback);
         return promise;
       }
       function length$1(callback) {
         var self2 = this;
-        var promise = new Promise$1(function(resolve2, reject) {
+        var promise = new Promise$1(function(resolve2, reject3) {
           self2.ready().then(function() {
             var dbInfo = self2._dbInfo;
             dbInfo.db.transaction(function(t) {
@@ -8014,17 +8321,17 @@ var localforage = { exports: {} };
                 var result = results.rows.item(0).c;
                 resolve2(result);
               }, function(t2, error) {
-                reject(error);
+                reject3(error);
               });
             });
-          })["catch"](reject);
+          })["catch"](reject3);
         });
         executeCallback(promise, callback);
         return promise;
       }
       function key$1(n, callback) {
         var self2 = this;
-        var promise = new Promise$1(function(resolve2, reject) {
+        var promise = new Promise$1(function(resolve2, reject3) {
           self2.ready().then(function() {
             var dbInfo = self2._dbInfo;
             dbInfo.db.transaction(function(t) {
@@ -8032,17 +8339,17 @@ var localforage = { exports: {} };
                 var result = results.rows.length ? results.rows.item(0).key : null;
                 resolve2(result);
               }, function(t2, error) {
-                reject(error);
+                reject3(error);
               });
             });
-          })["catch"](reject);
+          })["catch"](reject3);
         });
         executeCallback(promise, callback);
         return promise;
       }
       function keys$12(callback) {
         var self2 = this;
-        var promise = new Promise$1(function(resolve2, reject) {
+        var promise = new Promise$1(function(resolve2, reject3) {
           self2.ready().then(function() {
             var dbInfo = self2._dbInfo;
             dbInfo.db.transaction(function(t) {
@@ -8053,16 +8360,16 @@ var localforage = { exports: {} };
                 }
                 resolve2(keys5);
               }, function(t2, error) {
-                reject(error);
+                reject3(error);
               });
             });
-          })["catch"](reject);
+          })["catch"](reject3);
         });
         executeCallback(promise, callback);
         return promise;
       }
       function getAllStoreNames(db) {
-        return new Promise$1(function(resolve2, reject) {
+        return new Promise$1(function(resolve2, reject3) {
           db.transaction(function(t) {
             t.executeSql("SELECT name FROM sqlite_master WHERE type='table' AND name <> '__WebKitDatabaseInfoTable__'", [], function(t2, results) {
               var storeNames = [];
@@ -8074,10 +8381,10 @@ var localforage = { exports: {} };
                 storeNames
               });
             }, function(t2, error) {
-              reject(error);
+              reject3(error);
             });
           }, function(sqlError) {
-            reject(sqlError);
+            reject3(sqlError);
           });
         });
       }
@@ -8110,14 +8417,14 @@ var localforage = { exports: {} };
               });
             }
           }).then(function(operationInfo) {
-            return new Promise$1(function(resolve2, reject) {
+            return new Promise$1(function(resolve2, reject3) {
               operationInfo.db.transaction(function(t) {
                 function dropTable(storeName) {
-                  return new Promise$1(function(resolve3, reject2) {
+                  return new Promise$1(function(resolve3, reject4) {
                     t.executeSql("DROP TABLE IF EXISTS " + storeName, [], function() {
                       resolve3();
                     }, function(t2, error) {
-                      reject2(error);
+                      reject4(error);
                     });
                   });
                 }
@@ -8128,10 +8435,10 @@ var localforage = { exports: {} };
                 Promise$1.all(operations).then(function() {
                   resolve2();
                 })["catch"](function(e) {
-                  reject(e);
+                  reject3(e);
                 });
               }, function(sqlError) {
-                reject(sqlError);
+                reject3(sqlError);
               });
             });
           });
@@ -8311,20 +8618,20 @@ var localforage = { exports: {} };
             value = null;
           }
           var originalValue = value;
-          return new Promise$1(function(resolve2, reject) {
+          return new Promise$1(function(resolve2, reject3) {
             var dbInfo = self2._dbInfo;
             dbInfo.serializer.serialize(value, function(value2, error) {
               if (error) {
-                reject(error);
+                reject3(error);
               } else {
                 try {
                   localStorage.setItem(dbInfo.keyPrefix + key2, value2);
                   resolve2(originalValue);
                 } catch (e) {
                   if (e.name === "QuotaExceededError" || e.name === "NS_ERROR_DOM_QUOTA_REACHED") {
-                    reject(e);
+                    reject3(e);
                   }
-                  reject(e);
+                  reject3(e);
                 }
               }
             });
@@ -8486,12 +8793,12 @@ var localforage = { exports: {} };
           }
         };
         LocalForage2.prototype.defineDriver = function defineDriver(driverObject, callback, errorCallback) {
-          var promise = new Promise$1(function(resolve2, reject) {
+          var promise = new Promise$1(function(resolve2, reject3) {
             try {
               var driverName = driverObject._driver;
               var complianceError = new Error("Custom driver not compliant; see https://mozilla.github.io/localForage/#definedriver");
               if (!driverObject._driver) {
-                reject(complianceError);
+                reject3(complianceError);
                 return;
               }
               var driverMethods = LibraryMethods.concat("_initStorage");
@@ -8499,7 +8806,7 @@ var localforage = { exports: {} };
                 var driverMethodName = driverMethods[i];
                 var isRequired = !includes(OptionalDriverMethods, driverMethodName);
                 if ((isRequired || driverObject[driverMethodName]) && typeof driverObject[driverMethodName] !== "function") {
-                  reject(complianceError);
+                  reject3(complianceError);
                   return;
                 }
               }
@@ -8530,7 +8837,7 @@ var localforage = { exports: {} };
               };
               if ("_support" in driverObject) {
                 if (driverObject._support && typeof driverObject._support === "function") {
-                  driverObject._support().then(setDriverSupport, reject);
+                  driverObject._support().then(setDriverSupport, reject3);
                 } else {
                   setDriverSupport(!!driverObject._support);
                 }
@@ -8538,7 +8845,7 @@ var localforage = { exports: {} };
                 setDriverSupport(true);
               }
             } catch (e) {
-              reject(e);
+              reject3(e);
             }
           });
           executeTwoCallbacks(promise, callback, errorCallback);
@@ -9656,7 +9963,7 @@ var guards = {};
 })(guards);
 var wildcards = {};
 Object.defineProperty(wildcards, "__esModule", { value: true });
-wildcards.__ = void 0;
+var __ = wildcards.__ = void 0;
 const guards_1 = guards;
 function isUnknown(x) {
   return true;
@@ -9682,7 +9989,7 @@ const numberGuard = (0, guards_1.when)(isNumber);
 const NaNGuard = (0, guards_1.when)(numberIsNaN);
 const booleanGuard = (0, guards_1.when)(isBoolean);
 const nullishGuard = (0, guards_1.when)(isNullish);
-wildcards.__ = Object.assign(unknownGuard, {
+__ = wildcards.__ = Object.assign(unknownGuard, {
   string: stringGuard,
   number: numberGuard,
   NaN: NaNGuard,
@@ -9714,7 +10021,7 @@ wildcards.__ = Object.assign(unknownGuard, {
   exports.match = match3;
   const builder = (value, cases) => {
     const run = () => {
-      const entry = cases.find(({ test }) => test(value));
+      const entry = cases.find(({ test: test3 }) => test3(value));
       if (!entry) {
         let displayedValue;
         try {
@@ -10693,10 +11000,10 @@ function isAliasRecord(record) {
 function mergeMetaFields(matched) {
   return matched.reduce((meta, record) => assign(meta, record.meta), {});
 }
-function mergeOptions(defaults, partialOptions) {
+function mergeOptions(defaults2, partialOptions) {
   const options2 = {};
-  for (const key in defaults) {
-    options2[key] = key in partialOptions ? partialOptions[key] : defaults[key];
+  for (const key in defaults2) {
+    options2[key] = key in partialOptions ? partialOptions[key] : defaults2[key];
   }
   return options2;
 }
@@ -10815,17 +11122,17 @@ function useCallbacks() {
 }
 function guardToPromiseFn(guard, to, from, record, name) {
   const enterCallbackArray = record && (record.enterCallbacks[name] = record.enterCallbacks[name] || []);
-  return () => new Promise((resolve2, reject) => {
+  return () => new Promise((resolve2, reject3) => {
     const next = (valid) => {
       if (valid === false)
-        reject(createRouterError(4, {
+        reject3(createRouterError(4, {
           from,
           to
         }));
       else if (valid instanceof Error) {
-        reject(valid);
+        reject3(valid);
       } else if (isRouteLocation(valid)) {
-        reject(createRouterError(2, {
+        reject3(createRouterError(2, {
           from: to,
           to: valid
         }));
@@ -10839,7 +11146,7 @@ function guardToPromiseFn(guard, to, from, record, name) {
     let guardCall = Promise.resolve(guardReturn);
     if (guard.length < 3)
       guardCall = guardCall.then(next);
-    guardCall.catch((err) => reject(err));
+    guardCall.catch((err) => reject3(err));
   });
 }
 function extractComponentsGuards(matched, guardType, to, from) {
@@ -11334,8 +11641,8 @@ function createRouter(options2) {
   function isReady() {
     if (ready && currentRoute.value !== START_LOCATION_NORMALIZED)
       return Promise.resolve();
-    return new Promise((resolve3, reject) => {
-      readyHandlers.add([resolve3, reject]);
+    return new Promise((resolve3, reject3) => {
+      readyHandlers.add([resolve3, reject3]);
     });
   }
   function markAsReady(err) {
@@ -11343,7 +11650,7 @@ function createRouter(options2) {
       return;
     ready = true;
     setupListeners();
-    readyHandlers.list().forEach(([resolve3, reject]) => err ? reject(err) : resolve3());
+    readyHandlers.list().forEach(([resolve3, reject3]) => err ? reject3(err) : resolve3());
     readyHandlers.reset();
   }
   function handleScroll(to, from, isPush, isFirstNavigation) {
@@ -11443,6 +11750,1958 @@ function useRouter() {
 function useRoute() {
   return inject(routeLocationKey);
 }
+function getDefaults() {
+  return {
+    baseUrl: null,
+    breaks: false,
+    extensions: null,
+    gfm: true,
+    headerIds: true,
+    headerPrefix: "",
+    highlight: null,
+    langPrefix: "language-",
+    mangle: true,
+    pedantic: false,
+    renderer: null,
+    sanitize: false,
+    sanitizer: null,
+    silent: false,
+    smartLists: false,
+    smartypants: false,
+    tokenizer: null,
+    walkTokens: null,
+    xhtml: false
+  };
+}
+let defaults = getDefaults();
+function changeDefaults(newDefaults) {
+  defaults = newDefaults;
+}
+const escapeTest = /[&<>"']/;
+const escapeReplace = /[&<>"']/g;
+const escapeTestNoEncode = /[<>"']|&(?!#?\w+;)/;
+const escapeReplaceNoEncode = /[<>"']|&(?!#?\w+;)/g;
+const escapeReplacements = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&#39;"
+};
+const getEscapeReplacement = (ch) => escapeReplacements[ch];
+function escape(html, encode) {
+  if (encode) {
+    if (escapeTest.test(html)) {
+      return html.replace(escapeReplace, getEscapeReplacement);
+    }
+  } else {
+    if (escapeTestNoEncode.test(html)) {
+      return html.replace(escapeReplaceNoEncode, getEscapeReplacement);
+    }
+  }
+  return html;
+}
+const unescapeTest = /&(#(?:\d+)|(?:#x[0-9A-Fa-f]+)|(?:\w+));?/ig;
+function unescape(html) {
+  return html.replace(unescapeTest, (_, n) => {
+    n = n.toLowerCase();
+    if (n === "colon")
+      return ":";
+    if (n.charAt(0) === "#") {
+      return n.charAt(1) === "x" ? String.fromCharCode(parseInt(n.substring(2), 16)) : String.fromCharCode(+n.substring(1));
+    }
+    return "";
+  });
+}
+const caret = /(^|[^\[])\^/g;
+function edit(regex, opt) {
+  regex = regex.source || regex;
+  opt = opt || "";
+  const obj = {
+    replace: (name, val) => {
+      val = val.source || val;
+      val = val.replace(caret, "$1");
+      regex = regex.replace(name, val);
+      return obj;
+    },
+    getRegex: () => {
+      return new RegExp(regex, opt);
+    }
+  };
+  return obj;
+}
+const nonWordAndColonTest = /[^\w:]/g;
+const originIndependentUrl = /^$|^[a-z][a-z0-9+.-]*:|^[?#]/i;
+function cleanUrl(sanitize, base, href) {
+  if (sanitize) {
+    let prot;
+    try {
+      prot = decodeURIComponent(unescape(href)).replace(nonWordAndColonTest, "").toLowerCase();
+    } catch (e) {
+      return null;
+    }
+    if (prot.indexOf("javascript:") === 0 || prot.indexOf("vbscript:") === 0 || prot.indexOf("data:") === 0) {
+      return null;
+    }
+  }
+  if (base && !originIndependentUrl.test(href)) {
+    href = resolveUrl(base, href);
+  }
+  try {
+    href = encodeURI(href).replace(/%25/g, "%");
+  } catch (e) {
+    return null;
+  }
+  return href;
+}
+const baseUrls = {};
+const justDomain = /^[^:]+:\/*[^/]*$/;
+const protocol = /^([^:]+:)[\s\S]*$/;
+const domain = /^([^:]+:\/*[^/]*)[\s\S]*$/;
+function resolveUrl(base, href) {
+  if (!baseUrls[" " + base]) {
+    if (justDomain.test(base)) {
+      baseUrls[" " + base] = base + "/";
+    } else {
+      baseUrls[" " + base] = rtrim(base, "/", true);
+    }
+  }
+  base = baseUrls[" " + base];
+  const relativeBase = base.indexOf(":") === -1;
+  if (href.substring(0, 2) === "//") {
+    if (relativeBase) {
+      return href;
+    }
+    return base.replace(protocol, "$1") + href;
+  } else if (href.charAt(0) === "/") {
+    if (relativeBase) {
+      return href;
+    }
+    return base.replace(domain, "$1") + href;
+  } else {
+    return base + href;
+  }
+}
+const noopTest = { exec: function noopTest2() {
+} };
+function merge(obj) {
+  let i = 1, target, key;
+  for (; i < arguments.length; i++) {
+    target = arguments[i];
+    for (key in target) {
+      if (Object.prototype.hasOwnProperty.call(target, key)) {
+        obj[key] = target[key];
+      }
+    }
+  }
+  return obj;
+}
+function splitCells(tableRow, count) {
+  const row = tableRow.replace(/\|/g, (match3, offset2, str) => {
+    let escaped = false, curr = offset2;
+    while (--curr >= 0 && str[curr] === "\\")
+      escaped = !escaped;
+    if (escaped) {
+      return "|";
+    } else {
+      return " |";
+    }
+  }), cells = row.split(/ \|/);
+  let i = 0;
+  if (!cells[0].trim()) {
+    cells.shift();
+  }
+  if (cells.length > 0 && !cells[cells.length - 1].trim()) {
+    cells.pop();
+  }
+  if (cells.length > count) {
+    cells.splice(count);
+  } else {
+    while (cells.length < count)
+      cells.push("");
+  }
+  for (; i < cells.length; i++) {
+    cells[i] = cells[i].trim().replace(/\\\|/g, "|");
+  }
+  return cells;
+}
+function rtrim(str, c, invert) {
+  const l = str.length;
+  if (l === 0) {
+    return "";
+  }
+  let suffLen = 0;
+  while (suffLen < l) {
+    const currChar = str.charAt(l - suffLen - 1);
+    if (currChar === c && !invert) {
+      suffLen++;
+    } else if (currChar !== c && invert) {
+      suffLen++;
+    } else {
+      break;
+    }
+  }
+  return str.substr(0, l - suffLen);
+}
+function findClosingBracket(str, b) {
+  if (str.indexOf(b[1]) === -1) {
+    return -1;
+  }
+  const l = str.length;
+  let level = 0, i = 0;
+  for (; i < l; i++) {
+    if (str[i] === "\\") {
+      i++;
+    } else if (str[i] === b[0]) {
+      level++;
+    } else if (str[i] === b[1]) {
+      level--;
+      if (level < 0) {
+        return i;
+      }
+    }
+  }
+  return -1;
+}
+function checkSanitizeDeprecation(opt) {
+  if (opt && opt.sanitize && !opt.silent) {
+    console.warn("marked(): sanitize and sanitizer parameters are deprecated since version 0.7.0, should not be used and will be removed in the future. Read more here: https://marked.js.org/#/USING_ADVANCED.md#options");
+  }
+}
+function repeatString(pattern, count) {
+  if (count < 1) {
+    return "";
+  }
+  let result = "";
+  while (count > 1) {
+    if (count & 1) {
+      result += pattern;
+    }
+    count >>= 1;
+    pattern += pattern;
+  }
+  return result + pattern;
+}
+function outputLink(cap, link, raw, lexer) {
+  const href = link.href;
+  const title = link.title ? escape(link.title) : null;
+  const text = cap[1].replace(/\\([\[\]])/g, "$1");
+  if (cap[0].charAt(0) !== "!") {
+    lexer.state.inLink = true;
+    const token = {
+      type: "link",
+      raw,
+      href,
+      title,
+      text,
+      tokens: lexer.inlineTokens(text, [])
+    };
+    lexer.state.inLink = false;
+    return token;
+  } else {
+    return {
+      type: "image",
+      raw,
+      href,
+      title,
+      text: escape(text)
+    };
+  }
+}
+function indentCodeCompensation(raw, text) {
+  const matchIndentToCode = raw.match(/^(\s+)(?:```)/);
+  if (matchIndentToCode === null) {
+    return text;
+  }
+  const indentToCode = matchIndentToCode[1];
+  return text.split("\n").map((node) => {
+    const matchIndentInNode = node.match(/^\s+/);
+    if (matchIndentInNode === null) {
+      return node;
+    }
+    const [indentInNode] = matchIndentInNode;
+    if (indentInNode.length >= indentToCode.length) {
+      return node.slice(indentToCode.length);
+    }
+    return node;
+  }).join("\n");
+}
+class Tokenizer {
+  constructor(options2) {
+    this.options = options2 || defaults;
+  }
+  space(src) {
+    const cap = this.rules.block.newline.exec(src);
+    if (cap && cap[0].length > 0) {
+      return {
+        type: "space",
+        raw: cap[0]
+      };
+    }
+  }
+  code(src) {
+    const cap = this.rules.block.code.exec(src);
+    if (cap) {
+      const text = cap[0].replace(/^ {1,4}/gm, "");
+      return {
+        type: "code",
+        raw: cap[0],
+        codeBlockStyle: "indented",
+        text: !this.options.pedantic ? rtrim(text, "\n") : text
+      };
+    }
+  }
+  fences(src) {
+    const cap = this.rules.block.fences.exec(src);
+    if (cap) {
+      const raw = cap[0];
+      const text = indentCodeCompensation(raw, cap[3] || "");
+      return {
+        type: "code",
+        raw,
+        lang: cap[2] ? cap[2].trim() : cap[2],
+        text
+      };
+    }
+  }
+  heading(src) {
+    const cap = this.rules.block.heading.exec(src);
+    if (cap) {
+      let text = cap[2].trim();
+      if (/#$/.test(text)) {
+        const trimmed = rtrim(text, "#");
+        if (this.options.pedantic) {
+          text = trimmed.trim();
+        } else if (!trimmed || / $/.test(trimmed)) {
+          text = trimmed.trim();
+        }
+      }
+      const token = {
+        type: "heading",
+        raw: cap[0],
+        depth: cap[1].length,
+        text,
+        tokens: []
+      };
+      this.lexer.inline(token.text, token.tokens);
+      return token;
+    }
+  }
+  hr(src) {
+    const cap = this.rules.block.hr.exec(src);
+    if (cap) {
+      return {
+        type: "hr",
+        raw: cap[0]
+      };
+    }
+  }
+  blockquote(src) {
+    const cap = this.rules.block.blockquote.exec(src);
+    if (cap) {
+      const text = cap[0].replace(/^ *> ?/gm, "");
+      return {
+        type: "blockquote",
+        raw: cap[0],
+        tokens: this.lexer.blockTokens(text, []),
+        text
+      };
+    }
+  }
+  list(src) {
+    let cap = this.rules.block.list.exec(src);
+    if (cap) {
+      let raw, istask, ischecked, indent, i, blankLine, endsWithBlankLine, line, nextLine, rawLine, itemContents, endEarly;
+      let bull = cap[1].trim();
+      const isordered = bull.length > 1;
+      const list = {
+        type: "list",
+        raw: "",
+        ordered: isordered,
+        start: isordered ? +bull.slice(0, -1) : "",
+        loose: false,
+        items: []
+      };
+      bull = isordered ? `\\d{1,9}\\${bull.slice(-1)}` : `\\${bull}`;
+      if (this.options.pedantic) {
+        bull = isordered ? bull : "[*+-]";
+      }
+      const itemRegex = new RegExp(`^( {0,3}${bull})((?: [^\\n]*)?(?:\\n|$))`);
+      while (src) {
+        endEarly = false;
+        if (!(cap = itemRegex.exec(src))) {
+          break;
+        }
+        if (this.rules.block.hr.test(src)) {
+          break;
+        }
+        raw = cap[0];
+        src = src.substring(raw.length);
+        line = cap[2].split("\n", 1)[0];
+        nextLine = src.split("\n", 1)[0];
+        if (this.options.pedantic) {
+          indent = 2;
+          itemContents = line.trimLeft();
+        } else {
+          indent = cap[2].search(/[^ ]/);
+          indent = indent > 4 ? 1 : indent;
+          itemContents = line.slice(indent);
+          indent += cap[1].length;
+        }
+        blankLine = false;
+        if (!line && /^ *$/.test(nextLine)) {
+          raw += nextLine + "\n";
+          src = src.substring(nextLine.length + 1);
+          endEarly = true;
+        }
+        if (!endEarly) {
+          const nextBulletRegex = new RegExp(`^ {0,${Math.min(3, indent - 1)}}(?:[*+-]|\\d{1,9}[.)])`);
+          while (src) {
+            rawLine = src.split("\n", 1)[0];
+            line = rawLine;
+            if (this.options.pedantic) {
+              line = line.replace(/^ {1,4}(?=( {4})*[^ ])/g, "  ");
+            }
+            if (nextBulletRegex.test(line)) {
+              break;
+            }
+            if (line.search(/[^ ]/) >= indent || !line.trim()) {
+              itemContents += "\n" + line.slice(indent);
+            } else if (!blankLine) {
+              itemContents += "\n" + line;
+            } else {
+              break;
+            }
+            if (!blankLine && !line.trim()) {
+              blankLine = true;
+            }
+            raw += rawLine + "\n";
+            src = src.substring(rawLine.length + 1);
+          }
+        }
+        if (!list.loose) {
+          if (endsWithBlankLine) {
+            list.loose = true;
+          } else if (/\n *\n *$/.test(raw)) {
+            endsWithBlankLine = true;
+          }
+        }
+        if (this.options.gfm) {
+          istask = /^\[[ xX]\] /.exec(itemContents);
+          if (istask) {
+            ischecked = istask[0] !== "[ ] ";
+            itemContents = itemContents.replace(/^\[[ xX]\] +/, "");
+          }
+        }
+        list.items.push({
+          type: "list_item",
+          raw,
+          task: !!istask,
+          checked: ischecked,
+          loose: false,
+          text: itemContents
+        });
+        list.raw += raw;
+      }
+      list.items[list.items.length - 1].raw = raw.trimRight();
+      list.items[list.items.length - 1].text = itemContents.trimRight();
+      list.raw = list.raw.trimRight();
+      const l = list.items.length;
+      for (i = 0; i < l; i++) {
+        this.lexer.state.top = false;
+        list.items[i].tokens = this.lexer.blockTokens(list.items[i].text, []);
+        const spacers = list.items[i].tokens.filter((t) => t.type === "space");
+        const hasMultipleLineBreaks = spacers.every((t) => {
+          const chars = t.raw.split("");
+          let lineBreaks = 0;
+          for (const char of chars) {
+            if (char === "\n") {
+              lineBreaks += 1;
+            }
+            if (lineBreaks > 1) {
+              return true;
+            }
+          }
+          return false;
+        });
+        if (!list.loose && spacers.length && hasMultipleLineBreaks) {
+          list.loose = true;
+          list.items[i].loose = true;
+        }
+      }
+      return list;
+    }
+  }
+  html(src) {
+    const cap = this.rules.block.html.exec(src);
+    if (cap) {
+      const token = {
+        type: "html",
+        raw: cap[0],
+        pre: !this.options.sanitizer && (cap[1] === "pre" || cap[1] === "script" || cap[1] === "style"),
+        text: cap[0]
+      };
+      if (this.options.sanitize) {
+        token.type = "paragraph";
+        token.text = this.options.sanitizer ? this.options.sanitizer(cap[0]) : escape(cap[0]);
+        token.tokens = [];
+        this.lexer.inline(token.text, token.tokens);
+      }
+      return token;
+    }
+  }
+  def(src) {
+    const cap = this.rules.block.def.exec(src);
+    if (cap) {
+      if (cap[3])
+        cap[3] = cap[3].substring(1, cap[3].length - 1);
+      const tag = cap[1].toLowerCase().replace(/\s+/g, " ");
+      return {
+        type: "def",
+        tag,
+        raw: cap[0],
+        href: cap[2],
+        title: cap[3]
+      };
+    }
+  }
+  table(src) {
+    const cap = this.rules.block.table.exec(src);
+    if (cap) {
+      const item = {
+        type: "table",
+        header: splitCells(cap[1]).map((c) => {
+          return { text: c };
+        }),
+        align: cap[2].replace(/^ *|\| *$/g, "").split(/ *\| */),
+        rows: cap[3] && cap[3].trim() ? cap[3].replace(/\n[ \t]*$/, "").split("\n") : []
+      };
+      if (item.header.length === item.align.length) {
+        item.raw = cap[0];
+        let l = item.align.length;
+        let i, j, k, row;
+        for (i = 0; i < l; i++) {
+          if (/^ *-+: *$/.test(item.align[i])) {
+            item.align[i] = "right";
+          } else if (/^ *:-+: *$/.test(item.align[i])) {
+            item.align[i] = "center";
+          } else if (/^ *:-+ *$/.test(item.align[i])) {
+            item.align[i] = "left";
+          } else {
+            item.align[i] = null;
+          }
+        }
+        l = item.rows.length;
+        for (i = 0; i < l; i++) {
+          item.rows[i] = splitCells(item.rows[i], item.header.length).map((c) => {
+            return { text: c };
+          });
+        }
+        l = item.header.length;
+        for (j = 0; j < l; j++) {
+          item.header[j].tokens = [];
+          this.lexer.inlineTokens(item.header[j].text, item.header[j].tokens);
+        }
+        l = item.rows.length;
+        for (j = 0; j < l; j++) {
+          row = item.rows[j];
+          for (k = 0; k < row.length; k++) {
+            row[k].tokens = [];
+            this.lexer.inlineTokens(row[k].text, row[k].tokens);
+          }
+        }
+        return item;
+      }
+    }
+  }
+  lheading(src) {
+    const cap = this.rules.block.lheading.exec(src);
+    if (cap) {
+      const token = {
+        type: "heading",
+        raw: cap[0],
+        depth: cap[2].charAt(0) === "=" ? 1 : 2,
+        text: cap[1],
+        tokens: []
+      };
+      this.lexer.inline(token.text, token.tokens);
+      return token;
+    }
+  }
+  paragraph(src) {
+    const cap = this.rules.block.paragraph.exec(src);
+    if (cap) {
+      const token = {
+        type: "paragraph",
+        raw: cap[0],
+        text: cap[1].charAt(cap[1].length - 1) === "\n" ? cap[1].slice(0, -1) : cap[1],
+        tokens: []
+      };
+      this.lexer.inline(token.text, token.tokens);
+      return token;
+    }
+  }
+  text(src) {
+    const cap = this.rules.block.text.exec(src);
+    if (cap) {
+      const token = {
+        type: "text",
+        raw: cap[0],
+        text: cap[0],
+        tokens: []
+      };
+      this.lexer.inline(token.text, token.tokens);
+      return token;
+    }
+  }
+  escape(src) {
+    const cap = this.rules.inline.escape.exec(src);
+    if (cap) {
+      return {
+        type: "escape",
+        raw: cap[0],
+        text: escape(cap[1])
+      };
+    }
+  }
+  tag(src) {
+    const cap = this.rules.inline.tag.exec(src);
+    if (cap) {
+      if (!this.lexer.state.inLink && /^<a /i.test(cap[0])) {
+        this.lexer.state.inLink = true;
+      } else if (this.lexer.state.inLink && /^<\/a>/i.test(cap[0])) {
+        this.lexer.state.inLink = false;
+      }
+      if (!this.lexer.state.inRawBlock && /^<(pre|code|kbd|script)(\s|>)/i.test(cap[0])) {
+        this.lexer.state.inRawBlock = true;
+      } else if (this.lexer.state.inRawBlock && /^<\/(pre|code|kbd|script)(\s|>)/i.test(cap[0])) {
+        this.lexer.state.inRawBlock = false;
+      }
+      return {
+        type: this.options.sanitize ? "text" : "html",
+        raw: cap[0],
+        inLink: this.lexer.state.inLink,
+        inRawBlock: this.lexer.state.inRawBlock,
+        text: this.options.sanitize ? this.options.sanitizer ? this.options.sanitizer(cap[0]) : escape(cap[0]) : cap[0]
+      };
+    }
+  }
+  link(src) {
+    const cap = this.rules.inline.link.exec(src);
+    if (cap) {
+      const trimmedUrl = cap[2].trim();
+      if (!this.options.pedantic && /^</.test(trimmedUrl)) {
+        if (!/>$/.test(trimmedUrl)) {
+          return;
+        }
+        const rtrimSlash = rtrim(trimmedUrl.slice(0, -1), "\\");
+        if ((trimmedUrl.length - rtrimSlash.length) % 2 === 0) {
+          return;
+        }
+      } else {
+        const lastParenIndex = findClosingBracket(cap[2], "()");
+        if (lastParenIndex > -1) {
+          const start2 = cap[0].indexOf("!") === 0 ? 5 : 4;
+          const linkLen = start2 + cap[1].length + lastParenIndex;
+          cap[2] = cap[2].substring(0, lastParenIndex);
+          cap[0] = cap[0].substring(0, linkLen).trim();
+          cap[3] = "";
+        }
+      }
+      let href = cap[2];
+      let title = "";
+      if (this.options.pedantic) {
+        const link = /^([^'"]*[^\s])\s+(['"])(.*)\2/.exec(href);
+        if (link) {
+          href = link[1];
+          title = link[3];
+        }
+      } else {
+        title = cap[3] ? cap[3].slice(1, -1) : "";
+      }
+      href = href.trim();
+      if (/^</.test(href)) {
+        if (this.options.pedantic && !/>$/.test(trimmedUrl)) {
+          href = href.slice(1);
+        } else {
+          href = href.slice(1, -1);
+        }
+      }
+      return outputLink(cap, {
+        href: href ? href.replace(this.rules.inline._escapes, "$1") : href,
+        title: title ? title.replace(this.rules.inline._escapes, "$1") : title
+      }, cap[0], this.lexer);
+    }
+  }
+  reflink(src, links) {
+    let cap;
+    if ((cap = this.rules.inline.reflink.exec(src)) || (cap = this.rules.inline.nolink.exec(src))) {
+      let link = (cap[2] || cap[1]).replace(/\s+/g, " ");
+      link = links[link.toLowerCase()];
+      if (!link || !link.href) {
+        const text = cap[0].charAt(0);
+        return {
+          type: "text",
+          raw: text,
+          text
+        };
+      }
+      return outputLink(cap, link, cap[0], this.lexer);
+    }
+  }
+  emStrong(src, maskedSrc, prevChar = "") {
+    let match3 = this.rules.inline.emStrong.lDelim.exec(src);
+    if (!match3)
+      return;
+    if (match3[3] && prevChar.match(/[\p{L}\p{N}]/u))
+      return;
+    const nextChar = match3[1] || match3[2] || "";
+    if (!nextChar || nextChar && (prevChar === "" || this.rules.inline.punctuation.exec(prevChar))) {
+      const lLength = match3[0].length - 1;
+      let rDelim, rLength, delimTotal = lLength, midDelimTotal = 0;
+      const endReg = match3[0][0] === "*" ? this.rules.inline.emStrong.rDelimAst : this.rules.inline.emStrong.rDelimUnd;
+      endReg.lastIndex = 0;
+      maskedSrc = maskedSrc.slice(-1 * src.length + lLength);
+      while ((match3 = endReg.exec(maskedSrc)) != null) {
+        rDelim = match3[1] || match3[2] || match3[3] || match3[4] || match3[5] || match3[6];
+        if (!rDelim)
+          continue;
+        rLength = rDelim.length;
+        if (match3[3] || match3[4]) {
+          delimTotal += rLength;
+          continue;
+        } else if (match3[5] || match3[6]) {
+          if (lLength % 3 && !((lLength + rLength) % 3)) {
+            midDelimTotal += rLength;
+            continue;
+          }
+        }
+        delimTotal -= rLength;
+        if (delimTotal > 0)
+          continue;
+        rLength = Math.min(rLength, rLength + delimTotal + midDelimTotal);
+        if (Math.min(lLength, rLength) % 2) {
+          const text2 = src.slice(1, lLength + match3.index + rLength);
+          return {
+            type: "em",
+            raw: src.slice(0, lLength + match3.index + rLength + 1),
+            text: text2,
+            tokens: this.lexer.inlineTokens(text2, [])
+          };
+        }
+        const text = src.slice(2, lLength + match3.index + rLength - 1);
+        return {
+          type: "strong",
+          raw: src.slice(0, lLength + match3.index + rLength + 1),
+          text,
+          tokens: this.lexer.inlineTokens(text, [])
+        };
+      }
+    }
+  }
+  codespan(src) {
+    const cap = this.rules.inline.code.exec(src);
+    if (cap) {
+      let text = cap[2].replace(/\n/g, " ");
+      const hasNonSpaceChars = /[^ ]/.test(text);
+      const hasSpaceCharsOnBothEnds = /^ /.test(text) && / $/.test(text);
+      if (hasNonSpaceChars && hasSpaceCharsOnBothEnds) {
+        text = text.substring(1, text.length - 1);
+      }
+      text = escape(text, true);
+      return {
+        type: "codespan",
+        raw: cap[0],
+        text
+      };
+    }
+  }
+  br(src) {
+    const cap = this.rules.inline.br.exec(src);
+    if (cap) {
+      return {
+        type: "br",
+        raw: cap[0]
+      };
+    }
+  }
+  del(src) {
+    const cap = this.rules.inline.del.exec(src);
+    if (cap) {
+      return {
+        type: "del",
+        raw: cap[0],
+        text: cap[2],
+        tokens: this.lexer.inlineTokens(cap[2], [])
+      };
+    }
+  }
+  autolink(src, mangle2) {
+    const cap = this.rules.inline.autolink.exec(src);
+    if (cap) {
+      let text, href;
+      if (cap[2] === "@") {
+        text = escape(this.options.mangle ? mangle2(cap[1]) : cap[1]);
+        href = "mailto:" + text;
+      } else {
+        text = escape(cap[1]);
+        href = text;
+      }
+      return {
+        type: "link",
+        raw: cap[0],
+        text,
+        href,
+        tokens: [
+          {
+            type: "text",
+            raw: text,
+            text
+          }
+        ]
+      };
+    }
+  }
+  url(src, mangle2) {
+    let cap;
+    if (cap = this.rules.inline.url.exec(src)) {
+      let text, href;
+      if (cap[2] === "@") {
+        text = escape(this.options.mangle ? mangle2(cap[0]) : cap[0]);
+        href = "mailto:" + text;
+      } else {
+        let prevCapZero;
+        do {
+          prevCapZero = cap[0];
+          cap[0] = this.rules.inline._backpedal.exec(cap[0])[0];
+        } while (prevCapZero !== cap[0]);
+        text = escape(cap[0]);
+        if (cap[1] === "www.") {
+          href = "http://" + text;
+        } else {
+          href = text;
+        }
+      }
+      return {
+        type: "link",
+        raw: cap[0],
+        text,
+        href,
+        tokens: [
+          {
+            type: "text",
+            raw: text,
+            text
+          }
+        ]
+      };
+    }
+  }
+  inlineText(src, smartypants2) {
+    const cap = this.rules.inline.text.exec(src);
+    if (cap) {
+      let text;
+      if (this.lexer.state.inRawBlock) {
+        text = this.options.sanitize ? this.options.sanitizer ? this.options.sanitizer(cap[0]) : escape(cap[0]) : cap[0];
+      } else {
+        text = escape(this.options.smartypants ? smartypants2(cap[0]) : cap[0]);
+      }
+      return {
+        type: "text",
+        raw: cap[0],
+        text
+      };
+    }
+  }
+}
+const block = {
+  newline: /^(?: *(?:\n|$))+/,
+  code: /^( {4}[^\n]+(?:\n(?: *(?:\n|$))*)?)+/,
+  fences: /^ {0,3}(`{3,}(?=[^`\n]*\n)|~{3,})([^\n]*)\n(?:|([\s\S]*?)\n)(?: {0,3}\1[~`]* *(?=\n|$)|$)/,
+  hr: /^ {0,3}((?:- *){3,}|(?:_ *){3,}|(?:\* *){3,})(?:\n+|$)/,
+  heading: /^ {0,3}(#{1,6})(?=\s|$)(.*)(?:\n+|$)/,
+  blockquote: /^( {0,3}> ?(paragraph|[^\n]*)(?:\n|$))+/,
+  list: /^( {0,3}bull)( [^\n]+?)?(?:\n|$)/,
+  html: "^ {0,3}(?:<(script|pre|style|textarea)[\\s>][\\s\\S]*?(?:</\\1>[^\\n]*\\n+|$)|comment[^\\n]*(\\n+|$)|<\\?[\\s\\S]*?(?:\\?>\\n*|$)|<![A-Z][\\s\\S]*?(?:>\\n*|$)|<!\\[CDATA\\[[\\s\\S]*?(?:\\]\\]>\\n*|$)|</?(tag)(?: +|\\n|/?>)[\\s\\S]*?(?:(?:\\n *)+\\n|$)|<(?!script|pre|style|textarea)([a-z][\\w-]*)(?:attribute)*? */?>(?=[ \\t]*(?:\\n|$))[\\s\\S]*?(?:(?:\\n *)+\\n|$)|</(?!script|pre|style|textarea)[a-z][\\w-]*\\s*>(?=[ \\t]*(?:\\n|$))[\\s\\S]*?(?:(?:\\n *)+\\n|$))",
+  def: /^ {0,3}\[(label)\]: *(?:\n *)?<?([^\s>]+)>?(?:(?: +(?:\n *)?| *\n *)(title))? *(?:\n+|$)/,
+  table: noopTest,
+  lheading: /^([^\n]+)\n {0,3}(=+|-+) *(?:\n+|$)/,
+  _paragraph: /^([^\n]+(?:\n(?!hr|heading|lheading|blockquote|fences|list|html|table| +\n)[^\n]+)*)/,
+  text: /^[^\n]+/
+};
+block._label = /(?!\s*\])(?:\\.|[^\[\]\\])+/;
+block._title = /(?:"(?:\\"?|[^"\\])*"|'[^'\n]*(?:\n[^'\n]+)*\n?'|\([^()]*\))/;
+block.def = edit(block.def).replace("label", block._label).replace("title", block._title).getRegex();
+block.bullet = /(?:[*+-]|\d{1,9}[.)])/;
+block.listItemStart = edit(/^( *)(bull) */).replace("bull", block.bullet).getRegex();
+block.list = edit(block.list).replace(/bull/g, block.bullet).replace("hr", "\\n+(?=\\1?(?:(?:- *){3,}|(?:_ *){3,}|(?:\\* *){3,})(?:\\n+|$))").replace("def", "\\n+(?=" + block.def.source + ")").getRegex();
+block._tag = "address|article|aside|base|basefont|blockquote|body|caption|center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption|figure|footer|form|frame|frameset|h[1-6]|head|header|hr|html|iframe|legend|li|link|main|menu|menuitem|meta|nav|noframes|ol|optgroup|option|p|param|section|source|summary|table|tbody|td|tfoot|th|thead|title|tr|track|ul";
+block._comment = /<!--(?!-?>)[\s\S]*?(?:-->|$)/;
+block.html = edit(block.html, "i").replace("comment", block._comment).replace("tag", block._tag).replace("attribute", / +[a-zA-Z:_][\w.:-]*(?: *= *"[^"\n]*"| *= *'[^'\n]*'| *= *[^\s"'=<>`]+)?/).getRegex();
+block.paragraph = edit(block._paragraph).replace("hr", block.hr).replace("heading", " {0,3}#{1,6} ").replace("|lheading", "").replace("|table", "").replace("blockquote", " {0,3}>").replace("fences", " {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n").replace("list", " {0,3}(?:[*+-]|1[.)]) ").replace("html", "</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)").replace("tag", block._tag).getRegex();
+block.blockquote = edit(block.blockquote).replace("paragraph", block.paragraph).getRegex();
+block.normal = merge({}, block);
+block.gfm = merge({}, block.normal, {
+  table: "^ *([^\\n ].*\\|.*)\\n {0,3}(?:\\| *)?(:?-+:? *(?:\\| *:?-+:? *)*)(?:\\| *)?(?:\\n((?:(?! *\\n|hr|heading|blockquote|code|fences|list|html).*(?:\\n|$))*)\\n*|$)"
+});
+block.gfm.table = edit(block.gfm.table).replace("hr", block.hr).replace("heading", " {0,3}#{1,6} ").replace("blockquote", " {0,3}>").replace("code", " {4}[^\\n]").replace("fences", " {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n").replace("list", " {0,3}(?:[*+-]|1[.)]) ").replace("html", "</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)").replace("tag", block._tag).getRegex();
+block.gfm.paragraph = edit(block._paragraph).replace("hr", block.hr).replace("heading", " {0,3}#{1,6} ").replace("|lheading", "").replace("table", block.gfm.table).replace("blockquote", " {0,3}>").replace("fences", " {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n").replace("list", " {0,3}(?:[*+-]|1[.)]) ").replace("html", "</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)").replace("tag", block._tag).getRegex();
+block.pedantic = merge({}, block.normal, {
+  html: edit(`^ *(?:comment *(?:\\n|\\s*$)|<(tag)[\\s\\S]+?</\\1> *(?:\\n{2,}|\\s*$)|<tag(?:"[^"]*"|'[^']*'|\\s[^'"/>\\s]*)*?/?> *(?:\\n{2,}|\\s*$))`).replace("comment", block._comment).replace(/tag/g, "(?!(?:a|em|strong|small|s|cite|q|dfn|abbr|data|time|code|var|samp|kbd|sub|sup|i|b|u|mark|ruby|rt|rp|bdi|bdo|span|br|wbr|ins|del|img)\\b)\\w+(?!:|[^\\w\\s@]*@)\\b").getRegex(),
+  def: /^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +(["(][^\n]+[")]))? *(?:\n+|$)/,
+  heading: /^(#{1,6})(.*)(?:\n+|$)/,
+  fences: noopTest,
+  paragraph: edit(block.normal._paragraph).replace("hr", block.hr).replace("heading", " *#{1,6} *[^\n]").replace("lheading", block.lheading).replace("blockquote", " {0,3}>").replace("|fences", "").replace("|list", "").replace("|html", "").getRegex()
+});
+const inline = {
+  escape: /^\\([!"#$%&'()*+,\-./:;<=>?@\[\]\\^_`{|}~])/,
+  autolink: /^<(scheme:[^\s\x00-\x1f<>]*|email)>/,
+  url: noopTest,
+  tag: "^comment|^</[a-zA-Z][\\w:-]*\\s*>|^<[a-zA-Z][\\w-]*(?:attribute)*?\\s*/?>|^<\\?[\\s\\S]*?\\?>|^<![a-zA-Z]+\\s[\\s\\S]*?>|^<!\\[CDATA\\[[\\s\\S]*?\\]\\]>",
+  link: /^!?\[(label)\]\(\s*(href)(?:\s+(title))?\s*\)/,
+  reflink: /^!?\[(label)\]\[(ref)\]/,
+  nolink: /^!?\[(ref)\](?:\[\])?/,
+  reflinkSearch: "reflink|nolink(?!\\()",
+  emStrong: {
+    lDelim: /^(?:\*+(?:([punct_])|[^\s*]))|^_+(?:([punct*])|([^\s_]))/,
+    rDelimAst: /^[^_*]*?\_\_[^_*]*?\*[^_*]*?(?=\_\_)|[punct_](\*+)(?=[\s]|$)|[^punct*_\s](\*+)(?=[punct_\s]|$)|[punct_\s](\*+)(?=[^punct*_\s])|[\s](\*+)(?=[punct_])|[punct_](\*+)(?=[punct_])|[^punct*_\s](\*+)(?=[^punct*_\s])/,
+    rDelimUnd: /^[^_*]*?\*\*[^_*]*?\_[^_*]*?(?=\*\*)|[punct*](\_+)(?=[\s]|$)|[^punct*_\s](\_+)(?=[punct*\s]|$)|[punct*\s](\_+)(?=[^punct*_\s])|[\s](\_+)(?=[punct*])|[punct*](\_+)(?=[punct*])/
+  },
+  code: /^(`+)([^`]|[^`][\s\S]*?[^`])\1(?!`)/,
+  br: /^( {2,}|\\)\n(?!\s*$)/,
+  del: noopTest,
+  text: /^(`+|[^`])(?:(?= {2,}\n)|[\s\S]*?(?:(?=[\\<!\[`*_]|\b_|$)|[^ ](?= {2,}\n)))/,
+  punctuation: /^([\spunctuation])/
+};
+inline._punctuation = "!\"#$%&'()+\\-.,/:;<=>?@\\[\\]`^{|}~";
+inline.punctuation = edit(inline.punctuation).replace(/punctuation/g, inline._punctuation).getRegex();
+inline.blockSkip = /\[[^\]]*?\]\([^\)]*?\)|`[^`]*?`|<[^>]*?>/g;
+inline.escapedEmSt = /\\\*|\\_/g;
+inline._comment = edit(block._comment).replace("(?:-->|$)", "-->").getRegex();
+inline.emStrong.lDelim = edit(inline.emStrong.lDelim).replace(/punct/g, inline._punctuation).getRegex();
+inline.emStrong.rDelimAst = edit(inline.emStrong.rDelimAst, "g").replace(/punct/g, inline._punctuation).getRegex();
+inline.emStrong.rDelimUnd = edit(inline.emStrong.rDelimUnd, "g").replace(/punct/g, inline._punctuation).getRegex();
+inline._escapes = /\\([!"#$%&'()*+,\-./:;<=>?@\[\]\\^_`{|}~])/g;
+inline._scheme = /[a-zA-Z][a-zA-Z0-9+.-]{1,31}/;
+inline._email = /[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+(@)[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+(?![-_])/;
+inline.autolink = edit(inline.autolink).replace("scheme", inline._scheme).replace("email", inline._email).getRegex();
+inline._attribute = /\s+[a-zA-Z:_][\w.:-]*(?:\s*=\s*"[^"]*"|\s*=\s*'[^']*'|\s*=\s*[^\s"'=<>`]+)?/;
+inline.tag = edit(inline.tag).replace("comment", inline._comment).replace("attribute", inline._attribute).getRegex();
+inline._label = /(?:\[(?:\\.|[^\[\]\\])*\]|\\.|`[^`]*`|[^\[\]\\`])*?/;
+inline._href = /<(?:\\.|[^\n<>\\])+>|[^\s\x00-\x1f]*/;
+inline._title = /"(?:\\"?|[^"\\])*"|'(?:\\'?|[^'\\])*'|\((?:\\\)?|[^)\\])*\)/;
+inline.link = edit(inline.link).replace("label", inline._label).replace("href", inline._href).replace("title", inline._title).getRegex();
+inline.reflink = edit(inline.reflink).replace("label", inline._label).replace("ref", block._label).getRegex();
+inline.nolink = edit(inline.nolink).replace("ref", block._label).getRegex();
+inline.reflinkSearch = edit(inline.reflinkSearch, "g").replace("reflink", inline.reflink).replace("nolink", inline.nolink).getRegex();
+inline.normal = merge({}, inline);
+inline.pedantic = merge({}, inline.normal, {
+  strong: {
+    start: /^__|\*\*/,
+    middle: /^__(?=\S)([\s\S]*?\S)__(?!_)|^\*\*(?=\S)([\s\S]*?\S)\*\*(?!\*)/,
+    endAst: /\*\*(?!\*)/g,
+    endUnd: /__(?!_)/g
+  },
+  em: {
+    start: /^_|\*/,
+    middle: /^()\*(?=\S)([\s\S]*?\S)\*(?!\*)|^_(?=\S)([\s\S]*?\S)_(?!_)/,
+    endAst: /\*(?!\*)/g,
+    endUnd: /_(?!_)/g
+  },
+  link: edit(/^!?\[(label)\]\((.*?)\)/).replace("label", inline._label).getRegex(),
+  reflink: edit(/^!?\[(label)\]\s*\[([^\]]*)\]/).replace("label", inline._label).getRegex()
+});
+inline.gfm = merge({}, inline.normal, {
+  escape: edit(inline.escape).replace("])", "~|])").getRegex(),
+  _extended_email: /[A-Za-z0-9._+-]+(@)[a-zA-Z0-9-_]+(?:\.[a-zA-Z0-9-_]*[a-zA-Z0-9])+(?![-_])/,
+  url: /^((?:ftp|https?):\/\/|www\.)(?:[a-zA-Z0-9\-]+\.?)+[^\s<]*|^email/,
+  _backpedal: /(?:[^?!.,:;*_~()&]+|\([^)]*\)|&(?![a-zA-Z0-9]+;$)|[?!.,:;*_~)]+(?!$))+/,
+  del: /^(~~?)(?=[^\s~])([\s\S]*?[^\s~])\1(?=[^~]|$)/,
+  text: /^([`~]+|[^`~])(?:(?= {2,}\n)|(?=[a-zA-Z0-9.!#$%&'*+\/=?_`{\|}~-]+@)|[\s\S]*?(?:(?=[\\<!\[`*~_]|\b_|https?:\/\/|ftp:\/\/|www\.|$)|[^ ](?= {2,}\n)|[^a-zA-Z0-9.!#$%&'*+\/=?_`{\|}~-](?=[a-zA-Z0-9.!#$%&'*+\/=?_`{\|}~-]+@)))/
+});
+inline.gfm.url = edit(inline.gfm.url, "i").replace("email", inline.gfm._extended_email).getRegex();
+inline.breaks = merge({}, inline.gfm, {
+  br: edit(inline.br).replace("{2,}", "*").getRegex(),
+  text: edit(inline.gfm.text).replace("\\b_", "\\b_| {2,}\\n").replace(/\{2,\}/g, "*").getRegex()
+});
+function smartypants(text) {
+  return text.replace(/---/g, "\u2014").replace(/--/g, "\u2013").replace(/(^|[-\u2014/(\[{"\s])'/g, "$1\u2018").replace(/'/g, "\u2019").replace(/(^|[-\u2014/(\[{\u2018\s])"/g, "$1\u201C").replace(/"/g, "\u201D").replace(/\.{3}/g, "\u2026");
+}
+function mangle(text) {
+  let out = "", i, ch;
+  const l = text.length;
+  for (i = 0; i < l; i++) {
+    ch = text.charCodeAt(i);
+    if (Math.random() > 0.5) {
+      ch = "x" + ch.toString(16);
+    }
+    out += "&#" + ch + ";";
+  }
+  return out;
+}
+class Lexer {
+  constructor(options2) {
+    this.tokens = [];
+    this.tokens.links = Object.create(null);
+    this.options = options2 || defaults;
+    this.options.tokenizer = this.options.tokenizer || new Tokenizer();
+    this.tokenizer = this.options.tokenizer;
+    this.tokenizer.options = this.options;
+    this.tokenizer.lexer = this;
+    this.inlineQueue = [];
+    this.state = {
+      inLink: false,
+      inRawBlock: false,
+      top: true
+    };
+    const rules = {
+      block: block.normal,
+      inline: inline.normal
+    };
+    if (this.options.pedantic) {
+      rules.block = block.pedantic;
+      rules.inline = inline.pedantic;
+    } else if (this.options.gfm) {
+      rules.block = block.gfm;
+      if (this.options.breaks) {
+        rules.inline = inline.breaks;
+      } else {
+        rules.inline = inline.gfm;
+      }
+    }
+    this.tokenizer.rules = rules;
+  }
+  static get rules() {
+    return {
+      block,
+      inline
+    };
+  }
+  static lex(src, options2) {
+    const lexer = new Lexer(options2);
+    return lexer.lex(src);
+  }
+  static lexInline(src, options2) {
+    const lexer = new Lexer(options2);
+    return lexer.inlineTokens(src);
+  }
+  lex(src) {
+    src = src.replace(/\r\n|\r/g, "\n").replace(/\t/g, "    ");
+    this.blockTokens(src, this.tokens);
+    let next;
+    while (next = this.inlineQueue.shift()) {
+      this.inlineTokens(next.src, next.tokens);
+    }
+    return this.tokens;
+  }
+  blockTokens(src, tokens = []) {
+    if (this.options.pedantic) {
+      src = src.replace(/^ +$/gm, "");
+    }
+    let token, lastToken, cutSrc, lastParagraphClipped;
+    while (src) {
+      if (this.options.extensions && this.options.extensions.block && this.options.extensions.block.some((extTokenizer) => {
+        if (token = extTokenizer.call({ lexer: this }, src, tokens)) {
+          src = src.substring(token.raw.length);
+          tokens.push(token);
+          return true;
+        }
+        return false;
+      })) {
+        continue;
+      }
+      if (token = this.tokenizer.space(src)) {
+        src = src.substring(token.raw.length);
+        if (token.raw.length === 1 && tokens.length > 0) {
+          tokens[tokens.length - 1].raw += "\n";
+        } else {
+          tokens.push(token);
+        }
+        continue;
+      }
+      if (token = this.tokenizer.code(src)) {
+        src = src.substring(token.raw.length);
+        lastToken = tokens[tokens.length - 1];
+        if (lastToken && (lastToken.type === "paragraph" || lastToken.type === "text")) {
+          lastToken.raw += "\n" + token.raw;
+          lastToken.text += "\n" + token.text;
+          this.inlineQueue[this.inlineQueue.length - 1].src = lastToken.text;
+        } else {
+          tokens.push(token);
+        }
+        continue;
+      }
+      if (token = this.tokenizer.fences(src)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (token = this.tokenizer.heading(src)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (token = this.tokenizer.hr(src)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (token = this.tokenizer.blockquote(src)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (token = this.tokenizer.list(src)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (token = this.tokenizer.html(src)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (token = this.tokenizer.def(src)) {
+        src = src.substring(token.raw.length);
+        lastToken = tokens[tokens.length - 1];
+        if (lastToken && (lastToken.type === "paragraph" || lastToken.type === "text")) {
+          lastToken.raw += "\n" + token.raw;
+          lastToken.text += "\n" + token.raw;
+          this.inlineQueue[this.inlineQueue.length - 1].src = lastToken.text;
+        } else if (!this.tokens.links[token.tag]) {
+          this.tokens.links[token.tag] = {
+            href: token.href,
+            title: token.title
+          };
+        }
+        continue;
+      }
+      if (token = this.tokenizer.table(src)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (token = this.tokenizer.lheading(src)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      cutSrc = src;
+      if (this.options.extensions && this.options.extensions.startBlock) {
+        let startIndex = Infinity;
+        const tempSrc = src.slice(1);
+        let tempStart;
+        this.options.extensions.startBlock.forEach(function(getStartIndex) {
+          tempStart = getStartIndex.call({ lexer: this }, tempSrc);
+          if (typeof tempStart === "number" && tempStart >= 0) {
+            startIndex = Math.min(startIndex, tempStart);
+          }
+        });
+        if (startIndex < Infinity && startIndex >= 0) {
+          cutSrc = src.substring(0, startIndex + 1);
+        }
+      }
+      if (this.state.top && (token = this.tokenizer.paragraph(cutSrc))) {
+        lastToken = tokens[tokens.length - 1];
+        if (lastParagraphClipped && lastToken.type === "paragraph") {
+          lastToken.raw += "\n" + token.raw;
+          lastToken.text += "\n" + token.text;
+          this.inlineQueue.pop();
+          this.inlineQueue[this.inlineQueue.length - 1].src = lastToken.text;
+        } else {
+          tokens.push(token);
+        }
+        lastParagraphClipped = cutSrc.length !== src.length;
+        src = src.substring(token.raw.length);
+        continue;
+      }
+      if (token = this.tokenizer.text(src)) {
+        src = src.substring(token.raw.length);
+        lastToken = tokens[tokens.length - 1];
+        if (lastToken && lastToken.type === "text") {
+          lastToken.raw += "\n" + token.raw;
+          lastToken.text += "\n" + token.text;
+          this.inlineQueue.pop();
+          this.inlineQueue[this.inlineQueue.length - 1].src = lastToken.text;
+        } else {
+          tokens.push(token);
+        }
+        continue;
+      }
+      if (src) {
+        const errMsg = "Infinite loop on byte: " + src.charCodeAt(0);
+        if (this.options.silent) {
+          console.error(errMsg);
+          break;
+        } else {
+          throw new Error(errMsg);
+        }
+      }
+    }
+    this.state.top = true;
+    return tokens;
+  }
+  inline(src, tokens) {
+    this.inlineQueue.push({ src, tokens });
+  }
+  inlineTokens(src, tokens = []) {
+    let token, lastToken, cutSrc;
+    let maskedSrc = src;
+    let match3;
+    let keepPrevChar, prevChar;
+    if (this.tokens.links) {
+      const links = Object.keys(this.tokens.links);
+      if (links.length > 0) {
+        while ((match3 = this.tokenizer.rules.inline.reflinkSearch.exec(maskedSrc)) != null) {
+          if (links.includes(match3[0].slice(match3[0].lastIndexOf("[") + 1, -1))) {
+            maskedSrc = maskedSrc.slice(0, match3.index) + "[" + repeatString("a", match3[0].length - 2) + "]" + maskedSrc.slice(this.tokenizer.rules.inline.reflinkSearch.lastIndex);
+          }
+        }
+      }
+    }
+    while ((match3 = this.tokenizer.rules.inline.blockSkip.exec(maskedSrc)) != null) {
+      maskedSrc = maskedSrc.slice(0, match3.index) + "[" + repeatString("a", match3[0].length - 2) + "]" + maskedSrc.slice(this.tokenizer.rules.inline.blockSkip.lastIndex);
+    }
+    while ((match3 = this.tokenizer.rules.inline.escapedEmSt.exec(maskedSrc)) != null) {
+      maskedSrc = maskedSrc.slice(0, match3.index) + "++" + maskedSrc.slice(this.tokenizer.rules.inline.escapedEmSt.lastIndex);
+    }
+    while (src) {
+      if (!keepPrevChar) {
+        prevChar = "";
+      }
+      keepPrevChar = false;
+      if (this.options.extensions && this.options.extensions.inline && this.options.extensions.inline.some((extTokenizer) => {
+        if (token = extTokenizer.call({ lexer: this }, src, tokens)) {
+          src = src.substring(token.raw.length);
+          tokens.push(token);
+          return true;
+        }
+        return false;
+      })) {
+        continue;
+      }
+      if (token = this.tokenizer.escape(src)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (token = this.tokenizer.tag(src)) {
+        src = src.substring(token.raw.length);
+        lastToken = tokens[tokens.length - 1];
+        if (lastToken && token.type === "text" && lastToken.type === "text") {
+          lastToken.raw += token.raw;
+          lastToken.text += token.text;
+        } else {
+          tokens.push(token);
+        }
+        continue;
+      }
+      if (token = this.tokenizer.link(src)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (token = this.tokenizer.reflink(src, this.tokens.links)) {
+        src = src.substring(token.raw.length);
+        lastToken = tokens[tokens.length - 1];
+        if (lastToken && token.type === "text" && lastToken.type === "text") {
+          lastToken.raw += token.raw;
+          lastToken.text += token.text;
+        } else {
+          tokens.push(token);
+        }
+        continue;
+      }
+      if (token = this.tokenizer.emStrong(src, maskedSrc, prevChar)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (token = this.tokenizer.codespan(src)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (token = this.tokenizer.br(src)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (token = this.tokenizer.del(src)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (token = this.tokenizer.autolink(src, mangle)) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      if (!this.state.inLink && (token = this.tokenizer.url(src, mangle))) {
+        src = src.substring(token.raw.length);
+        tokens.push(token);
+        continue;
+      }
+      cutSrc = src;
+      if (this.options.extensions && this.options.extensions.startInline) {
+        let startIndex = Infinity;
+        const tempSrc = src.slice(1);
+        let tempStart;
+        this.options.extensions.startInline.forEach(function(getStartIndex) {
+          tempStart = getStartIndex.call({ lexer: this }, tempSrc);
+          if (typeof tempStart === "number" && tempStart >= 0) {
+            startIndex = Math.min(startIndex, tempStart);
+          }
+        });
+        if (startIndex < Infinity && startIndex >= 0) {
+          cutSrc = src.substring(0, startIndex + 1);
+        }
+      }
+      if (token = this.tokenizer.inlineText(cutSrc, smartypants)) {
+        src = src.substring(token.raw.length);
+        if (token.raw.slice(-1) !== "_") {
+          prevChar = token.raw.slice(-1);
+        }
+        keepPrevChar = true;
+        lastToken = tokens[tokens.length - 1];
+        if (lastToken && lastToken.type === "text") {
+          lastToken.raw += token.raw;
+          lastToken.text += token.text;
+        } else {
+          tokens.push(token);
+        }
+        continue;
+      }
+      if (src) {
+        const errMsg = "Infinite loop on byte: " + src.charCodeAt(0);
+        if (this.options.silent) {
+          console.error(errMsg);
+          break;
+        } else {
+          throw new Error(errMsg);
+        }
+      }
+    }
+    return tokens;
+  }
+}
+class Renderer {
+  constructor(options2) {
+    this.options = options2 || defaults;
+  }
+  code(code, infostring, escaped) {
+    const lang = (infostring || "").match(/\S*/)[0];
+    if (this.options.highlight) {
+      const out = this.options.highlight(code, lang);
+      if (out != null && out !== code) {
+        escaped = true;
+        code = out;
+      }
+    }
+    code = code.replace(/\n$/, "") + "\n";
+    if (!lang) {
+      return "<pre><code>" + (escaped ? code : escape(code, true)) + "</code></pre>\n";
+    }
+    return '<pre><code class="' + this.options.langPrefix + escape(lang, true) + '">' + (escaped ? code : escape(code, true)) + "</code></pre>\n";
+  }
+  blockquote(quote) {
+    return "<blockquote>\n" + quote + "</blockquote>\n";
+  }
+  html(html) {
+    return html;
+  }
+  heading(text, level, raw, slugger) {
+    if (this.options.headerIds) {
+      return "<h" + level + ' id="' + this.options.headerPrefix + slugger.slug(raw) + '">' + text + "</h" + level + ">\n";
+    }
+    return "<h" + level + ">" + text + "</h" + level + ">\n";
+  }
+  hr() {
+    return this.options.xhtml ? "<hr/>\n" : "<hr>\n";
+  }
+  list(body, ordered, start2) {
+    const type3 = ordered ? "ol" : "ul", startatt = ordered && start2 !== 1 ? ' start="' + start2 + '"' : "";
+    return "<" + type3 + startatt + ">\n" + body + "</" + type3 + ">\n";
+  }
+  listitem(text) {
+    return "<li>" + text + "</li>\n";
+  }
+  checkbox(checked) {
+    return "<input " + (checked ? 'checked="" ' : "") + 'disabled="" type="checkbox"' + (this.options.xhtml ? " /" : "") + "> ";
+  }
+  paragraph(text) {
+    return "<p>" + text + "</p>\n";
+  }
+  table(header, body) {
+    if (body)
+      body = "<tbody>" + body + "</tbody>";
+    return "<table>\n<thead>\n" + header + "</thead>\n" + body + "</table>\n";
+  }
+  tablerow(content) {
+    return "<tr>\n" + content + "</tr>\n";
+  }
+  tablecell(content, flags) {
+    const type3 = flags.header ? "th" : "td";
+    const tag = flags.align ? "<" + type3 + ' align="' + flags.align + '">' : "<" + type3 + ">";
+    return tag + content + "</" + type3 + ">\n";
+  }
+  strong(text) {
+    return "<strong>" + text + "</strong>";
+  }
+  em(text) {
+    return "<em>" + text + "</em>";
+  }
+  codespan(text) {
+    return "<code>" + text + "</code>";
+  }
+  br() {
+    return this.options.xhtml ? "<br/>" : "<br>";
+  }
+  del(text) {
+    return "<del>" + text + "</del>";
+  }
+  link(href, title, text) {
+    href = cleanUrl(this.options.sanitize, this.options.baseUrl, href);
+    if (href === null) {
+      return text;
+    }
+    let out = '<a href="' + escape(href) + '"';
+    if (title) {
+      out += ' title="' + title + '"';
+    }
+    out += ">" + text + "</a>";
+    return out;
+  }
+  image(href, title, text) {
+    href = cleanUrl(this.options.sanitize, this.options.baseUrl, href);
+    if (href === null) {
+      return text;
+    }
+    let out = '<img src="' + href + '" alt="' + text + '"';
+    if (title) {
+      out += ' title="' + title + '"';
+    }
+    out += this.options.xhtml ? "/>" : ">";
+    return out;
+  }
+  text(text) {
+    return text;
+  }
+}
+class TextRenderer {
+  strong(text) {
+    return text;
+  }
+  em(text) {
+    return text;
+  }
+  codespan(text) {
+    return text;
+  }
+  del(text) {
+    return text;
+  }
+  html(text) {
+    return text;
+  }
+  text(text) {
+    return text;
+  }
+  link(href, title, text) {
+    return "" + text;
+  }
+  image(href, title, text) {
+    return "" + text;
+  }
+  br() {
+    return "";
+  }
+}
+class Slugger {
+  constructor() {
+    this.seen = {};
+  }
+  serialize(value) {
+    return value.toLowerCase().trim().replace(/<[!\/a-z].*?>/ig, "").replace(/[\u2000-\u206F\u2E00-\u2E7F\\'!"#$%&()*+,./:;<=>?@[\]^`{|}~]/g, "").replace(/\s/g, "-");
+  }
+  getNextSafeSlug(originalSlug, isDryRun) {
+    let slug = originalSlug;
+    let occurenceAccumulator = 0;
+    if (this.seen.hasOwnProperty(slug)) {
+      occurenceAccumulator = this.seen[originalSlug];
+      do {
+        occurenceAccumulator++;
+        slug = originalSlug + "-" + occurenceAccumulator;
+      } while (this.seen.hasOwnProperty(slug));
+    }
+    if (!isDryRun) {
+      this.seen[originalSlug] = occurenceAccumulator;
+      this.seen[slug] = 0;
+    }
+    return slug;
+  }
+  slug(value, options2 = {}) {
+    const slug = this.serialize(value);
+    return this.getNextSafeSlug(slug, options2.dryrun);
+  }
+}
+class Parser {
+  constructor(options2) {
+    this.options = options2 || defaults;
+    this.options.renderer = this.options.renderer || new Renderer();
+    this.renderer = this.options.renderer;
+    this.renderer.options = this.options;
+    this.textRenderer = new TextRenderer();
+    this.slugger = new Slugger();
+  }
+  static parse(tokens, options2) {
+    const parser = new Parser(options2);
+    return parser.parse(tokens);
+  }
+  static parseInline(tokens, options2) {
+    const parser = new Parser(options2);
+    return parser.parseInline(tokens);
+  }
+  parse(tokens, top2 = true) {
+    let out = "", i, j, k, l2, l3, row, cell, header, body, token, ordered, start2, loose, itemBody, item, checked, task, checkbox, ret;
+    const l = tokens.length;
+    for (i = 0; i < l; i++) {
+      token = tokens[i];
+      if (this.options.extensions && this.options.extensions.renderers && this.options.extensions.renderers[token.type]) {
+        ret = this.options.extensions.renderers[token.type].call({ parser: this }, token);
+        if (ret !== false || !["space", "hr", "heading", "code", "table", "blockquote", "list", "html", "paragraph", "text"].includes(token.type)) {
+          out += ret || "";
+          continue;
+        }
+      }
+      switch (token.type) {
+        case "space": {
+          continue;
+        }
+        case "hr": {
+          out += this.renderer.hr();
+          continue;
+        }
+        case "heading": {
+          out += this.renderer.heading(this.parseInline(token.tokens), token.depth, unescape(this.parseInline(token.tokens, this.textRenderer)), this.slugger);
+          continue;
+        }
+        case "code": {
+          out += this.renderer.code(token.text, token.lang, token.escaped);
+          continue;
+        }
+        case "table": {
+          header = "";
+          cell = "";
+          l2 = token.header.length;
+          for (j = 0; j < l2; j++) {
+            cell += this.renderer.tablecell(this.parseInline(token.header[j].tokens), { header: true, align: token.align[j] });
+          }
+          header += this.renderer.tablerow(cell);
+          body = "";
+          l2 = token.rows.length;
+          for (j = 0; j < l2; j++) {
+            row = token.rows[j];
+            cell = "";
+            l3 = row.length;
+            for (k = 0; k < l3; k++) {
+              cell += this.renderer.tablecell(this.parseInline(row[k].tokens), { header: false, align: token.align[k] });
+            }
+            body += this.renderer.tablerow(cell);
+          }
+          out += this.renderer.table(header, body);
+          continue;
+        }
+        case "blockquote": {
+          body = this.parse(token.tokens);
+          out += this.renderer.blockquote(body);
+          continue;
+        }
+        case "list": {
+          ordered = token.ordered;
+          start2 = token.start;
+          loose = token.loose;
+          l2 = token.items.length;
+          body = "";
+          for (j = 0; j < l2; j++) {
+            item = token.items[j];
+            checked = item.checked;
+            task = item.task;
+            itemBody = "";
+            if (item.task) {
+              checkbox = this.renderer.checkbox(checked);
+              if (loose) {
+                if (item.tokens.length > 0 && item.tokens[0].type === "paragraph") {
+                  item.tokens[0].text = checkbox + " " + item.tokens[0].text;
+                  if (item.tokens[0].tokens && item.tokens[0].tokens.length > 0 && item.tokens[0].tokens[0].type === "text") {
+                    item.tokens[0].tokens[0].text = checkbox + " " + item.tokens[0].tokens[0].text;
+                  }
+                } else {
+                  item.tokens.unshift({
+                    type: "text",
+                    text: checkbox
+                  });
+                }
+              } else {
+                itemBody += checkbox;
+              }
+            }
+            itemBody += this.parse(item.tokens, loose);
+            body += this.renderer.listitem(itemBody, task, checked);
+          }
+          out += this.renderer.list(body, ordered, start2);
+          continue;
+        }
+        case "html": {
+          out += this.renderer.html(token.text);
+          continue;
+        }
+        case "paragraph": {
+          out += this.renderer.paragraph(this.parseInline(token.tokens));
+          continue;
+        }
+        case "text": {
+          body = token.tokens ? this.parseInline(token.tokens) : token.text;
+          while (i + 1 < l && tokens[i + 1].type === "text") {
+            token = tokens[++i];
+            body += "\n" + (token.tokens ? this.parseInline(token.tokens) : token.text);
+          }
+          out += top2 ? this.renderer.paragraph(body) : body;
+          continue;
+        }
+        default: {
+          const errMsg = 'Token with "' + token.type + '" type was not found.';
+          if (this.options.silent) {
+            console.error(errMsg);
+            return;
+          } else {
+            throw new Error(errMsg);
+          }
+        }
+      }
+    }
+    return out;
+  }
+  parseInline(tokens, renderer2) {
+    renderer2 = renderer2 || this.renderer;
+    let out = "", i, token, ret;
+    const l = tokens.length;
+    for (i = 0; i < l; i++) {
+      token = tokens[i];
+      if (this.options.extensions && this.options.extensions.renderers && this.options.extensions.renderers[token.type]) {
+        ret = this.options.extensions.renderers[token.type].call({ parser: this }, token);
+        if (ret !== false || !["escape", "html", "link", "image", "strong", "em", "codespan", "br", "del", "text"].includes(token.type)) {
+          out += ret || "";
+          continue;
+        }
+      }
+      switch (token.type) {
+        case "escape": {
+          out += renderer2.text(token.text);
+          break;
+        }
+        case "html": {
+          out += renderer2.html(token.text);
+          break;
+        }
+        case "link": {
+          out += renderer2.link(token.href, token.title, this.parseInline(token.tokens, renderer2));
+          break;
+        }
+        case "image": {
+          out += renderer2.image(token.href, token.title, token.text);
+          break;
+        }
+        case "strong": {
+          out += renderer2.strong(this.parseInline(token.tokens, renderer2));
+          break;
+        }
+        case "em": {
+          out += renderer2.em(this.parseInline(token.tokens, renderer2));
+          break;
+        }
+        case "codespan": {
+          out += renderer2.codespan(token.text);
+          break;
+        }
+        case "br": {
+          out += renderer2.br();
+          break;
+        }
+        case "del": {
+          out += renderer2.del(this.parseInline(token.tokens, renderer2));
+          break;
+        }
+        case "text": {
+          out += renderer2.text(token.text);
+          break;
+        }
+        default: {
+          const errMsg = 'Token with "' + token.type + '" type was not found.';
+          if (this.options.silent) {
+            console.error(errMsg);
+            return;
+          } else {
+            throw new Error(errMsg);
+          }
+        }
+      }
+    }
+    return out;
+  }
+}
+function marked(src, opt, callback) {
+  if (typeof src === "undefined" || src === null) {
+    throw new Error("marked(): input parameter is undefined or null");
+  }
+  if (typeof src !== "string") {
+    throw new Error("marked(): input parameter is of type " + Object.prototype.toString.call(src) + ", string expected");
+  }
+  if (typeof opt === "function") {
+    callback = opt;
+    opt = null;
+  }
+  opt = merge({}, marked.defaults, opt || {});
+  checkSanitizeDeprecation(opt);
+  if (callback) {
+    const highlight = opt.highlight;
+    let tokens;
+    try {
+      tokens = Lexer.lex(src, opt);
+    } catch (e) {
+      return callback(e);
+    }
+    const done = function(err) {
+      let out;
+      if (!err) {
+        try {
+          if (opt.walkTokens) {
+            marked.walkTokens(tokens, opt.walkTokens);
+          }
+          out = Parser.parse(tokens, opt);
+        } catch (e) {
+          err = e;
+        }
+      }
+      opt.highlight = highlight;
+      return err ? callback(err) : callback(null, out);
+    };
+    if (!highlight || highlight.length < 3) {
+      return done();
+    }
+    delete opt.highlight;
+    if (!tokens.length)
+      return done();
+    let pending = 0;
+    marked.walkTokens(tokens, function(token) {
+      if (token.type === "code") {
+        pending++;
+        setTimeout(() => {
+          highlight(token.text, token.lang, function(err, code) {
+            if (err) {
+              return done(err);
+            }
+            if (code != null && code !== token.text) {
+              token.text = code;
+              token.escaped = true;
+            }
+            pending--;
+            if (pending === 0) {
+              done();
+            }
+          });
+        }, 0);
+      }
+    });
+    if (pending === 0) {
+      done();
+    }
+    return;
+  }
+  try {
+    const tokens = Lexer.lex(src, opt);
+    if (opt.walkTokens) {
+      marked.walkTokens(tokens, opt.walkTokens);
+    }
+    return Parser.parse(tokens, opt);
+  } catch (e) {
+    e.message += "\nPlease report this to https://github.com/markedjs/marked.";
+    if (opt.silent) {
+      return "<p>An error occurred:</p><pre>" + escape(e.message + "", true) + "</pre>";
+    }
+    throw e;
+  }
+}
+marked.options = marked.setOptions = function(opt) {
+  merge(marked.defaults, opt);
+  changeDefaults(marked.defaults);
+  return marked;
+};
+marked.getDefaults = getDefaults;
+marked.defaults = defaults;
+marked.use = function(...args) {
+  const opts = merge({}, ...args);
+  const extensions = marked.defaults.extensions || { renderers: {}, childTokens: {} };
+  let hasExtensions;
+  args.forEach((pack) => {
+    if (pack.extensions) {
+      hasExtensions = true;
+      pack.extensions.forEach((ext) => {
+        if (!ext.name) {
+          throw new Error("extension name required");
+        }
+        if (ext.renderer) {
+          const prevRenderer = extensions.renderers ? extensions.renderers[ext.name] : null;
+          if (prevRenderer) {
+            extensions.renderers[ext.name] = function(...args2) {
+              let ret = ext.renderer.apply(this, args2);
+              if (ret === false) {
+                ret = prevRenderer.apply(this, args2);
+              }
+              return ret;
+            };
+          } else {
+            extensions.renderers[ext.name] = ext.renderer;
+          }
+        }
+        if (ext.tokenizer) {
+          if (!ext.level || ext.level !== "block" && ext.level !== "inline") {
+            throw new Error("extension level must be 'block' or 'inline'");
+          }
+          if (extensions[ext.level]) {
+            extensions[ext.level].unshift(ext.tokenizer);
+          } else {
+            extensions[ext.level] = [ext.tokenizer];
+          }
+          if (ext.start) {
+            if (ext.level === "block") {
+              if (extensions.startBlock) {
+                extensions.startBlock.push(ext.start);
+              } else {
+                extensions.startBlock = [ext.start];
+              }
+            } else if (ext.level === "inline") {
+              if (extensions.startInline) {
+                extensions.startInline.push(ext.start);
+              } else {
+                extensions.startInline = [ext.start];
+              }
+            }
+          }
+        }
+        if (ext.childTokens) {
+          extensions.childTokens[ext.name] = ext.childTokens;
+        }
+      });
+    }
+    if (pack.renderer) {
+      const renderer2 = marked.defaults.renderer || new Renderer();
+      for (const prop3 in pack.renderer) {
+        const prevRenderer = renderer2[prop3];
+        renderer2[prop3] = (...args2) => {
+          let ret = pack.renderer[prop3].apply(renderer2, args2);
+          if (ret === false) {
+            ret = prevRenderer.apply(renderer2, args2);
+          }
+          return ret;
+        };
+      }
+      opts.renderer = renderer2;
+    }
+    if (pack.tokenizer) {
+      const tokenizer = marked.defaults.tokenizer || new Tokenizer();
+      for (const prop3 in pack.tokenizer) {
+        const prevTokenizer = tokenizer[prop3];
+        tokenizer[prop3] = (...args2) => {
+          let ret = pack.tokenizer[prop3].apply(tokenizer, args2);
+          if (ret === false) {
+            ret = prevTokenizer.apply(tokenizer, args2);
+          }
+          return ret;
+        };
+      }
+      opts.tokenizer = tokenizer;
+    }
+    if (pack.walkTokens) {
+      const walkTokens = marked.defaults.walkTokens;
+      opts.walkTokens = function(token) {
+        pack.walkTokens.call(this, token);
+        if (walkTokens) {
+          walkTokens.call(this, token);
+        }
+      };
+    }
+    if (hasExtensions) {
+      opts.extensions = extensions;
+    }
+    marked.setOptions(opts);
+  });
+};
+marked.walkTokens = function(tokens, callback) {
+  for (const token of tokens) {
+    callback.call(marked, token);
+    switch (token.type) {
+      case "table": {
+        for (const cell of token.header) {
+          marked.walkTokens(cell.tokens, callback);
+        }
+        for (const row of token.rows) {
+          for (const cell of row) {
+            marked.walkTokens(cell.tokens, callback);
+          }
+        }
+        break;
+      }
+      case "list": {
+        marked.walkTokens(token.items, callback);
+        break;
+      }
+      default: {
+        if (marked.defaults.extensions && marked.defaults.extensions.childTokens && marked.defaults.extensions.childTokens[token.type]) {
+          marked.defaults.extensions.childTokens[token.type].forEach(function(childTokens) {
+            marked.walkTokens(token[childTokens], callback);
+          });
+        } else if (token.tokens) {
+          marked.walkTokens(token.tokens, callback);
+        }
+      }
+    }
+  }
+};
+marked.parseInline = function(src, opt) {
+  if (typeof src === "undefined" || src === null) {
+    throw new Error("marked.parseInline(): input parameter is undefined or null");
+  }
+  if (typeof src !== "string") {
+    throw new Error("marked.parseInline(): input parameter is of type " + Object.prototype.toString.call(src) + ", string expected");
+  }
+  opt = merge({}, marked.defaults, opt || {});
+  checkSanitizeDeprecation(opt);
+  try {
+    const tokens = Lexer.lexInline(src, opt);
+    if (opt.walkTokens) {
+      marked.walkTokens(tokens, opt.walkTokens);
+    }
+    return Parser.parseInline(tokens, opt);
+  } catch (e) {
+    e.message += "\nPlease report this to https://github.com/markedjs/marked.";
+    if (opt.silent) {
+      return "<p>An error occurred:</p><pre>" + escape(e.message + "", true) + "</pre>";
+    }
+    throw e;
+  }
+};
+marked.Parser = Parser;
+marked.parser = Parser.parse;
+marked.Renderer = Renderer;
+marked.TextRenderer = TextRenderer;
+marked.Lexer = Lexer;
+marked.lexer = Lexer.lex;
+marked.Tokenizer = Tokenizer;
+marked.Slugger = Slugger;
+marked.parse = marked;
+Parser.parse;
+Lexer.lex;
 var top = "top";
 var bottom = "bottom";
 var right = "right";
@@ -16191,4 +18450,4 @@ class Toast extends BaseComponent {
 }
 enableDismissTrigger(Toast);
 defineJQueryPlugin(Toast);
-export { createRouter as $, pushScopeId as A, popScopeId as B, createTextVNode as C, normalizeClass as D, useRouter as E, Fragment as F, watch as G, Hashids as H, onMounted as I, onUnmounted as J, view$1 as K, lensProp$1 as L, withDirectives as M, vModelText as N, isRef as O, toRefs as P, h as Q, vShow as R, createBlock as S, mergeWith$1 as T, mergeAll$1 as U, VuexPersistence$1 as V, match$1 as W, vModelSelect as X, normalizeStyle as Y, useRoute as Z, __ as _, createStore as a, createWebHashHistory as a0, createApp as a1, createLogger as b, clone$1 as c, lensPath$1 as d, lib as e, always$1 as f, omit$1 as g, defineComponent as h, openBlock as i, createElementBlock as j, createBaseVNode as k, localforage as l, mergeRight$1 as m, createCommentVNode as n, over$1 as o, reactive as p, computed as q, renderSlot as r, set$1 as s, toDisplayString as t, useStore as u, resolveComponent as v, renderList as w, unref as x, createVNode as y, withCtx as z };
+export { normalizeStyle as $, withCtx as A, pushScopeId as B, popScopeId as C, createTextVNode as D, useRouter as E, Fragment as F, watch as G, Hashids as H, onMounted as I, onUnmounted as J, view$1 as K, ref as L, lensProp$1 as M, withDirectives as N, vModelText as O, isRef as P, marked as Q, toRefs as R, h as S, vShow as T, createBlock as U, VuexPersistence$1 as V, mergeWith$1 as W, mergeAll$1 as X, match$1 as Y, vModelSelect as Z, __$1 as _, createStore as a, __ as a0, test$1 as a1, useRoute as a2, createRouter as a3, createWebHashHistory as a4, createApp as a5, createLogger as b, clone$1 as c, lensPath$1 as d, lib as e, always$1 as f, omit$1 as g, defineComponent as h, openBlock as i, createElementBlock as j, createBaseVNode as k, localforage as l, mergeRight$1 as m, createCommentVNode as n, over$1 as o, normalizeClass as p, reactive as q, renderSlot as r, set$1 as s, toDisplayString as t, useStore as u, computed as v, resolveComponent as w, renderList as x, unref as y, createVNode as z };
