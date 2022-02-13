@@ -1,9 +1,7 @@
 import * as P from "ts-pattern";
 import { __ as PM } from "ts-pattern/lib/wildcards";
 import * as R from "ramda";
-import { DefaultChoiceStyle, IGridChildStyle, IGridContainerStyle } from "../../data/model/style";
-import { prop, repeat } from "ramda";
-import { numberToPos } from "vite/dist/node/utils";
+import { IGridContainerStyle } from "../../data/model/style";
 
 export const EMPTY = R.always<object>({});
 
@@ -22,11 +20,9 @@ export function computeGridTemplate(
   return P.match<string | undefined>(value)
     .with(undefined, EMPTY)
     .with(PM.string, R.test(/^\d+$/), (numCols) => {
-      console.log("Hit number", numCols);
       return { [property]: `repeat(${numCols}, minmax(max-content, 1fr))` };
     })
     .with(PM.string, R.test(/^repeat\(.+\)$/), (repeatExpr) => {
-      console.log("Hit repeat", repeatExpr);
       return { [property]: repeatExpr };
     })
     .otherwise(EMPTY);

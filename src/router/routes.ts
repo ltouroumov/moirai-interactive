@@ -1,15 +1,11 @@
 import Home from "../components/Home.vue";
 import Editor from "../components/Editor.vue";
 import HomeTab from "../components/editor/HomeTab.vue";
-
 import PagesTab from "../components/editor/PagesTab.vue";
 import PagesTools from "../components/editor/PagesTools.vue";
-
 import SectionsTab from "../components/editor/SectionsTab.vue";
 import SectionsTools from "../components/editor/SectionsTools.vue";
-
 import SettingsTab from "../components/editor/SettingsTab.vue";
-
 import Viewer from "../components/Viewer.vue";
 
 export const routes = [
