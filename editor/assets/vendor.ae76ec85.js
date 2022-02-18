@@ -3649,6 +3649,11 @@ function cloneVNode(vnode, extraProps, mergeRef = false) {
 function createTextVNode(text = " ", flag = 0) {
   return createVNode(Text, null, text, flag);
 }
+function createStaticVNode(content, numberOfNodes) {
+  const vnode = createVNode(Static, null, content);
+  vnode.staticCount = numberOfNodes;
+  return vnode;
+}
 function createCommentVNode(text = "", asBlock = false) {
   return asBlock ? (openBlock(), createBlock(Comment, null, text)) : createVNode(Comment, null, text);
 }
@@ -4576,6 +4581,30 @@ function setSelected(el, value) {
 function getValue(el) {
   return "_value" in el ? el._value : el.value;
 }
+const systemModifiers = ["ctrl", "shift", "alt", "meta"];
+const modifierGuards = {
+  stop: (e) => e.stopPropagation(),
+  prevent: (e) => e.preventDefault(),
+  self: (e) => e.target !== e.currentTarget,
+  ctrl: (e) => !e.ctrlKey,
+  shift: (e) => !e.shiftKey,
+  alt: (e) => !e.altKey,
+  meta: (e) => !e.metaKey,
+  left: (e) => "button" in e && e.button !== 0,
+  middle: (e) => "button" in e && e.button !== 1,
+  right: (e) => "button" in e && e.button !== 2,
+  exact: (e, modifiers) => systemModifiers.some((m) => e[`${m}Key`] && !modifiers.includes(m))
+};
+const withModifiers = (fn2, modifiers) => {
+  return (event, ...args) => {
+    for (let i = 0; i < modifiers.length; i++) {
+      const guard = modifierGuards[modifiers[i]];
+      if (guard && guard(event, modifiers))
+        return;
+    }
+    return fn2(event, ...args);
+  };
+};
 const vShow = {
   beforeMount(el, { value }, { transition }) {
     el._vod = el.style.display === "none" ? "" : el.style.display;
@@ -18450,4 +18479,4 @@ class Toast extends BaseComponent {
 }
 enableDismissTrigger(Toast);
 defineJQueryPlugin(Toast);
-export { normalizeStyle as $, withCtx as A, pushScopeId as B, popScopeId as C, createTextVNode as D, useRouter as E, Fragment as F, watch as G, Hashids as H, onMounted as I, onUnmounted as J, view$1 as K, ref as L, lensProp$1 as M, withDirectives as N, vModelText as O, isRef as P, marked as Q, toRefs as R, h as S, vShow as T, createBlock as U, VuexPersistence$1 as V, mergeWith$1 as W, mergeAll$1 as X, match$1 as Y, vModelSelect as Z, __$1 as _, createStore as a, __ as a0, test$1 as a1, useRoute as a2, createRouter as a3, createWebHashHistory as a4, createApp as a5, createLogger as b, clone$1 as c, lensPath$1 as d, lib as e, always$1 as f, omit$1 as g, defineComponent as h, openBlock as i, createElementBlock as j, createBaseVNode as k, localforage as l, mergeRight$1 as m, createCommentVNode as n, over$1 as o, normalizeClass as p, reactive as q, renderSlot as r, set$1 as s, toDisplayString as t, useStore as u, computed as v, resolveComponent as w, renderList as x, unref as y, createVNode as z };
+export { normalizeStyle as $, withCtx as A, pushScopeId as B, popScopeId as C, createTextVNode as D, useRouter as E, Fragment as F, watch as G, Hashids as H, onMounted as I, onUnmounted as J, view$1 as K, ref as L, lensProp$1 as M, withDirectives as N, vModelText as O, isRef as P, marked as Q, toRefs as R, h as S, vShow as T, createBlock as U, VuexPersistence$1 as V, mergeWith$1 as W, mergeAll$1 as X, match$1 as Y, vModelSelect as Z, __$1 as _, createStore as a, __ as a0, test$1 as a1, useRoute as a2, createStaticVNode as a3, withModifiers as a4, createRouter as a5, createWebHashHistory as a6, createApp as a7, createLogger as b, clone$1 as c, lensPath$1 as d, lib as e, always$1 as f, omit$1 as g, defineComponent as h, openBlock as i, createElementBlock as j, createBaseVNode as k, localforage as l, mergeRight$1 as m, createCommentVNode as n, over$1 as o, normalizeClass as p, reactive as q, renderSlot as r, set$1 as s, toDisplayString as t, useStore as u, computed as v, resolveComponent as w, renderList as x, unref as y, createVNode as z };

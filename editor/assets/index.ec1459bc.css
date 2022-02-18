@@ -370,7 +370,59 @@ h1[data-v-56450fb2] {
   padding: 5px;
   border-radius: 5px;
 }
-#app {
+.content-editor[data-v-7d74615c] {
+  display: grid;
+  grid-gap: 5px;
+  grid-template: "name type" auto "view view" 1fr/1fr minmax(100px, auto);
+}
+.content-editor .editor-name[data-v-7d74615c] {
+  display: block;
+  font-weight: bold;
+  grid-area: name;
+  align-self: center;
+}
+.content-editor .content-type[data-v-7d74615c] {
+  grid-area: type;
+}
+.content-editor .editor-view[data-v-7d74615c] {
+  grid-area: view;
+}div.toolbar {
+  padding: 5px;
+  background: lightgray;
+  border-bottom: 1px solid grey;
+  display: grid;
+  grid-template-columns: [nav] auto 1fr [actions] auto;
+  justify-content: center;
+}
+div.toolbar .editor-tabs {
+  grid-column: nav/span 1;
+}
+div.toolbar .editor-actions {
+  grid-column: actions/span 1;
+}
+#viewer-main {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+#viewer-main #editor-current {
+  padding: 5px;
+  flex-grow: 1;
+}
+#viewer-loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+#viewer-loader div.loader {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  row-gap: 10px;
+}#app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
