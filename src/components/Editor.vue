@@ -59,6 +59,7 @@ import { Choice, ElementType, Page, Section } from "../data/model/element";
 import MdIcon from "./utils/MdIcon.vue";
 import { Project } from "../data/model/project";
 import { sleep } from "./utils/time";
+import { reloadProject } from "../store/utils";
 
 const _state = reactive({
   loaded: false
@@ -84,19 +85,6 @@ watch(
     if (newValue) reloadProject(newValue);
   }
 );
-
-async function reloadProject(projectId: string) {
-  console.log(`Loading project ${projectId}`);
-
-  const homeStore = useStore(homeStoreKey);
-  const projectInfo = homeStore.getters["findProject"](projectId);
-
-  await store.dispatch("project/restoreProject", {
-    projectId,
-    projectInfo
-  });
-  await sleep(500);
-}
 
 onMounted(async () => {
   _state.loaded = false;

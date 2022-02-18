@@ -37,5 +37,5 @@ export const routes = [
       },
     ],
   },
-  { name: "view", path: "/view/:projectId", component: Viewer },
+  { name: "view", path: "/view/:projectId", component: Viewer, props: true },
 ];
